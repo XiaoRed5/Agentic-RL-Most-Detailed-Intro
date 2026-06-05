@@ -1,0 +1,453 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentic RL 入门</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=STIX+Two+Text:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});"></script>
+<style>
+:root {
+  --primary: #111;
+  --bg: #fff;
+  --card: #fff;
+  --text: #222;
+  --muted: #666;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'STIX Two Text', 'Noto Serif SC', 'CMU Serif', 'Times New Roman', serif;
+  background: var(--bg); color: var(--text); line-height:1.9; font-size:15px;
+}
+.toc-sidebar {
+  position:fixed; left:0; top:0; width:240px; height:100vh;
+  background:#fafafa; color:#222; overflow-y:auto;
+  padding:24px 16px; z-index:100; border-right:1px solid #ddd;
+}
+.toc-sidebar h2 { font-size:13px; margin-bottom:16px; letter-spacing:2px; text-transform:uppercase; color:#444; font-weight:700; }
+.toc-sidebar a {
+  display:block; color:#555; text-decoration:none;
+  padding:5px 8px; font-size:12.5px; margin:1px 0; border-left:2px solid transparent;
+}
+.toc-sidebar a:hover { border-left:2px solid #111; color:#111; background:#f0f0f0; }
+.toc-sidebar .sub { padding-left:18px; font-size:11.5px; color:#888; }
+.toc-sidebar .grp { font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:#aaa; font-weight:700; margin:20px 0 6px; padding:0 8px; }
+.toc-sidebar .grp:first-of-type { margin-top:6px; }
+.main { margin:0 auto; max-width:760px; padding:48px 40px 120px; }
+.toc-inline { margin:28px 0 44px; padding:18px 0 8px; border-top:2px solid #000; }
+.toc-inline .toc-head { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:#000; font-weight:700; margin-bottom:16px; }
+.toc-cols { display:grid; grid-template-columns:repeat(3,1fr); gap:14px 24px; }
+.toc-col .grp { font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:#bbb; font-weight:700; margin-bottom:6px; }
+.toc-inline a { display:block; color:#333; text-decoration:none; font-size:13px; padding:3px 0; }
+.toc-inline a:hover { color:#000; text-decoration:underline; text-underline-offset:3px; }
+.toc-inline a .n { color:#bbb; font-size:11px; margin-right:7px; font-family:'SFMono-Regular','Consolas',monospace; }
+@media(max-width:900px){ .toc-cols { grid-template-columns:1fr; } }
+h1 { font-size:26px; color:#000; margin-bottom:6px; line-height:1.35; font-weight:700; }
+.subtitle { color:#666; font-size:13px; margin-bottom:36px; }
+h2 { font-size:19px; color:#000; margin:48px 0 14px; padding-bottom:6px; border-bottom:2px solid #000; font-weight:700; }
+h3 { font-size:15.5px; color:#000; margin:28px 0 10px; font-weight:700; }
+p { margin-bottom:12px; text-align:justify; }
+pre {
+  background:#f7f7f7; border-left:2px solid #000; padding:14px 18px;
+  margin:14px 0; overflow-x:auto; font-size:13px; line-height:1.7;
+}
+.formula, .formula-block {
+  background:#f7f7f7; padding:14px 18px;
+  margin:14px 0; font-family:'STIX Two Text','Courier New',monospace; font-size:13.5px;
+  overflow-x:auto; border-left:2px solid #000;
+}
+code { font-family:'SFMono-Regular','Consolas','Liberation Mono',monospace; }
+a { color:#111; text-decoration:underline; text-underline-offset:3px; }
+.highlight { background:#f5f5f0; padding:14px 18px; margin:14px 0; border-left:3px solid #000; }
+.trajectory-visual {
+  margin:18px 0 30px; padding:16px 18px;
+  background:#f7f7f7; border-left:3px solid #000;
+}
+.flow-row { display:grid; grid-template-columns:92px 1fr; gap:12px; align-items:center; margin:8px 0; }
+.flow-label { font-weight:700; color:#000; font-size:13.5px; }
+.flow-path { display:flex; flex-wrap:wrap; align-items:center; gap:7px; font-size:13px; line-height:1.55; }
+.flow-path span { background:#fff; border:1px solid #ddd; padding:3px 7px; }
+.flow-path i { font-style:normal; color:#777; }
+.flow-row.agent .flow-path span { border-color:#aaa; }
+.flow-note { margin-top:10px; color:#555; font-size:12.5px; line-height:1.55; }
+.agent-trace { margin:18px 0 30px; padding:16px 18px 18px; background:#f7f7f7; border-left:3px solid #000; }
+.agent-trace .trace-task { font-weight:700; color:#000; font-size:13.5px; margin-bottom:10px; line-height:1.55; }
+.trace-step { display:grid; grid-template-columns:70px 1fr; gap:10px; align-items:baseline; margin:5px 0; }
+.trace-tag { font-size:11px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:#000; }
+.trace-tag.obs { color:#888; font-weight:400; }
+.trace-body span { display:inline-block; background:#fff; border:1px solid #ddd; padding:3px 8px; font-size:13px; }
+.trace-body.obs span { background:transparent; border:1px dashed #ccc; color:#666; font-style:italic; }
+.trace-body span.mutates { border:2px solid #000; font-weight:700; }
+.mut-tag { font-style:normal; font-size:10.5px; letter-spacing:.5px; background:#000; color:#fff; padding:2px 6px; margin-left:7px; vertical-align:middle; }
+.trace-reward { margin-top:12px; font-weight:700; color:#000; font-size:13px; }
+.card-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0; }
+.card { background:#f7f7f7; border-left:3px solid #000; padding:12px 14px; }
+.card .ct { font-size:13px; font-weight:700; color:#000; margin-bottom:4px; }
+.card .cd { font-size:12.5px; color:#444; line-height:1.6; }
+.compare { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:14px 0; }
+.compare-col { background:#f7f7f7; border-left:3px solid #000; padding:12px 14px; }
+.compare-col .ch { font-size:12.5px; font-weight:700; color:#000; margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid #ddd; }
+.compare-col .ch.bad::before { content:"\2717\00a0\00a0"; }
+.compare-col .ch.good::before { content:"\2713\00a0\00a0"; }
+.compare-col .cl { font-size:12.5px; color:#444; line-height:1.65; }
+.compare-col .cl .step { display:block; }
+.compare-col .cl i { font-style:normal; color:#999; padding:0 2px; }
+@media(max-width:900px){ .card-grid,.compare{ grid-template-columns:1fr; } }
+@media(max-width:900px){
+  .toc-sidebar { transform:translateX(-240px); }
+  .main { margin-left:0; padding:24px 20px 80px; }
+  .flow-row { grid-template-columns:1fr; gap:4px; }
+}
+html { scroll-behavior:smooth; }
+ul, ol { margin: 0 0 12px 20px; }
+li { margin-bottom: 4px; }
+</style>
+</head>
+<body>
+<div class="main">
+<h1 id="intro">Agentic RL最详细入门：基础·项目实战·进阶</h1>
+
+<p>Agentic RL 可以理解为：把大模型从一次性答题器，训练成会在环境中多轮行动的 policy。它优化的不再是单段回答，而是下图这样一整条 trajectory。</p>
+
+<div class="trajectory-visual">
+  <div class="flow-row">
+    <div class="flow-label">普通生成</div>
+    <div class="flow-path"><span>用户问题</span><i>→</i><span>模型答案</span></div>
+  </div>
+  <div class="flow-row agent">
+    <div class="flow-label">Agentic RL</div>
+    <div class="flow-path"><span>任务</span><i>→</i><span>Action</span><i>→</i><span>Observation</span><i>→</i><span>Action</span><i>→</i><span>Answer</span><i>→</i><span>Reward</span></div>
+  </div>
+  <div class="flow-note">训练对象从单段 response 变成完整 trajectory；reward 评估的是整条轨迹是否完成任务。</div>
+</div>
+
+<p>这里的 action 可以是搜索 query、网页点击、代码执行、工具调用参数，也可以是“继续探索”或“停止回答”；observation 则是环境返回的网页、JSON、报错或状态变化。</p>
+
+<h3 id="why">为什么要做 Agentic RL</h3>
+
+<p>Prompt / SFT 能教模型模仿 ReAct 格式，但很难保证它学会最优策略：什么时候搜索、搜什么、搜几次、何时停止，往往只有执行后才知道。所以 Agentic RL 的核心是让模型在 rollout 中试错，并根据任务结果优化行动策略。</p>
+
+<h2 id="loop">Agentic RL 训练流程</h2>
+
+<p>工程上，训练 agent 的 trajectory 时要保存完整 history：模型每一步做了什么、环境返回了什么、哪里报错、最终为什么得分高或低。</p>
+
+<pre><code>task q
+history = []
+
+while not done:
+    action = policy(history)
+    observation = env.step(action)
+    history += [action, observation]
+
+reward = evaluate(history, env_state)
+update(policy, history, reward)</code></pre>
+
+<div class="trajectory-visual">
+  <div class="flow-row">
+    <div class="flow-label">循环体</div>
+    <div class="flow-path"><span>policy 读 history</span><i>→</i><span>生成 action</span><i>→</i><span>env.step</span><i>→</i><span>observation</span><i>→</i><span>写回 history</span><i>↺</i></div>
+  </div>
+  <div class="flow-row agent">
+    <div class="flow-label">结束后</div>
+    <div class="flow-path"><span>evaluate(history)</span><i>→</i><span>reward</span><i>→</i><span>update(policy)</span></div>
+  </div>
+  <div class="flow-note">↺ 表示回到循环开头：action ↔ observation 反复进行，直到 done；整条轨迹结束后才打一次 reward 并更新 policy。</div>
+</div>
+
+<p>这个循环里有四个组件：</p>
+
+<div class="card-grid">
+  <div class="card"><div class="ct">policy</div><div class="cd">LLM agent，负责生成 thought / action / answer。</div></div>
+  <div class="card"><div class="ct">environment</div><div class="cd">搜索、浏览器、代码解释器、API 或模拟器。</div></div>
+  <div class="card"><div class="ct">reward</div><div class="cd">检查任务是否完成、格式是否合法、成本是否可控。</div></div>
+  <div class="card"><div class="ct">optimizer</div><div class="cd">用 PPO、GRPO、StarPO 等方法提高高回报轨迹的概率。</div></div>
+</div>
+
+<h3 id="reward">Reward：从答案匹配到任务验收</h3>
+
+<p>一次性解题通常只看最终答案；Agentic RL 还可能检查工具调用、环境状态和副作用。比如订票 agent 不是说“订好了”就成功，而是数据库里真的多了一张符合约束的订单，且没有误改其他字段。入门时可以先把 reward 分成四类：</p>
+
+<div class="card-grid">
+  <div class="card"><div class="ct">Outcome</div><div class="cd">最终答案是否正确，或者最终环境状态是否满足任务。</div></div>
+  <div class="card"><div class="ct">Format</div><div class="cd">action 是否能被环境解析和执行。</div></div>
+  <div class="card"><div class="ct">Cost</div><div class="cd">轨迹是否过长，工具调用是否过多、过贵。</div></div>
+  <div class="card"><div class="ct">Process</div><div class="cd">中间步骤是否真的推进任务，例如搜索是否找到有效证据。</div></div>
+</div>
+
+<h2 id="ragen">入门案例一：RAGEN</h2>
+
+<p><a href="https://arxiv.org/abs/2504.20073">RAGEN</a> 更像一篇 Agentic RL 系统论文，适合帮助新人建立整体框架。它研究 multi-turn LLM agents 怎么通过 RL 自我演化，并提出 StarPO 作为 trajectory-level agent RL 框架。</p>
+
+<p>RAGEN 的价值在于它把几个现实问题讲得比较清楚。</p>
+
+<h3>第一，Agent RL 会遇到长程决策，而不是单步回答。</h3>
+
+<p>RAGEN 强调的不是“轨迹变长”这个表面现象，而是早期 action 会改变后续状态分布。比如搜索任务里，第一个 query 会决定模型看到哪些网页；打开哪篇网页会决定后面读到什么证据；是否继续搜索会决定信息是否足够。</p>
+
+<div class="compare">
+  <div class="compare-col">
+    <div class="ch bad">query 写得差</div>
+    <div class="cl">搜索结果偏了 <i>→</i> 读到错误证据 <i>→</i> 后面推理全被带偏</div>
+  </div>
+  <div class="compare-col">
+    <div class="ch good">query 写得好</div>
+    <div class="cl">找到关键来源 <i>→</i> 后续只需要验证和归纳</div>
+  </div>
+</div>
+
+<p>一个早期小错误可能在后面被放大；一个早期好决策也可能因为后续步骤失误而没有转化成最终成功。这就是长程决策的难点：训练信号往往很晚才出现，但真正影响结果的决策可能发生在很早的位置。</p>
+
+<h3>第二，环境反馈可能随机，reward variance 会很大。</h3>
+
+<p>Agent 和环境交互时，环境不是一个完全稳定的文本函数。搜索引擎的结果可能变化，网页内容可能更新，工具调用可能失败，模拟环境可能有随机性；即使环境固定，模型采样本身也会让同一个任务产生多条不同轨迹。</p>
+
+<p>这会带来一个训练问题：同一个 prompt 下，不同 rollout 的最终 reward 可能差异很大。有的轨迹刚好搜到关键证据，有的轨迹走到无关页面；有的轨迹早早答对，有的轨迹多绕几步后失败。于是 reward variance 会变高，advantage 估计会更噪，policy gradient 也更容易不稳定。</p>
+
+<div class="compare">
+  <div class="compare-col">
+    <div class="ch">同一个问题采 8 条 rollout</div>
+    <div class="cl"><span class="step">2 条成功，reward = 1</span><span class="step">6 条失败，reward = 0</span></div>
+  </div>
+  <div class="compare-col">
+    <div class="ch">下一轮再采 8 条</div>
+    <div class="cl"><span class="step">5 条成功，reward = 1</span><span class="step">3 条失败，reward = 0</span></div>
+  </div>
+</div>
+
+<p>这种波动不一定说明模型突然变强或变弱，可能只是采样和环境反馈造成的方差。RAGEN 这类系统工作提醒我们，Agentic RL 不能只看单次 reward 曲线，还要关注 reward variance、梯度尖峰、轨迹分布是否塌缩，以及模型是不是陷入某种重复行为模式。</p>
+
+<h3>第三，rollout 设计很重要，例如初始状态多样性、交互粒度、采样频率。</h3>
+
+<p>在 Agentic RL 里，rollout 不是简单的“让模型多生成几条答案”。它决定了模型能探索到什么状态、能比较哪些行为、以及 reward 信号是否足够有信息量。</p>
+
+<p>初始状态多样性很重要。如果训练任务过于相似，模型可能学会固定套路，而不是学会通用的决策能力。比如搜索 agent 如果总是在同一种问法、同一种网站结构上训练，就可能只学会某种模板化 query，而不是学会真正根据信息缺口设计搜索策略。</p>
+
+<p>交互粒度也很重要。粒度太粗时，一次 action 包含太多决策，出了问题很难知道是哪一部分错了；粒度太细时，轨迹会变得很长，训练成本上升，reward 更稀疏，模型也可能在无意义的小动作上浪费预算。</p>
+
+<div class="compare">
+  <div class="compare-col">
+    <div class="ch bad">粒度太粗</div>
+    <div class="cl"><span class="step">一次 action = 搜索 + 阅读 + 判断 + 回答</span><span class="step">问题：失败后很难判断哪一步错了</span></div>
+  </div>
+  <div class="compare-col">
+    <div class="ch bad">粒度太细</div>
+    <div class="cl"><span class="step">一次 action = 点击一个按钮 / 滚动一次页面</span><span class="step">问题：轨迹太长，训练成本和 credit assignment 难度都上升</span></div>
+  </div>
+</div>
+
+<p>采样频率也会影响学习。每个任务只采一条 rollout，模型很难知道“同一个状态下其他动作会怎样”；每个任务采太多 rollout，成本又会迅速变高。实际训练时，rollout 数量、最大交互轮数、采样温度、是否复用环境缓存，都会直接影响训练稳定性和样本效率。</p>
+
+<h3>第四，如果 reward 只看最终结果，模型可能学到浅层策略。</h3>
+
+<p>最终答案 reward 很有用，因为它简单、便宜、可验证。但如果 reward 只有最终结果，模型可能会学到一些“看起来有效”的捷径，而不一定学到我们想要的 agent reasoning。</p>
+
+<p>比如搜索问答里，模型可能学会优先生成高频答案，或者学会在证据不足时也提前作答；网页任务里，模型可能学会某些固定点击模式；工具任务里，模型可能学会调用工具的形式，却没有真正利用 observation 修正自己的计划。</p>
+
+<div class="compare">
+  <div class="compare-col">
+    <div class="ch">表面上看</div>
+    <div class="cl">模型会搜索、会阅读、会回答</div>
+  </div>
+  <div class="compare-col">
+    <div class="ch bad">实际可能是</div>
+    <div class="cl"><span class="step">搜索 query 很模板化</span><span class="step">读到冲突证据也不验证</span><span class="step">observation 没有真正进入后续推理</span><span class="step">最后只是凭先验猜答案</span></div>
+  </div>
+</div>
+
+<p>这也是为什么 RAGEN 强调：如果没有更细粒度、reasoning-aware 的反馈，multi-turn RL 不一定自然涌现出可靠推理。模型可能优化到了 reward 的表面相关特征，而不是任务真正需要的能力。后续的信用分配、process reward、progress reward、information gain 等方法，本质上都是在尝试让训练信号更接近“哪一步真的推动了任务完成”。</p>
+
+<p>因此，RAGEN 更适合作为“系统视角”的第一篇：Agentic RL 不只是把 GRPO 套到 tool call 上，而是要同时设计环境、采样、奖励、稳定训练和评估。</p>
+
+<h2 id="search-r1">入门案例二：Search-R1：最小可跑案例</h2>
+
+<p><a href="https://arxiv.org/abs/2503.09516">Search-R1</a> 适合作为第一个动手案例，因为它把任务限制在一个很小的 agent 环境里：模型只需要学会“什么时候搜索、搜什么、什么时候回答”。代码仓库是 <a href="https://github.com/PeterGriffinJin/Search-R1">github.com/PeterGriffinJin/Search-R1</a>。</p>
+
+<p>它和传统 RAG 的差别不是“有没有检索”，而是“谁来决定检索”。传统 RAG 往往由系统先检索，再把文档交给模型；Search-R1 让模型在推理过程中自己发起 search action。</p>
+
+<div class="compare">
+  <div class="compare-col">
+    <div class="ch">RAG（系统决定检索）</div>
+    <div class="cl">question <i>→</i> retriever <i>→</i> documents <i>→</i> model answer</div>
+  </div>
+  <div class="compare-col">
+    <div class="ch">Search-R1（模型决定检索）</div>
+    <div class="cl"><span class="step">question <i>→</i> model emits search query</span><span class="step"><i>→</i> retriever returns documents</span><span class="step"><i>→</i> model continues or answers</span></div>
+  </div>
+</div>
+
+<p>代码里用四类标签把这个闭环写出来：</p>
+
+<div class="card-grid">
+  <div class="card"><div class="ct"><code>&lt;think&gt;…&lt;/think&gt;</code></div><div class="cd">模型内部推理 · 模型生成，参与训练</div></div>
+  <div class="card"><div class="ct"><code>&lt;search&gt;query&lt;/search&gt;</code></div><div class="cd">模型 action · 模型生成，参与训练</div></div>
+  <div class="card"><div class="ct"><code>&lt;information&gt;docs&lt;/information&gt;</code></div><div class="cd">环境 observation · 检索器返回，masked 不训练</div></div>
+  <div class="card"><div class="ct"><code>&lt;answer&gt;final answer&lt;/answer&gt;</code></div><div class="cd">模型最终回答 · 模型生成，参与训练</div></div>
+</div>
+
+<p>一次 rollout 的核心逻辑很短：模型生成到 <code>&lt;/search&gt;</code> 时暂停，系统解析 query，调用检索器，把返回文档包进 <code>&lt;information&gt;</code> 后拼回上下文；模型读到这些 observation 后继续生成，直到输出 <code>&lt;answer&gt;</code> 或达到最大轮数。</p>
+
+<p>这里最重要的训练细节是 mask。<code>&lt;search&gt;</code>、<code>&lt;think&gt;</code>、<code>&lt;answer&gt;</code> 是模型生成的 token，可以被优化；<code>&lt;information&gt;</code> 是检索器返回的文本，只能作为上下文，不应该让模型学习“生成搜索结果”。Search-R1 里的 <code>state_masking=true</code> 对应的就是这件事。</p>
+
+<p>看代码时抓三条主线就够了：</p>
+
+<ol>
+  <li><code>search_r1/llm_agent/generation.py</code>：多轮 rollout 怎么暂停、检索、拼回 observation、继续生成。</li>
+  <li><code>train_ppo.sh</code> / <code>train_grpo.sh</code>：训练时的 <code>max_turns</code>、<code>topk</code>、<code>state_masking</code> 怎么配置。</li>
+  <li><code>verl/utils/reward_score/qa_em.py</code>：最终如何从 <code>&lt;answer&gt;</code> 抽取答案并计算 reward。</li>
+</ol>
+
+<p>因此，读 Search-R1 时不需要先陷进复杂工具系统。它要表达的核心很清楚：当搜索 query 变成模型 action，检索结果变成环境 observation，RL 训练就不再只是优化一段 answer，而是在优化一条会调用工具的轨迹。</p>
+
+<h2 id="long-horizon">入门案例三：Reinforcement Learning for Long-Horizon Interactive LLM Agents</h2>
+
+<p><a href="https://arxiv.org/abs/2502.01600">Reinforcement Learning for Long-Horizon Interactive LLM Agents</a> 可以看成 Search-R1 的下一层难度。Search-R1 里，工具主要是 search：模型发 query，环境返回文本，模型读完再决定是否继续搜。Long-Horizon Interactive LLM Agents 里，环境变成 stateful digital environment：数据库、REPL、应用 API 都会被 agent 的 action 改变。</p>
+
+<p>论文使用 AppWorld 作为实验环境。AppWorld 有 9 个应用、457 个 API endpoint，单个 endpoint 最多有 17 个参数。它像一个小型数字世界：有数据库，有 Python REPL，有应用 API，有会被读写的状态。reward 不是靠模型自评，而是靠任务单元测试：正确状态修改了吗？有没有多余副作用？如果需要最终答案，答案是否匹配 ground truth？</p>
+
+<p>比如一个任务是：查看明天下午有没有会；如果没有，就给 Alex 发邮件确认晚餐，并在日历里创建提醒。它不是“搜到答案并回答”就结束，而是一条会改变环境状态的轨迹：</p>
+
+<div class="agent-trace">
+  <div class="trace-task">任务：查看明天下午有无会 → 若没有则给 Alex 发邮件确认晚餐 → 在日历创建提醒</div>
+
+  <div class="trace-step"><div class="trace-tag">Action 1</div><div class="trace-body act"><span>read calendar / email API docs</span></div></div>
+  <div class="trace-step"><div class="trace-tag obs">Obs 1</div><div class="trace-body obs"><span>文档文本</span></div></div>
+
+  <div class="trace-step"><div class="trace-tag">Action 2</div><div class="trace-body act"><span>calendar.search_events(明天下午)</span></div></div>
+  <div class="trace-step"><div class="trace-tag obs">Obs 2</div><div class="trace-body obs"><span>事件列表</span></div></div>
+
+  <div class="trace-step"><div class="trace-tag">Action 3</div><div class="trace-body act"><span>contacts.search("Alex")</span></div></div>
+  <div class="trace-step"><div class="trace-tag obs">Obs 3</div><div class="trace-body obs"><span>邮箱地址</span></div></div>
+
+  <div class="trace-step"><div class="trace-tag">Action 4</div><div class="trace-body act"><span class="mutates">email.send(...)</span><i class="mut-tag">改变环境</i></div></div>
+  <div class="trace-step"><div class="trace-tag obs">Obs 4</div><div class="trace-body obs"><span>success / error</span></div></div>
+
+  <div class="trace-step"><div class="trace-tag">Action 5</div><div class="trace-body act"><span class="mutates">calendar.create_event(...)</span><i class="mut-tag">改变环境</i></div></div>
+  <div class="trace-step"><div class="trace-tag obs">Obs 5</div><div class="trace-body obs"><span>success / error</span></div></div>
+
+  <div class="trace-step"><div class="trace-tag">Answer</div><div class="trace-body act"><span>report completion</span></div></div>
+
+  <div class="trace-reward">Reward = 单元测试通过率：状态改对了吗？有无多余副作用？答案是否匹配 ground truth？</div>
+  <div class="flow-note">粗黑框的步骤会真实改变环境（发邮件、写日历），所以 reward 不只看最终答案，还要验收最终环境状态与副作用——这正是它和 Search-R1 的关键差别。</div>
+</div>
+
+<p>这个例子也说明了它和 Search-R1 的关键差别：Search-R1 的 observation 通常只是信息，网页返回错了可以继续搜；AppWorld 里的 action 可能真的发邮件、改日历、写数据库。于是 reward 不再只是答案匹配，而是最终环境状态是否符合用户意图，且没有多余副作用。</p>
+
+<p>把这类轨迹写成 POMDP 时，一次性回答训练里的“状态”大致就是 prompt 加已经生成的 tokens；interactive agent 还要把隐藏环境状态也放进去。状态可以写成：</p>
+
+<div class="formula">
+$$
+z_t = [s_0, c, x_{1:t}]
+$$
+</div>
+
+<p>这里的三个部分分别是：</p>
+
+<ol>
+  <li>$s_0$：隐藏的初始环境状态，例如 AppWorld 的数据库和 Python REPL 状态。</li>
+  <li>$c$：任务上下文，也就是用户请求。</li>
+  <li>$x_{1:t}$：到当前为止的完整 token 历史，里面既有 LLM 生成的 action token，也有环境返回的 observation token。</li>
+</ol>
+
+<p>之所以叫 partially observable，是因为模型只能看到上下文里的文本历史，看不到完整数据库和所有应用内部状态。比如模型可以调用 API 查日历，但它不能直接“读取整个世界状态”。</p>
+
+<p>在数学上，action 被写成 LLM 生成下一个 token：</p>
+
+<div class="formula">
+$$
+x_{t+1} \sim p_\theta(\cdot \mid c, x_{1:t})
+$$
+</div>
+
+<p>如果这个 token 只是普通文本，比如 thought 或代码片段的一部分，它只会追加到历史里：</p>
+
+<div class="formula">
+$$
+[s_0,c,x_{1:t}] \rightarrow [s_0,c,x_{1:t+1}]
+$$
+</div>
+
+<p>但当 agent 结束一个代码块或触发执行时，环境会运行代码/API，并把返回结果也追加进上下文：</p>
+
+<div class="formula">
+$$
+[s_0,c,x_{1:t}]
+\rightarrow
+[s_0,c,x_{1:t+1+k}]
+$$
+</div>
+
+<p>这里多出来的 $k$ 个 token 是环境 observation，不是 policy action。比如 API 返回一段 JSON，它会影响模型下一步怎么做，但不是模型自己采样出来的。记 $a(x)$ 为轨迹 $x$ 中由 LLM 生成的 token 位置，那么轨迹分布只对这些位置连乘：</p>
+
+<div class="formula">
+$$
+\rho_\theta(x \mid s_0,c)
+=
+\mathbb{I}(s_0,x)
+\prod_{t \in a(x)}
+p_\theta(x_t \mid c,x_{1:t-1})
+$$
+</div>
+
+<p>这里的 $\mathbb{I}(s_0,x)$ 只是把环境动力学记进公式：给定初始数据库、REPL 状态和前面的 API 调用，环境返回什么 observation 是确定的或由环境分布决定的，不是模型自由生成的。实际读这条公式时，抓住主干即可：轨迹概率只对模型生成的 action token 连乘；环境 observation 会进入后续上下文，但不作为 policy action 计算梯度。</p>
+
+<p>优化目标是最大化给定初始状态和任务上下文下的期望回报：</p>
+
+<div class="formula">
+$$
+L_\theta(s_0,c)
+=
+\mathbb E_{x \sim \rho_\theta(\cdot \mid s_0,c)}
+\left[
+R(s_0,c,x)
+\right]
+$$
+</div>
+
+<p>如果训练集是 $\mathcal D$，整体目标就是：</p>
+
+<div class="formula">
+$$
+\max_\theta
+\mathbb E_{(s_0,c)\sim \mathcal D}
+\left[
+L_\theta(s_0,c)
+\right]
+$$
+</div>
+
+<p>训练算法上，论文提出 LOOP，可以粗略理解为一个更轻量的 PPO 变体：不使用 value network，只在内存里保留一份底层 LLM，并用同一任务下多条 rollout 的相对回报来估计 advantage。这里不需要展开算法细节，抓住它的工程动机即可：long-horizon agent rollout 已经很贵，训练方法要尽量少引入额外模型副本和复杂 critic。</p>
+
+<p>实验结论也有信息量：32B agent 用 LOOP 在 AppWorld 上超过更大的 OpenAI o1 agent 9 个百分点；行为分析显示 RL 后 agent 更常查 API 文档，减少无根据假设和 placeholder，失败 API 调用后的放弃行为也下降。这说明长程交互 RL 学到的不只是输出格式，而是更稳的环境探索、文档使用、错误恢复和状态控制策略。</p>
+
+<h2 id="credit">进阶：信用分配为什么重要</h2>
+
+<p>信用分配可以放在文章后半段作为进阶章节，而不是主线。</p>
+
+<p>当 agent 轨迹变长后，最终 reward 很难告诉我们每一步 action 的好坏。比如一条轨迹最后答错，不代表每一步都错；一条轨迹最后答对，也不代表每一步都好。</p>
+
+<p>这时就需要 credit assignment：</p>
+
+<pre><code>把最终 outcome reward 合理分配给中间每一步 action。</code></pre>
+
+<p>这类方法包括：</p>
+
+<ol>
+  <li>同 state 下比较不同 action，例如 GiGPO / HGPO。</li>
+  <li>学 step-level progress reward，例如 SPA-RL。</li>
+  <li>学 process reward model 或 Q(s,a)，例如 AgentPRM。</li>
+  <li>用模型自身信号做 dense reward，例如 entropy、information gain。</li>
+</ol>
+
+<p>这部分适合作为读者掌握基本 Agentic RL 之后的下一步，因为它解决的是“怎么让长程 agent 学得更精细”。</p>
+
+<h2 id="summary">总结</h2>
+
+<p>Agentic RL 的核心目标，是把 LLM 从一个静态回答器训练成能和环境交互的决策者。它的基本范式是：模型生成 action，环境返回 observation，模型继续决策，最后根据任务完成情况更新 policy。</p>
+
+<p>入门时不要一开始就被复杂算法淹没。先抓住四件事：环境怎么定义，action 怎么表示，reward 怎么打，哪些 token 应该被训练。等这些跑通之后，再进入信用分配、process reward、PRM、长程稳定训练这些进阶问题。</p>
+</div>
+</body>
+</html>

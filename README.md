@@ -1,19 +1,15 @@
-# Agentic RL 信用分配
+# Agentic RL 入门
 
-这是一份面向算法工程师的 Agentic RL 信用分配入门报告，聚焦长程多步智能体任务中如何把最终 outcome reward 分配到中间步骤。
+这里整理了两份面向算法工程师的 Agentic RL 入门报告。
 
 ## 内容结构
 
-- Agentic RL 中 credit assignment 的基本问题
-- 三类 step-level 信用分配方法
-  - State-anchored Stepwise：GiGPO、HGPO
-  - Process / Progress Reward：SPA-RL、AgentPRM
-  - Intrinsic Signal：ARPO、IGPO
-- 关键公式、直觉例子和方法对比
+- Agentic RL入门1：基础、代码
+- Agentic RL入门2：信用分配
 
 ## 在线阅读
 
-打开 `index.html` 即可阅读完整报告。
+打开 `index.html`，选择对应文章阅读。
 
 ## 本地预览
 

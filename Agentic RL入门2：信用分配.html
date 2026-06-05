@@ -1,0 +1,1013 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentic RL 信用分配</title>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Serif+SC:wght@400;700&family=STIX+Two+Text:ital,wght@0,400;0,700;1,400&display=swap" rel="stylesheet">
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});"></script>
+<style>
+:root {
+  --primary: #111;
+  --bg: #fff;
+  --card: #fff;
+  --text: #222;
+  --muted: #666;
+}
+* { margin:0; padding:0; box-sizing:border-box; }
+body {
+  font-family: 'STIX Two Text', 'Noto Serif SC', 'CMU Serif', 'Times New Roman', serif;
+  background: var(--bg); color: var(--text); line-height:1.9; font-size:15px;
+}
+.toc-sidebar {
+  position:fixed; left:0; top:0; width:240px; height:100vh;
+  background:#fafafa; color:#222; overflow-y:auto;
+  padding:24px 16px; z-index:100; border-right:1px solid #ddd;
+}
+.toc-sidebar h2 { font-size:13px; margin-bottom:16px; letter-spacing:2px; text-transform:uppercase; color:#444; font-weight:700; }
+.toc-sidebar a {
+  display:block; color:#555; text-decoration:none;
+  padding:5px 8px; font-size:12.5px; margin:1px 0; border-left:2px solid transparent;
+}
+.toc-sidebar a:hover { border-left:2px solid #111; color:#111; background:#f0f0f0; }
+.toc-sidebar .sub { padding-left:18px; font-size:11.5px; color:#888; }
+.toc-sidebar .grp { font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:#aaa; font-weight:700; margin:20px 0 6px; padding:0 8px; }
+.toc-sidebar .grp:first-of-type { margin-top:6px; }
+.main { margin:0 auto; max-width:760px; padding:48px 40px 120px; }
+.toc-inline { margin:28px 0 44px; padding:18px 0 8px; border-top:2px solid #000; }
+.toc-inline .toc-head { font-size:11px; letter-spacing:3px; text-transform:uppercase; color:#000; font-weight:700; margin-bottom:16px; }
+.toc-cols { display:grid; grid-template-columns:repeat(3,1fr); gap:14px 24px; }
+.toc-col .grp { font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:#bbb; font-weight:700; margin-bottom:6px; }
+.toc-inline a { display:block; color:#333; text-decoration:none; font-size:13px; padding:3px 0; }
+.toc-inline a:hover { color:#000; text-decoration:underline; text-underline-offset:3px; }
+.toc-inline a .n { color:#bbb; font-size:11px; margin-right:7px; font-family:'SFMono-Regular','Consolas',monospace; }
+@media(max-width:900px){ .toc-cols { grid-template-columns:1fr; } }
+h1 { font-size:26px; color:#000; margin-bottom:6px; line-height:1.35; font-weight:700; }
+.subtitle { color:#666; font-size:13px; margin-bottom:36px; }
+h2 { font-size:19px; color:#000; margin:48px 0 14px; padding-bottom:6px; border-bottom:2px solid #000; font-weight:700; }
+h3 { font-size:15.5px; color:#000; margin:28px 0 10px; font-weight:700; }
+p { margin-bottom:12px; text-align:justify; }
+.card { background:#f7f7f7; border-left:3px solid #000; padding:12px 14px; margin:14px 0; }
+.card-accent { border-left:3px solid #000; }
+table { width:100%; border-collapse:collapse; margin:14px 0; font-size:13px; }
+th { background:#f0f0f0; color:#000; padding:8px 10px; text-align:left; font-weight:700; border-bottom:2px solid #000; border-top:2px solid #000; }
+td { padding:7px 10px; border-bottom:1px solid #ddd; vertical-align:top; }
+tr:hover td { background:#f8f8f8; }
+pre {
+  background:#f7f7f7; border-left:2px solid #000; padding:14px 18px;
+  margin:14px 0; overflow-x:auto; font-size:13px; line-height:1.7;
+}
+.formula, .formula-block {
+  background:#f7f7f7; padding:14px 18px;
+  margin:14px 0; font-family:'STIX Two Text','Courier New',monospace; font-size:13.5px;
+  overflow-x:auto; border-left:2px solid #000;
+}
+code { font-family:'SFMono-Regular','Consolas','Liberation Mono',monospace; }
+a { color:#111; text-decoration:underline; text-underline-offset:3px; }
+.highlight { background:#f5f5f0; padding:14px 18px; margin:14px 0; border-left:3px solid #000; }
+.trajectory-visual {
+  margin:18px 0 30px; padding:16px 18px;
+  background:#f7f7f7; border-left:3px solid #000;
+}
+.flow-row { display:grid; grid-template-columns:92px 1fr; gap:12px; align-items:center; margin:8px 0; }
+.flow-label { font-weight:700; color:#000; font-size:13.5px; }
+.flow-path { display:flex; flex-wrap:wrap; align-items:center; gap:7px; font-size:13px; line-height:1.55; }
+.flow-path span { background:#fff; border:1px solid #ddd; padding:3px 7px; }
+.flow-path i { font-style:normal; color:#777; }
+.flow-row.agent .flow-path span { border-color:#aaa; }
+.flow-note { margin-top:10px; color:#555; font-size:12.5px; line-height:1.55; }
+.agent-trace { margin:18px 0 30px; padding:16px 18px 18px; background:#f7f7f7; border-left:3px solid #000; }
+.agent-trace .trace-task { font-weight:700; color:#000; font-size:13.5px; margin-bottom:10px; line-height:1.55; }
+.trace-step { display:grid; grid-template-columns:70px 1fr; gap:10px; align-items:baseline; margin:5px 0; }
+.trace-tag { font-size:11px; font-weight:700; letter-spacing:.5px; text-transform:uppercase; color:#000; }
+.trace-tag.obs { color:#888; font-weight:400; }
+.trace-body span { display:inline-block; background:#fff; border:1px solid #ddd; padding:3px 8px; font-size:13px; }
+.trace-body.obs span { background:transparent; border:1px dashed #ccc; color:#666; font-style:italic; }
+.trace-body span.mutates { border:2px solid #000; font-weight:700; }
+.mut-tag { font-style:normal; font-size:10.5px; letter-spacing:.5px; background:#000; color:#fff; padding:2px 6px; margin-left:7px; vertical-align:middle; }
+.trace-reward { margin-top:12px; font-weight:700; color:#000; font-size:13px; }
+.card-grid { display:grid; grid-template-columns:1fr 1fr; gap:10px; margin:14px 0; }
+.card .ct { font-size:13px; font-weight:700; color:#000; margin-bottom:4px; }
+.card .cd { font-size:12.5px; color:#444; line-height:1.6; }
+.compare { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin:14px 0; }
+.compare-col { background:#f7f7f7; border-left:3px solid #000; padding:12px 14px; }
+.compare-col .ch { font-size:12.5px; font-weight:700; color:#000; margin-bottom:8px; padding-bottom:6px; border-bottom:1px solid #ddd; }
+.compare-col .ch.bad::before { content:"\2717\00a0\00a0"; }
+.compare-col .ch.good::before { content:"\2713\00a0\00a0"; }
+.compare-col .cl { font-size:12.5px; color:#444; line-height:1.65; }
+.compare-col .cl .step { display:block; }
+.compare-col .cl i { font-style:normal; color:#999; padding:0 2px; }
+.mini-visual {
+  margin:18px 0 30px; padding:16px 18px;
+  background:#f7f7f7; border-left:3px solid #000;
+}
+.visual-title {
+  font-size:12px; letter-spacing:1.5px; text-transform:uppercase;
+  color:#000; font-weight:700; margin-bottom:12px;
+}
+.credit-flow { display:flex; flex-wrap:wrap; align-items:center; gap:7px; font-size:13px; line-height:1.55; }
+.credit-node { background:#fff; border:1px solid #ddd; padding:4px 8px; }
+.credit-node.strong { border:2px solid #000; font-weight:700; }
+.credit-arrow { color:#777; }
+.credit-note { margin-top:10px; color:#555; font-size:12.5px; line-height:1.55; }
+.credit-assignment-visual { display:grid; gap:12px; }
+.ca-row {
+  display:grid; grid-template-columns:92px 1fr; gap:12px; align-items:start;
+  font-size:12.5px; line-height:1.55;
+}
+.ca-label { font-weight:700; color:#000; padding-top:4px; }
+.ca-path, .ca-token-flow { display:flex; flex-wrap:wrap; align-items:center; gap:7px; }
+.ca-step, .ca-reward, .ca-token {
+  background:#fff; border:1px solid #ddd; padding:4px 8px;
+}
+.ca-step.action { border-color:#000; }
+.ca-step.obs { border-style:dashed; color:#666; background:transparent; }
+.ca-reward { border:2px solid #000; font-weight:700; }
+.ca-back {
+  margin-left:104px; padding:8px 10px; background:#fff; border-left:2px solid #000;
+  font-size:12.5px; color:#444; line-height:1.55;
+}
+.ca-credit-grid { display:grid; grid-template-columns:repeat(5,1fr); gap:7px; }
+.ca-credit {
+  background:#fff; border:1px solid #ddd; border-top:3px solid #000;
+  padding:8px 8px; min-height:74px;
+}
+.ca-credit.neg { border-top-color:#999; color:#444; }
+.ca-credit.zero { border-top-style:dashed; color:#666; background:#fafafa; }
+.ca-credit .sym { display:block; font-family:'SFMono-Regular','Consolas',monospace; font-size:11px; color:#777; margin-bottom:3px; }
+.ca-credit strong { display:block; color:#000; font-family:'SFMono-Regular','Consolas',monospace; font-size:13px; margin-bottom:3px; }
+.ca-credit small { display:block; color:#555; font-size:11.5px; line-height:1.35; }
+.ca-token { font-family:'SFMono-Regular','Consolas',monospace; font-size:11.5px; }
+.ca-token.masked { border-style:dashed; color:#777; background:transparent; }
+.stack-visual { display:grid; gap:8px; margin:14px 0; }
+.stack-row {
+  display:grid; grid-template-columns:150px 1fr; gap:12px; align-items:center;
+  background:#fff; border:1px solid #ddd; padding:8px 10px; font-size:13px;
+}
+.stack-row .lhs { font-weight:700; color:#000; }
+.stack-row .rhs { color:#444; line-height:1.55; }
+.method-map { display:grid; grid-template-columns:repeat(3,1fr); gap:10px; margin:14px 0; }
+.method-card { background:#fff; border:1px solid #ddd; border-left:3px solid #000; padding:12px 12px; }
+.method-card .mt { font-size:12.5px; font-weight:700; color:#000; margin-bottom:6px; }
+.method-card .mb { font-size:12.5px; color:#444; line-height:1.6; }
+.method-card .methods { margin-top:8px; font-family:'SFMono-Regular','Consolas',monospace; font-size:11.5px; color:#000; }
+.score-visual { display:grid; gap:9px; margin-top:8px; }
+.score-row { display:grid; grid-template-columns:112px 1fr 54px; gap:10px; align-items:center; font-size:12.5px; }
+.score-label { color:#222; }
+.score-track { position:relative; height:18px; background:#fff; border:1px solid #ddd; }
+.score-track::before { content:""; position:absolute; left:50%; top:-3px; bottom:-3px; border-left:2px solid #000; }
+.score-bar { position:absolute; top:3px; height:10px; background:#111; }
+.score-bar.pos { left:50%; }
+.score-bar.neg { right:50%; background:#9a9a9a; }
+.score-value { font-family:'SFMono-Regular','Consolas',monospace; color:#000; text-align:right; }
+.context-layers { display:grid; gap:8px; margin-top:8px; }
+.context-layer { display:grid; grid-template-columns:72px 1fr 78px; gap:10px; align-items:center; font-size:12.5px; }
+.context-layer .layer-name { font-weight:700; color:#000; }
+.context-chips { display:flex; flex-wrap:wrap; gap:6px; align-items:center; }
+.context-chips span { background:#fff; border:1px solid #ddd; padding:3px 7px; }
+.context-layer .tradeoff { color:#555; text-align:right; }
+.hgpo-example { display:grid; gap:14px; }
+.hgpo-current {
+  display:flex; flex-wrap:wrap; align-items:center; gap:7px;
+  font-size:12.5px; line-height:1.55;
+}
+.hgpo-chip { background:#fff; border:1px solid #ddd; padding:4px 8px; }
+.hgpo-chip.current { border:2px solid #000; font-weight:700; }
+.hgpo-agents { display:grid; grid-template-columns:1fr 1fr; gap:10px; }
+.hgpo-agent {
+  background:#fff; border:1px solid #ddd; border-left:3px solid #000;
+  padding:12px 12px; font-size:12.5px; line-height:1.6;
+}
+.hgpo-agent .name { font-weight:700; color:#000; margin-bottom:6px; }
+.hgpo-agent .line { display:block; color:#444; }
+.hgpo-agent .decision { margin-top:8px; padding-top:7px; border-top:1px solid #ddd; color:#000; }
+.hgpo-agent.bad { border-left-color:#999; }
+.hgpo-levels { display:grid; gap:8px; }
+.hgpo-level {
+  display:grid; grid-template-columns:58px 1fr 96px; gap:10px; align-items:center;
+  background:#fff; border:1px solid #ddd; padding:9px 10px; font-size:12.5px; line-height:1.55;
+}
+.hgpo-level .level { font-family:'SFMono-Regular','Consolas',monospace; font-weight:700; color:#000; }
+.hgpo-level .rule { color:#333; }
+.hgpo-level .effect { color:#555; text-align:right; }
+.progress-sum { display:flex; height:34px; border:1px solid #ddd; background:#fff; overflow:hidden; margin:10px 0; }
+.progress-segment {
+  display:flex; align-items:center; justify-content:center;
+  border-right:1px solid #ddd; font-family:'SFMono-Regular','Consolas',monospace;
+  font-size:11px; color:#000; min-width:28px;
+}
+.progress-segment.zero { color:#aaa; background:#fafafa; }
+.progress-segment:last-child { border-right:0; }
+.progress-legend { display:grid; grid-template-columns:repeat(5,1fr); gap:6px; font-size:11.5px; color:#555; line-height:1.4; }
+.entropy-bars { display:grid; grid-template-columns:repeat(8,1fr); gap:7px; height:92px; align-items:end; margin-top:8px; }
+.entropy-bar { background:#fff; border:1px solid #ddd; border-top:3px solid #000; min-height:12px; position:relative; }
+.entropy-bar.hot { background:#ececec; border:2px solid #000; }
+.entropy-bar span { position:absolute; left:50%; transform:translateX(-50%); bottom:-22px; font-size:10.5px; color:#666; white-space:nowrap; }
+.branch-visual { display:grid; gap:8px; margin-top:8px; }
+.branch-prefix { display:flex; flex-wrap:wrap; align-items:center; gap:7px; font-size:12.5px; }
+.branch-prefix span, .branch-row span { background:#fff; border:1px solid #ddd; padding:3px 7px; }
+.branch-fork { border-left:2px solid #000; margin-left:22px; padding-left:14px; display:grid; gap:6px; }
+.branch-row { display:flex; flex-wrap:wrap; align-items:center; gap:7px; font-size:12.5px; }
+.belief-grid { display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-top:8px; }
+.belief-case { background:#fff; border:1px solid #ddd; border-left:3px solid #000; padding:11px 12px; font-size:12.5px; line-height:1.6; }
+.belief-case .case-title { font-weight:700; color:#000; margin-bottom:6px; }
+.belief-line { display:flex; align-items:center; gap:7px; flex-wrap:wrap; font-family:'SFMono-Regular','Consolas',monospace; }
+.belief-line span { border:1px solid #ddd; padding:3px 7px; background:#fafafa; }
+.belief-delta { margin-top:7px; font-weight:700; color:#000; }
+blockquote {
+  margin:16px 0; padding:10px 18px; border-left:3px solid #000;
+  background:#f8f8f8; color:#222;
+}
+@media(max-width:900px){
+  .card-grid,.compare,.method-map,.belief-grid{ grid-template-columns:1fr; }
+  .stack-row,.context-layer,.score-row,.ca-row,.hgpo-level{ grid-template-columns:1fr; gap:5px; }
+  .hgpo-agents{ grid-template-columns:1fr; }
+  .context-layer .tradeoff,.score-value,.hgpo-level .effect{ text-align:left; }
+  .progress-legend,.ca-credit-grid{ grid-template-columns:1fr 1fr; }
+  .ca-back{ margin-left:0; }
+}
+@media(max-width:900px){
+  .toc-sidebar { transform:translateX(-240px); }
+  .main { margin-left:auto; margin-right:auto; padding:24px 20px 80px; }
+  .flow-row { grid-template-columns:1fr; gap:4px; }
+}
+html { scroll-behavior:smooth; }
+ul, ol { margin: 0 0 12px 20px; }
+li { margin-bottom: 4px; }
+</style>
+</head>
+<body>
+<div class="main">
+<h1 id="credit-assignment">Agentic RL 信用分配</h1>
+
+<p>先抓住一句话：<strong>Agentic RL 信用分配要回答的不是“最终得了几分”，而是“最终成败应该算到哪些中间决策头上”。</strong></p>
+
+<p>在普通生成任务里，模型通常一次性输出答案，最终 reward 和这段输出离得很近：答对就奖励，答错就惩罚。但在 Agentic RL 里，一条轨迹往往包含很多轮交互：读任务、搜索、打开网页、读证据、调工具、再搜索、总结答案。环境却常常只在最后给一个结果：</p>
+
+<div class="formula">
+$$
+R_{\text{final}} = 1 \quad \text{or} \quad 0
+$$
+</div>
+
+<p>这时真正困难的问题就出现了：如果最终成功，到底应该奖励哪一步？如果最终失败，又到底是哪一步该背锅？</p>
+
+<div class="mini-visual credit-assignment-visual">
+  <div class="visual-title">Credit assignment 具体做的事情</div>
+  <div class="ca-row">
+    <div class="ca-label">原始信号</div>
+    <div class="ca-path">
+      <span class="ca-step action">读任务</span><span class="credit-arrow">→</span>
+      <span class="ca-step action">搜索</span><span class="credit-arrow">→</span>
+      <span class="ca-step action">读证据</span><span class="credit-arrow">→</span>
+      <span class="ca-step action">调工具</span><span class="credit-arrow">→</span>
+      <span class="ca-step action">总结答案</span><span class="credit-arrow">→</span>
+      <span class="ca-reward">$R_{\text{final}}$</span>
+    </div>
+  </div>
+  <div class="ca-back">Credit assignment 做的不是“再算一个最终分”，而是把终点的 $R_{\text{final}}$ 回拆成每个决策位置的 step-level advantage。</div>
+  <div class="ca-row">
+    <div class="ca-label">回拆之后</div>
+    <div class="ca-credit-grid">
+      <div class="ca-credit"><span class="sym">$A_1$</span><strong>+0.10</strong><small>读清任务约束</small></div>
+      <div class="ca-credit"><span class="sym">$A_2$</span><strong>+0.35</strong><small>搜索命中关键方向</small></div>
+      <div class="ca-credit"><span class="sym">$A_3$</span><strong>+0.25</strong><small>证据提炼有效</small></div>
+      <div class="ca-credit neg"><span class="sym">$A_4$</span><strong>-0.20</strong><small>工具调用带来噪声</small></div>
+      <div class="ca-credit"><span class="sym">$A_5$</span><strong>+0.75</strong><small>答案整合正确</small></div>
+    </div>
+  </div>
+  <div class="ca-row">
+    <div class="ca-label">真正更新</div>
+    <div class="ca-token-flow">
+      <span class="ca-token">$A_1 \times \log\pi(\text{planning tokens})$</span>
+      <span class="credit-arrow">+</span>
+      <span class="ca-token">$A_2 \times \log\pi(\text{search tokens})$</span>
+      <span class="credit-arrow">+</span>
+      <span class="ca-token">$A_3 \times \log\pi(\text{evidence tokens})$</span>
+      <span class="credit-arrow">+</span>
+      <span class="ca-token">$A_4 \times \log\pi(\text{tool-call tokens})$</span>
+      <span class="credit-arrow">+</span>
+      <span class="ca-token">$A_5 \times \log\pi(\text{answer tokens})$</span>
+      <span class="ca-token masked">网页/工具返回内容 masked</span>
+    </div>
+  </div>
+  <div class="credit-note">图里的 $A_t$ 是示意性的 step-level advantage：有效决策给正 credit，带偏工具调用给负 credit；这些 $A_t$ 只更新模型生成的 decision tokens，网页/工具 observation 通常 masked。</div>
+</div>
+
+<p>如果仍然只做 trajectory-level RL，失败轨迹里的好搜索会被一起惩罚，成功轨迹里的无效搜索或错误工具调用也会被一起奖励。信用分配要修正的就是这个断点：从整条轨迹的成败，走向每一步决策的责任。</p>
+
+<p>从策略梯度的角度看，trajectory-level RL 更新大致是在做：</p>
+
+<div class="formula">
+$$
+\nabla J(\theta)
+=
+\mathbb E_{\tau \sim \pi_\theta}
+\left[
+R(\tau)\nabla \log \pi_\theta(\tau)
+\right]
+$$
+</div>
+
+<p>这条式子就是上面断点的数学形式：$R(\tau)$ 是一个 trajectory-level 标量，不会区分哪一步该奖、哪一步该罚。</p>
+
+<p>所以 Agentic RL 信用分配的核心困难不是“有 reward 后怎么更新 policy”，而是 <strong>step-level advantage 到底从哪里来</strong>。</p>
+
+<p>更具体地说，我们希望把整条轨迹的奖励：</p>
+
+<div class="formula">
+$$
+R(\tau_i)
+\quad
+\Longrightarrow
+\quad
+\{A_{i,1}, A_{i,2}, \ldots, A_{i,T}\}
+$$
+</div>
+
+<p>也就是从一个 trajectory-level outcome，变成每一步自己的 step-level advantage。然后再用这个 $A_{i,t}$ 去更新第 $t$ 轮 LLM action 里的 token：</p>
+
+<div class="formula">
+$$
+A_{i,t}
+\sum_{k \in a_{i,t}}
+\nabla \log \pi_\theta(y_k | h_{i,t}, y_{&lt;k})
+$$
+</div>
+
+<p>所以可以把信号理解成三层，从最终结果一路落到具体 token：</p>
+
+<div class="mini-visual">
+  <div class="visual-title">从最终结果到 token 更新的三层信号</div>
+  <div class="stack-visual">
+    <div class="stack-row"><div class="lhs">Trajectory reward</div><div class="rhs">整条轨迹最后得到 $R(\tau_i)$，只知道“这一局成没成”。</div></div>
+    <div class="stack-row"><div class="lhs">Step advantage</div><div class="rhs">把最终结果拆成 $A_{i,t}$，回答“第 $t$ 轮该不该被奖励”。</div></div>
+    <div class="stack-row"><div class="lhs">Token gradient</div><div class="rhs">把 $A_{i,t}$ 乘到这一轮 action 的 token log-prob 上，真正更新 LLM。</div></div>
+  </div>
+</div>
+
+<p>当前 GRPO-style Agentic RL 的很多工作，本质上都是在构造更好的 $A_{i,t}$。</p>
+
+<h2 id="other-directions">三类方法总览</h2>
+
+<p>为了构造 step-level advantage，当前可以把方法分成三类。它们的区别不在于最后怎么更新 policy，而在于 <strong>step-level 信号从哪里来</strong>：</p>
+
+<table>
+  <tr><th>类别</th><th>代表方法</th><th>信号来源</th><th>核心问题</th></tr>
+  <tr><td>方向一：State-anchored Stepwise</td><td>GiGPO、HGPO</td><td>同 state / 同上下文 group 内的相对回报</td><td>同样局面下，哪个动作更容易导向成功？</td></tr>
+  <tr><td>方向二：Process / Progress Reward</td><td>SPA-RL、AgentPRM</td><td>额外训练的 step-level progress / PRM scorer</td><td>这一步贡献了多少进展，或从这里出发未来回报多高？</td></tr>
+  <tr><td>方向三：Intrinsic Signal</td><td>ARPO、IGPO</td><td>policy 自身的 entropy / belief 变化</td><td>哪里最值得探索？哪一步让模型更接近正确答案？</td></tr>
+</table>
+
+<h2 id="direction-1">方向一：State-anchored Stepwise：同 state 下比较动作</h2>
+
+<p>以 GiGPO 为例。它的想法是：同一个任务采多条 rollout，如果这些 rollout 中间遇到了相同的环境状态 $s$，那就可以比较“同样局面下，不同动作谁更好”。</p>
+
+<p>先把所有在 state $s$ 下发生的动作聚成一个组：</p>
+
+<div class="formula">
+$$
+G^S(s)=\{(a_t^{(i)}, R_t^{(i)}) \mid s_t^{(i)}=s\}
+$$
+</div>
+
+<p>这里的 $R_t^{(i)}$ 不是整条轨迹 reward，而是从这一步开始往后的折扣回报：</p>
+
+<div class="formula">
+$$
+R_t^{(i)}
+=
+\sum_{k=t}^{T}
+\gamma^{k-t}r_k^{(i)}
+$$
+</div>
+
+<p>如果环境只有最终成功奖励，可以直觉理解成：这一步之后最终成功就有正回报，成功来得越晚、折扣后回报越小，最终失败则回报接近 0。</p>
+
+<p>然后在同一个 state group 里做相对优势：</p>
+
+<div class="formula">
+$$
+A^S(a_t^{(i)})
+=
+\frac{
+R_t^{(i)}-\text{mean}(\{R_t\}_{G^S(s)})
+}{
+F_{\text{norm}}(\{R_t\}_{G^S(s)})
+}
+$$
+</div>
+
+<p>也就是说，一个动作的 step 分数，等于它后续带来的回报，减去同 state 下其他动作的平均后续回报。</p>
+
+<p>举个 WebShop 例子。多个 rollout 都来到同一个商品搜索结果页：</p>
+
+<table>
+  <tr><th>动作</th><th>后续结果</th><th>$R_t$</th></tr>
+  <tr><td>点正确商品</td><td>很快成功</td><td>1.00</td></tr>
+  <tr><td>点错误商品，但后来返回并买对</td><td>晚一点成功</td><td>0.73</td></tr>
+  <tr><td>点下一页</td><td>最终失败</td><td>0.00</td></tr>
+</table>
+
+<p>组内平均值是：</p>
+
+<div class="formula">
+$$
+\bar R = 0.58
+$$
+</div>
+
+<p>不考虑标准差时，三个动作的相对分数就是：</p>
+
+<pre><code>点正确商品: 1.00 - 0.58 = +0.42
+点错误商品: 0.73 - 0.58 = +0.15
+点下一页:   0.00 - 0.58 = -0.58</code></pre>
+
+<p>这样模型学到的不是“成功轨迹里所有动作都好”，而是更细的局部偏好：在同一个 state 下，点正确商品最好；点错误商品虽然不理想，但还有补救机会；点下一页最差，因为后续失败了。</p>
+
+<p>最后 GiGPO 把整条轨迹的 macro advantage 和这一步的 micro advantage 合起来：</p>
+
+<div class="formula">
+$$
+A(a_t^{(i)})
+=
+A^E(\tau_i)
++
+\omega A^S(a_t^{(i)})
+$$
+</div>
+
+<p>其中 $A^E$ 表示整条轨迹相对好不好，$A^S$ 表示这一步在同 state 下相对好不好。</p>
+
+<h3 id="hgpo">HGPO：同 state 还不够，还要看历史上下文</h3>
+
+<p>HGPO 可以看成是对 GiGPO 的一个关键修正。GiGPO 在同一个 state 下比较动作，但 HGPO 指出：<strong>同一个当前 state，不一定代表同一个决策上下文。</strong></p>
+
+<p>最容易出错的是网页任务：两个 rollout 可能当前页面完全一样，但它们是怎么走到这个页面的并不一样。一个 agent 可能带着完整约束来到这里，另一个 agent 可能前面已经漏掉了关键条件。此时同一个动作的好坏含义就会不同。HGPO 把这个问题叫做 <strong>historical context inconsistency</strong>。</p>
+
+<p>HGPO 的做法是：先按当前 state 分组，再按历史上下文的一致程度继续分层。定义一个 $k$-step context operator：</p>
+
+<div class="formula">
+$$
+\mathcal C_k(s_t^{(i)})
+=
+(s_{t-k}^{(i)}, s_{t-k+1}^{(i)}, \ldots, s_t^{(i)})
+$$
+</div>
+
+<p>它表示“当前 state 加上前面 $k$ 个历史 state”。当 $k=0$ 时，只看当前 state；当 $k$ 越大，要求共享的历史越长，上下文越一致。</p>
+
+<p>然后对每个 step 构造多个层级 group：</p>
+
+<div class="formula">
+$$
+G_k^H(s_t^{(i)})
+=
+\{(j,n): \mathcal C_k(s_t^{(i)}) = \mathcal C_k(s_n^{(j)})\}
+$$
+</div>
+
+<p>这些 group 之间是嵌套关系：</p>
+
+<div class="formula">
+$$
+G_0^H \supseteq G_1^H \supseteq \cdots \supseteq G_K^H
+$$
+</div>
+
+<div class="mini-visual">
+  <div class="visual-title">HGPO 想避免把“看起来一样”的局面混在一起</div>
+  <div class="hgpo-example">
+    <div class="hgpo-current">
+      <span class="hgpo-chip">两个 rollout 都来到</span>
+      <span class="hgpo-chip current">同一个商品详情页：黑色雨靴</span>
+      <span class="hgpo-chip">当前 state 看起来一样</span>
+    </div>
+    <div class="hgpo-agents">
+      <div class="hgpo-agent">
+        <div class="name">Agent A 的历史</div>
+        <span class="line">用户要求：黑色、防水、低价</span>
+        <span class="line">上一轮搜索：black waterproof boots</span>
+        <div class="decision">此时“加入购物车”大概率是好动作。</div>
+      </div>
+      <div class="hgpo-agent bad">
+        <div class="name">Agent B 的历史</div>
+        <span class="line">用户要求：黑色、防水、低价</span>
+        <span class="line">上一轮搜索：black boots，漏掉防水</span>
+        <div class="decision">此时“加入购物车”可能是坏动作。</div>
+      </div>
+    </div>
+    <div class="hgpo-levels">
+      <div class="hgpo-level">
+        <div class="level">G0</div>
+        <div class="rule">只看当前商品页，把 A 和 B 放进同一组比较。</div>
+        <div class="effect">样本多，但会混</div>
+      </div>
+      <div class="hgpo-level">
+        <div class="level">G1</div>
+        <div class="rule">看“上一页 / 上一步 + 当前页”，把搜索历史不同的 rollout 分开。</div>
+        <div class="effect">更像同一语境</div>
+      </div>
+      <div class="hgpo-level">
+        <div class="level">GK</div>
+        <div class="rule">看更长历史，只和真正相似的决策上下文比较。</div>
+        <div class="effect">更准，但样本少</div>
+      </div>
+    </div>
+  </div>
+  <div class="credit-note">所以 HGPO 的核心不是“多画几层 group”，而是：当前页面一样时，先检查历史是否也相近；历史越相近，advantage 比较越公平，但可用样本越少。</div>
+</div>
+
+<p>所以公式里的嵌套关系可以直接按图来读：$G_0^H$ 是“只看当前页面”的大组，样本最多但容易混；$G_1^H$ 开始把上一轮历史也纳入比较；$G_K^H$ 则要求更长历史一致，比较最公平，但样本也最少。</p>
+
+<p>在每一层 group 里，HGPO 都可以像 GiGPO 一样算一个组内相对 advantage：</p>
+
+<div class="formula">
+$$
+A_k^H(s_t^{(i)})
+=
+\frac{
+R(s_t^{(i)}) - \frac{1}{|G_k^H|}\sum_{(j,n)\in G_k^H} R(s_n^{(j)})
+}{
+\sigma_{G_k^H}
+}
+$$
+</div>
+
+<p>其中 $R(s_t^{(i)})$ 仍然可以理解成从这一步开始的折扣未来回报。最后 HGPO 把不同层级的 advantage 加权融合：</p>
+
+<div class="formula">
+$$
+A^H(s_t^{(i)})
+=
+\sum_{k=0}^{K} w_k A_k^H(s_t^{(i)}),
+\qquad
+w_k =
+\frac{(k+1)^\alpha}{\sum_k (k+1)^\alpha}
+$$
+</div>
+
+<p>$\alpha$ 控制更深层 group 的权重。$\alpha$ 越大，越相信上下文更一致的深层 group；但深层 group 样本少，方差更高，所以这本质上是一个 bias-variance trade-off。</p>
+
+<p>一句话说，GiGPO 问“同一个 state 下哪个动作更好”，HGPO 进一步问“在同一个 state 且历史上下文相近时，哪个动作更好”。</p>
+
+<h2 id="direction-2">方向二：Process / Progress Reward：额外训练步级 scorer</h2>
+
+<p>第二类方法不要求 rollout 之间一定出现同 state 碰撞，而是额外训练一个能给步骤打分的模型。SPA-RL 侧重“这一步贡献了多少进步”，AgentPRM 侧重“从这个 state-action 出发未来回报有多高”。</p>
+
+<h3 id="spa-rl">SPA-RL：把最终 reward 分摊成每一步的 progress</h3>
+
+<p>SPA-RL 走的是另一条路线：不依赖同 state 碰撞，而是额外训练一个 <strong>progress estimator</strong>，让它学会判断“这一步让任务向完成目标推进了多少”。</p>
+
+<p>它的基本假设是：一个长程任务最终完成，是每一步 incremental progress 累积出来的。</p>
+
+<p>所以 SPA-RL 不直接给每一步打“绝对好坏分”，而是让模型预测每一步贡献 $\hat c_t$，并要求这些贡献加起来能还原最终 reward：</p>
+
+<div class="formula">
+$$
+\hat R
+=
+\sum_{t=1}^{N} \hat c_t
+\approx
+R
+$$
+</div>
+
+<p>progress estimator 的形式可以理解为：</p>
+
+<div class="formula">
+$$
+\hat c_t
+=
+\mathrm{MLP}(h_t),
+\qquad
+h_t = f_{\pi_\gamma}(s_t,a_t)
+$$
+</div>
+
+<p>也就是用一个 LLM 编码当前 state-action，再接一个轻量 MLP 输出标量贡献。训练时，用多条探索轨迹的最终 reward 做监督：</p>
+
+<div class="formula">
+$$
+\mathcal L_{\text{PE}}
+=
+\frac{1}{|\mathcal D|M}
+\sum_i
+\sum_j
+(\hat R_{i,j} - R_{i,j})^2
+$$
+</div>
+
+<p>这个 loss 的意义非常直接：如果某条轨迹最终成功，所有步骤贡献的和应该接近 1；如果最终失败，贡献的和应该接近 0。模型为了拟合这个目标，会学着把正贡献分给真正推动任务成功的步骤，把低贡献或负贡献分给无效步骤。</p>
+
+<p>举个直觉例子。一个搜索 agent 最终答对，轨迹里可能有 5 步：</p>
+
+<table>
+  <tr><th>步骤</th><th>行为</th><th>可能的 progress</th></tr>
+  <tr><td>1</td><td>生成一个模糊 query</td><td>0.05</td></tr>
+  <tr><td>2</td><td>打开无关网页</td><td>0.00</td></tr>
+  <tr><td>3</td><td>改写 query 命中关键网页</td><td>0.30</td></tr>
+  <tr><td>4</td><td>抽取关键证据</td><td>0.45</td></tr>
+  <tr><td>5</td><td>组织成最终答案</td><td>0.20</td></tr>
+</table>
+
+<div class="mini-visual">
+  <div class="visual-title">把最终成功 reward 重分配到步骤</div>
+  <div class="progress-sum">
+    <div class="progress-segment" style="flex:5;">0.05</div>
+    <div class="progress-segment zero" style="flex:4;">0</div>
+    <div class="progress-segment" style="flex:30;">0.30</div>
+    <div class="progress-segment" style="flex:45;">0.45</div>
+    <div class="progress-segment" style="flex:20;">0.20</div>
+  </div>
+  <div class="progress-legend">
+    <div>1 模糊 query</div>
+    <div>2 无关网页</div>
+    <div>3 命中网页</div>
+    <div>4 关键证据</div>
+    <div>5 最终答案</div>
+  </div>
+  <div class="credit-note">SPA-RL 想学到的是“每一步贡献多少”，而不是最后统一给整条轨迹一个 1。</div>
+</div>
+
+<p>这些分数加起来约等于最终成功 reward。这样 RL 训练时不再只有最后一步有信号，而是每一步都有 dense reward。</p>
+
+<p>SPA-RL 还加了一个 grounding signal $g_t$，表示动作是否真的能在环境中执行。最终中间奖励是：</p>
+
+<div class="formula">
+$$
+r_t^{\text{fused}}
+=
+\alpha c_t
++
+\beta g_t
+$$
+</div>
+
+<p>这里 $c_t$ 负责“是否推动任务完成”，$g_t$ 负责“动作是否可执行”。然后把原来 PPO 里的稀疏终点 reward 替换成 $r_t^{\text{fused}}$，得到更密的训练信号。</p>
+
+<div class="mini-visual">
+  <div class="visual-title">SPA-RL 的 fused reward</div>
+  <div class="credit-flow">
+    <span class="credit-node">progress $c_t$</span><span class="credit-arrow">+</span>
+    <span class="credit-node">grounding $g_t$</span><span class="credit-arrow">→</span>
+    <span class="credit-node strong">$r_t^{\text{fused}}$</span><span class="credit-arrow">→</span>
+    <span class="credit-node">PPO step reward</span>
+  </div>
+  <div class="credit-note">一个动作既要“有用”，也要“能执行”；两类信号融合后变成每一步都可用的训练奖励。</div>
+</div>
+
+<p>一句话说，SPA-RL 不要只问这一步好不好，而是问这一步对最终完成贡献了多少，并让所有步骤贡献之和对齐最终 reward。</p>
+
+<p>它和 AgentPRM 的差别是：SPA-RL 更像 reward redistribution，学的是“进步量”；AgentPRM 更像 value learning，学的是“从这个 state-action 出发未来能拿多少回报”。</p>
+
+<h3 id="agentprm">AgentPRM：把 PRM 当成 agent 的 $Q(s,a)$</h3>
+
+<p>AgentPRM 的思路更接近经典 RL 里的 actor-critic。它把 process reward model 看成一个状态-动作价值函数：</p>
+
+<div class="formula">
+$$
+Q^\pi(s_t,a_t)
+=
+\mathbb E_\pi
+\left[
+\sum_{k=t}^{T}
+\gamma^{k-t} r(s_k,a_k)
+\mid s_t,a_t
+\right]
+$$
+</div>
+
+<p>也就是说，PRM 输出的不是“这一小步贡献了多少”，而是“如果在当前 state 做这个 action，后面按当前 policy 继续走，预期能拿多少总回报”。</p>
+
+<p>AgentPRM 的训练是一个三阶段循环：</p>
+
+<ol>
+  <li><strong>Rollout and Compute Target：</strong>用当前 policy $\pi_{i-1}$ 在环境中采样大量轨迹，并用 MC return 给每个 $(s,a)$ 估计目标值。</li>
+  <li><strong>Train PRM：</strong>把这些自动标注的 $\hat Q(s,a)$ 当 soft label，训练 PRM。</li>
+  <li><strong>Train Policy：</strong>用训练好的 PRM 作为 dense reward，更新 policy，同时用 KL 约束不要离上一轮 policy 太远。</li>
+</ol>
+
+<p>第一步的 MC target 是：</p>
+
+<div class="formula">
+$$
+\hat Q(s,a)
+=
+\frac{1}{|\mathcal G(s,a)|}
+\sum_{(s_t,a_t)\in \mathcal D(s,a)}
+\sum_{k=t}^{T-1}
+\gamma^{k-t}r_k
+$$
+</div>
+
+<p>$\mathcal G(s,a)$ 是所有经过同一个 state-action 的轨迹集合。直觉上，如果很多轨迹在做了这个 action 之后最终成功，那么这个 action 的 $\hat Q$ 就高；如果经常失败，$\hat Q$ 就低。</p>
+
+<p>第二步训练 PRM 时，把 $\hat Q$ 当成 0 到 1 之间的 soft label，用 soft BCE：</p>
+
+<div class="formula">
+$$
+\mathcal L(Q_\phi)
+=
+-
+\mathbb E_{(s,a,\hat Q)}
+\left[
+\hat Q \log Q_\phi(s,a)
++
+(1-\hat Q)\log(1-Q_\phi(s,a))
+\right]
+$$
+</div>
+
+<p>第三步更新 policy：</p>
+
+<div class="formula">
+$$
+\pi_i
+=
+\arg\max_{\pi_\theta}
+\mathbb E_{s,a\sim\pi_\theta}
+[Q_\phi(s,a)]
+-
+\beta
+\mathbb D_{\mathrm{KL}}
+[
+\pi_\theta(a|s)
+\| 
+\pi_{i-1}(a|s)
+]
+$$
+</div>
+
+<p>这里 KL 不是约束到最初 SFT policy，而是约束到上一轮 policy $\pi_{i-1}$。原因是 PRM 是用上一轮 policy 的 rollout 训练的，如果新 policy 飘得太远，PRM 的估计就会失真。</p>
+
+<p>AgentPRM 在推理时还可以做 Best-of-N：每一步从 policy 采样 $N$ 个候选动作，用 PRM 选 $Q(s,a)$ 最高的那个。</p>
+
+<p>一句话说，AgentPRM 先用 rollout 自动给每个 state-action 估未来回报，再训练一个 PRM 近似 $Q(s,a)$，最后用这个 PRM 指导 policy 学习和搜索。</p>
+
+<p>它的最大风险是 reward hacking：policy 可能学会让 PRM 打高分，而不是让真实任务成功。论文里也观察到，PRM reward 持续升高时，真实 success rate 可能先升后降。常见缓解方式包括：迭代重训 PRM、增加 rollout 数据、加 KL 约束、使用参考 policy 做 reward shaping。</p>
+
+<h2 id="direction-3">方向三：Intrinsic Signal：从 policy 自身找信号</h2>
+
+<p>第三类方法不额外训练 PRM，而是从 policy 自己的行为分布里找 step-level 信号。ARPO 用 entropy 找最值得探索的分叉点；IGPO 用正确答案概率的增量衡量每一轮是否真的带来了信息。</p>
+
+<h3 id="arpo">ARPO：把 rollout 预算花在 entropy 飙升的位置</h3>
+
+<p>ARPO 关注的是工具调用场景。它的关键观察是：LLM 在收到工具返回结果之后，接下来生成的前 10 到 50 个 token entropy 往往会明显升高。</p>
+
+<p>token entropy 的定义是：</p>
+
+<div class="formula">
+$$
+H_t
+=
+-
+\sum_{j=1}^{V}
+p_{t,j}\log p_{t,j},
+\qquad
+p_t
+=
+\mathrm{Softmax}(z_t/\tau)
+$$
+</div>
+
+<p>entropy 高表示模型此刻不确定：可能有多种解释、多种下一步工具调用、多种推理路径。ARPO 的想法是：既然不确定性最高的位置最可能是关键决策点，那 rollout 预算就不应该平均花，而应该集中在那里。</p>
+
+<div class="mini-visual">
+  <div class="visual-title">工具返回后的 entropy 尖峰</div>
+  <div class="entropy-bars">
+    <div class="entropy-bar" style="height:24px;"><span>t1</span></div>
+    <div class="entropy-bar" style="height:30px;"><span>t2</span></div>
+    <div class="entropy-bar" style="height:28px;"><span>t3</span></div>
+    <div class="entropy-bar hot" style="height:82px;"><span>tool</span></div>
+    <div class="entropy-bar hot" style="height:74px;"><span>+10</span></div>
+    <div class="entropy-bar" style="height:46px;"><span>+30</span></div>
+    <div class="entropy-bar" style="height:34px;"><span>+50</span></div>
+    <div class="entropy-bar" style="height:26px;"><span>later</span></div>
+  </div>
+  <div class="credit-note">黑框区域表示模型刚读完工具结果后的不确定高峰；ARPO 会优先在这里追加分支采样。</div>
+</div>
+
+<p>ARPO 的 rollout 分成两类：</p>
+
+<pre><code>global rollout: 从头到尾采完整轨迹，保证整体探索
+partial rollout: 在高 entropy 工具调用节点分叉，重点探索局部决策</code></pre>
+
+<p>具体流程是：</p>
+
+<ol>
+  <li>总 rollout budget 是 $M$，先采 $N$ 条完整轨迹，剩下 $M-N$ 留给局部分叉。</li>
+  <li>记录每条轨迹初始 token entropy，得到 $H_{\text{initial}}$。</li>
+  <li>每次工具调用返回后，生成 $k$ 个 token，计算此时 entropy $H_t$。</li>
+  <li>计算 entropy 变化：</li>
+</ol>
+
+<div class="formula">
+$$
+\Delta H_t
+=
+\mathrm{Normalize}(H_t - H_{\text{initial}})
+$$
+</div>
+
+<p>然后把 entropy 变化转成分叉概率：</p>
+
+<div class="formula">
+$$
+P_t
+=
+\alpha + \beta \Delta H_t,
+\qquad
+\text{Action}(P_t)
+=
+\begin{cases}
+\text{Branch}(Z), & P_t > \tau \\
+\text{Continue}, & \text{otherwise}
+\end{cases}
+$$
+</div>
+
+<p>如果 $P_t$ 超过阈值，就从当前节点分出 $Z$ 条 partial rollout。比如搜索工具返回了几段互相冲突的证据，模型 entropy 飙升，ARPO 就在这里多分几条分支：一条追证据 A，一条追证据 B，一条换 query 验证。</p>
+
+<div class="mini-visual">
+  <div class="visual-title">ARPO 的局部分叉采样</div>
+  <div class="branch-visual">
+    <div class="branch-prefix">
+      <span>共享前缀</span><span class="credit-arrow">→</span>
+      <span>工具返回</span><span class="credit-arrow">→</span>
+      <span class="credit-node strong">高 entropy 节点</span>
+    </div>
+    <div class="branch-fork">
+      <div class="branch-row"><span>分支 A</span><span>追证据 A</span><span>reward 高</span></div>
+      <div class="branch-row"><span>分支 B</span><span>追证据 B</span><span>reward 低</span></div>
+      <div class="branch-row"><span>分支 C</span><span>换 query 验证</span><span>reward 中</span></div>
+    </div>
+  </div>
+  <div class="credit-note">分叉后的差异用来更新 individual tokens；共享前缀则吃多个分支 advantage 的平均。</div>
+</div>
+
+<p>因为 partial rollout 共享前缀，ARPO 还要处理 advantage 怎么分配。它区分两部分 token：</p>
+
+<pre><code>shared tokens: 分叉前所有分支共享的前缀
+individual tokens: 分叉后每条路径自己的 token</code></pre>
+
+<p>个性化分支 token 用各自轨迹的 normalized reward：</p>
+
+<div class="formula">
+$$
+\hat A_{i,t}
+=
+\frac{
+r_i-\mathrm{mean}(\{R_i\}_{i=1}^{G})
+}{
+\mathrm{std}(\{R_i\}_{i=1}^{G})
+}
+$$
+</div>
+
+<p>共享 token 则用包含该共享片段的多个分支 advantage 的平均：</p>
+
+<div class="formula">
+$$
+\hat A_{i,t}^{\text{shared}}
+=
+\frac{1}{d}
+\sum_{i=1}^{d}
+\hat A_{i,t}
+$$
+</div>
+
+<p>一句话说，entropy 告诉你哪里最不确定，ARPO 就在那里分叉采样，并把分叉后的成败差异回传给关键 tool-use 决策。</p>
+
+<h3 id="igpo">IGPO：用正确答案概率的增量当 turn-level reward</h3>
+
+<p>IGPO 的核心想法是：每一轮搜索、读证据、工具调用，本质上都应该让模型更接近正确答案。那就直接衡量这一轮之后，模型对 ground-truth answer 的概率有没有上升。</p>
+
+<p>设 ground-truth answer token 为：</p>
+
+<div class="formula">
+$$
+a=(a_1,\ldots,a_L)
+$$
+</div>
+
+<p>第 $i$ 条 rollout 到第 $t$ 轮为止的历史是 $o_{i,\leq t}$。IGPO 用 teacher forcing 计算模型生成正确答案的平均 log probability：</p>
+
+<div class="formula">
+$$
+\log \pi_\theta(a \mid q, o_{i,\leq t})
+=
+\frac{1}{L}
+\sum_{j=1}^{L}
+\log \pi_\theta(a_j \mid q, o_{i,\leq t}, a_{&lt;j})
+$$
+</div>
+
+<p>这条公式可以拆成三个部分看：</p>
+
+<table>
+  <tr><th>符号</th><th>含义</th><th>直觉</th></tr>
+  <tr><td>$q$</td><td>原始问题</td><td>用户一开始问的题目</td></tr>
+  <tr><td>$o_{i,\leq t}$</td><td>第 $i$ 条 rollout 到第 $t$ 轮为止的全部交互历史</td><td>包括已经搜索过什么、读到什么证据、调用过什么工具</td></tr>
+  <tr><td>$a=(a_1,\ldots,a_L)$</td><td>标准答案 token 序列</td><td>训练集中给定的 ground-truth answer</td></tr>
+</table>
+
+<p>举个例子，问题是：</p>
+
+<pre><code>q: 《哈利·波特》的作者是谁？</code></pre>
+
+<p>标准答案是：</p>
+
+<pre><code>a: J. K. Rowling</code></pre>
+
+<p>一条 rollout 可能是：</p>
+
+<pre><code>o_{i,≤0}: 还没搜索，只看到问题
+o_{i,≤1}: 第 1 轮搜索后，看到一些网页摘要
+o_{i,≤2}: 第 2 轮打开百科，看到作者信息
+o_{i,≤3}: 第 3 轮整理答案</code></pre>
+
+<p>IGPO 每一轮都问同一个问题：在当前已有信息下，模型生成正确答案 “J. K. Rowling” 的概率有多大？</p>
+
+<p>这里的 <strong>teacher forcing</strong> 指的是：不让模型自由生成答案，而是把正确答案 token 一个一个喂给模型，然后计算模型对每个正确 token 的概率。</p>
+
+<p>如果正确答案 token 是：</p>
+
+<pre><code>a = [J, ., K, ., Rowling]</code></pre>
+
+<p>那 teacher forcing 会计算：</p>
+
+<pre><code>P(J | 问题 + 当前历史)
+P(. | 问题 + 当前历史 + J)
+P(K | 问题 + 当前历史 + J.)
+P(. | 问题 + 当前历史 + J.K)
+P(Rowling | 问题 + 当前历史 + J.K.)</code></pre>
+
+<p>再把这些 token 的 log probability 取平均。除以 $L$ 是为了避免长答案天然 log probability 更低；否则长答案会因为 token 多而被不公平地惩罚。</p>
+
+<p>然后把连续两轮之间的 log probability 增量定义成 information gain reward：</p>
+
+<div class="formula">
+$$
+r_{i,t}^{IG}
+=
+\log \pi_\theta(a \mid q, o_{i,\leq t})
+-
+\log \pi_\theta(a \mid q, o_{i,\leq t-1})
+$$
+</div>
+
+<div class="mini-visual">
+  <div class="visual-title">IGPO 看的是正确答案信心的增量</div>
+  <div class="belief-grid">
+    <div class="belief-case">
+      <div class="case-title">有用交互</div>
+      <div class="belief-line"><span>-4.0</span><span>→</span><span>-1.5</span></div>
+      <div class="belief-delta">$r^{IG}=+2.5$</div>
+    </div>
+    <div class="belief-case">
+      <div class="case-title">带偏交互</div>
+      <div class="belief-line"><span>-2.0</span><span>→</span><span>-3.2</span></div>
+      <div class="belief-delta">$r^{IG}=-1.2$</div>
+    </div>
+  </div>
+  <div class="credit-note">这就是第 $t$ 轮带来的信息增量：log probability 越接近 0，说明模型越容易生成正确答案；上升给正 credit，下降给负 credit，基本不变就接近 0 credit。</div>
+</div>
+
+<p>IGPO 不是只用 information gain。它还保留最终 outcome reward，并且把两类 reward 分开做 group-wise z-normalization：</p>
+
+<div class="formula">
+$$
+\tilde r_{i,t}
+=
+\begin{cases}
+\frac{r_{i,t}^{IG}-\mu_{IG}}{\sigma_{IG}}, & 1\leq t&lt;T \\
+\frac{r_i^O-\mu_O}{\sigma_O}, & t=T
+\end{cases}
+$$
+</div>
+
+<p>然后像普通 RL 一样向后累积折扣回报：</p>
+
+<div class="formula">
+$$
+\tilde R_{i,t}
+=
+\sum_{k=t}^{T}
+\gamma^{k-t}
+\tilde r_{i,k}
+$$
+</div>
+
+<p>训练时，把 $\tilde R_{i,t}$ 分配给第 $t$ 轮产生的 decision tokens；工具返回内容本身不更新，因为那不是模型生成的。</p>
+
+<p>一句话说，如果某一轮交互让模型更容易生成正确答案，这一轮就该被奖励；如果让模型偏离正确答案，这一轮就该被惩罚。</p>
+
+<p>IGPO 的优点是便宜、稠密、ground-truth-aware，不需要额外 PRM，也不需要 Monte Carlo 估值。缺点是它依赖高质量 ground truth。如果问题本身有多个合理答案，但数据集只认其中一个，IGPO 可能会惩罚事实正确但不匹配标注的推理路径。</p>
+
+</div>
+</body>
+</html>
