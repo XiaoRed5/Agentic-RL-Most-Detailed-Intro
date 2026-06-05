@@ -4,7 +4,7 @@
 
 我目前在美团M17做基座agent后训练，24年上交EE毕业转AI，帮助像曾经的我一样想转行的朋友！
 
-这里整理了两份面向算法工程师的 Agentic RL 入门报告。
+欢迎关注我的小红书：[小red](https://xhslink.com/m/2dKOxmxjYcC)，后续会继续更新 Agentic RL、基座模型后训练和算法工程师转行相关内容。
 
 ## 内容结构
 
