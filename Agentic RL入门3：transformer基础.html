@@ -107,7 +107,7 @@
 <div class="wrap">
 <header class="page">
   <h1>Agentic RL 入门 3：Transformer 基础</h1>
-  <div class="meta">位置编码 / Attention 全家桶 / FFN·MoE·LayerNorm / MTP / KV Cache · <a href="./index.html">返回入门系列首页</a></div>
+  <div class="meta">位置编码 / Attention 全家桶 / 归一化体系 / MoE / MTP / KV Cache · <a href="./index.html">返回入门系列首页</a></div>
 </header>
 <nav class="toc" id="top">
   <h2>目录</h2>
@@ -130,18 +130,26 @@
         <li class="sub"><a href="#sec1-2-h7">2.7 MoBA（Mixture of Block Attention）</a></li>
       </ul>
     </li>
-    <li class="card"><a href="#sec1-3">3. FFN / MoE / LayerNorm / 现代归一化</a>
+    <li class="card"><a href="#sec1-3">3. 归一化体系</a>
       <ul>
         <li class="sub"><a href="#sec1-3-h1">3.1 FFN 与 SwiGLU</a></li>
-        <li class="sub"><a href="#sec1-3-h2">3.2 LayerNorm vs RMSNorm</a></li>
-        <li class="sub"><a href="#sec1-3-h3">3.3 Residual 与梯度通路</a></li>
-        <li class="sub"><a href="#sec1-3-h4">3.4 Pre-Norm vs Post-Norm（含 DeepNorm / Sandwich）</a></li>
-        <li class="sub"><a href="#sec1-3-h5">3.5 MoE 架构（DeepSeekMoE / Qwen-MoE）</a></li>
-        <li class="sub"><a href="#sec1-3-h6">3.6 QK-Norm 与现代归一化进展</a></li>
+        <li class="sub"><a href="#sec1-3-h2">3.2 LayerNorm / RMSNorm 与残差结构</a></li>
+        <li class="sub"><a href="#sec1-3-h3">3.3 为什么大模型 loss spike</a></li>
+        <li class="sub"><a href="#sec1-3-h4">3.4 QK-Norm</a></li>
+        <li class="sub"><a href="#sec1-3-h5">3.5 Soft-capping</a></li>
+        <li class="sub"><a href="#sec1-3-h6">3.6 Embedding Norm / LayerScale / μP</a></li>
       </ul>
     </li>
-    <li class="card"><a href="#sec1-4">4. Multi-Token Prediction（MTP）</a></li>
-    <li class="card"><a href="#sec1-5">5. 推理优化：KV Cache 与两阶段</a></li>
+    <li class="card"><a href="#sec1-4">4. MoE 架构（DeepSeekMoE / Qwen-MoE）</a>
+      <ul>
+        <li class="sub"><a href="#sec1-4-h1">4.1 基础范式：稀疏激活的 FFN 路由</a></li>
+        <li class="sub"><a href="#sec1-4-h2">4.2 DeepSeekMoE 的两板斧：Fine-grained + Shared Experts</a></li>
+        <li class="sub"><a href="#sec1-4-h3">4.3 负载均衡：从 aux loss 到 Auxiliary-Loss-Free</a></li>
+        <li class="sub"><a href="#sec1-4-h4">4.4 系统侧：EP、All-to-All、DeepEP 与推理瓶颈</a></li>
+      </ul>
+    </li>
+    <li class="card"><a href="#sec1-5">5. Multi-Token Prediction（MTP）</a></li>
+    <li class="card"><a href="#sec1-6">6. 推理优化：KV Cache 与两阶段</a></li>
   </ul>
 </nav>
 <section class="group" id="sec1">
@@ -598,7 +606,7 @@ $$</div>
 </article>
 
 <article class="qa" id="sec1-3">
-  <h3>3. FFN / MoE / LayerNorm / 现代归一化</h3>
+  <h3>3. 归一化体系</h3>
 
 <h4 id="sec1-3-h1">3.1 FFN 与 SwiGLU</h4>
 <p>原始 FFN 一行带过：$\text{FFN}(x)=W_2\,\text{ReLU}(W_1 x)$，中间维 $d_{ff}=4d$，对每个 position 独立计算。</p>
@@ -612,8 +620,10 @@ $$</div>
   <li><b>参数与知识</b>：FFN 约占模型 2/3 参数（LLaMA-7B 中 FFN ≈ 4.3B），是事实知识的主要载体；ROME / 知识编辑都改 FFN 的 down-proj。</li>
 </ul>
 
+<h4 id="sec1-3-h2">3.2 LayerNorm / RMSNorm 与残差结构</h4>
+<p>Transformer 每层的标准范式是<strong>子层 + 残差 + 归一化</strong>：$y = x + \text{Sublayer}(x)$ 的残差提供恒等映射的"梯度高速公路"，使上百层 Transformer 可训；再用 LN/RMSNorm 约束数值尺度。下面分别讲归一化算子选型与"残差/归一化"的组合顺序。</p>
 
-<h4 id="sec1-3-h2">3.2 LayerNorm vs RMSNorm</h4>
+<h5 id="sec1-3-h2-h1">3.2.1 LayerNorm vs RMSNorm</h5>
 <p>LN 一行：$\text{LN}(x)=\gamma\odot(x-\mu)/\sqrt{\sigma^2+\epsilon}+\beta$，对最后一维做均值方差归一。BN 不行的原因：序列长度变化、batch 内 token 分布异质、推理时 batch=1 统计量无意义。</p>
 <p><b>RMSNorm（LLaMA / GPT-NeoX / Qwen / DeepSeek 全系）</b>：</p>
 <div class="formula">$$\text{RMSNorm}(x) = \gamma \odot \frac{x}{\text{RMS}(x)}, \quad \text{RMS}(x)=\sqrt{\frac{1}{d}\sum_{i=1}^{d} x_i^2 + \epsilon}$$</div>
@@ -625,11 +635,7 @@ $$</div>
   <li><b>实现要点</b>:权重 $\gamma$ 初始化为 1，$\epsilon$ 一般 $10^{-6}$（FP16 时调到 $10^{-5}$ 防下溢）；很多实现把 norm 的 reduce 放在 FP32 算，再 cast 回 BF16。</li>
 </ul>
 
-
-<h4 id="sec1-3-h3">3.3 Residual 与梯度通路</h4>
-<p>$y = x + \text{Sublayer}(x)$，提供恒等映射的"梯度高速公路"，使 100+ 层 Transformer 可训。$\partial y/\partial x = I + \partial \text{Sublayer}/\partial x$，恒等项保底防止梯度消失。现代实现中残差 stream 还承担"信息总线"角色——每层读/写共享 hidden state，可解释性研究（logit lens / residual stream analysis）都基于此。</p>
-
-<h4 id="sec1-3-h4">3.4 Pre-Norm vs Post-Norm（含 DeepNorm / Sandwich）</h4>
+<h5 id="sec1-3-h2-h2">3.2.2 Pre-Norm vs Post-Norm（含 DeepNorm / Sandwich）</h5>
 <table>
 <thead><tr><th>结构</th><th>公式</th><th>稳定性</th><th>需要 warmup？</th><th>代表模型</th></tr></thead>
 <tbody>
@@ -643,17 +649,48 @@ $$</div>
 <p><b>Post-Norm 为什么难训</b>：LN 套在残差外面，每层把 $x_l + \text{Sub}$ 重新归一，反向时梯度要穿过每一层的 LN Jacobian，深层会指数级衰减/放大，必须用大 warmup + 小 lr 才能稳，BERT-large 训不动的经典坑就在这。</p>
 <p><b>DeepNorm（Wang et al. 2022）</b>：在残差加权 $\alpha>1$ 放大 identity 路径，同时把 sublayer 权重初始化缩小 $\beta=(8N)^{-1/4}$，证明 1000 层 Transformer 可稳定训练；GLM-130B 用了它的变体。<b>Sandwich-Norm</b>：在 sublayer 前后各加一个 norm，进一步约束 residual 方差爆炸，CogView/GLM 训超大模型时用。</p>
 
+<h4 id="sec1-3-h3">3.3 为什么大模型 loss spike——从 q·k 范数爆炸说起</h4>
+<p>在标准 Pre-Norm Transformer 里，<strong>子层输入</strong>已经被 RMSNorm 约束到单位范数，但 $Q=X W_Q,\ K=X W_K$ 经过线性投影后会出现"非各向同性"的范数膨胀：训练到中后期，少数 head 的 $W_Q,W_K$ 谱范数显著增大，使 $q_i\cdot k_j$ 的尺度从初始的 $\mathcal{O}(\sqrt{d_h})$ 漂移到 $\mathcal{O}(10^2)$ 甚至更大。代入 softmax 后，<strong>注意力熵塌缩</strong>到接近 0，反向传播时 $\frac{\partial \mathrm{softmax}}{\partial \text{logit}}\approx p_i(\delta_{ij}-p_j)$ 几乎处处为 0 但偶发巨大值，于是出现典型的 <strong>loss spike</strong>。Gemma 2/3、Olmo、Chameleon、DeepSeek-V3 都在 tech report 里把这个现象作为引入 QK-Norm 的核心动机。</p>
 
 
-<h4 id="sec1-3-h5">3.5 MoE 架构（DeepSeekMoE / Qwen-MoE）</h4>
-<h5 id="sec1-3-h5-h1">3.5.1 基础范式：稀疏激活的 FFN 路由</h5>
+<h4 id="sec1-3-h4">3.4 QK-Norm：在内积之前做 head-wise 归一化</h4>
+<p>QK-Norm（Henry 2020；ViT-22B；Chameleon；Gemma 3；DeepSeek-V3 系列）的形式非常直接：对每个 head 的 $Q,K\in\mathbb{R}^{L\times d_h}$ 沿 <strong>head 维度</strong>（最后一维）做 RMSNorm（或 LayerNorm），然后再做内积：</p>
+<div class="formula">$$\widetilde Q=\mathrm{RMSNorm}_{d_h}(Q),\quad \widetilde K=\mathrm{RMSNorm}_{d_h}(K),\quad A=\mathrm{softmax}\!\left(\tfrac{\widetilde Q\,\widetilde K^\top}{\tau}\right)V$$</div>
+<p>其中 $\mathrm{RMSNorm}(x)=\frac{x}{\sqrt{\frac{1}{d_h}\sum_i x_i^2+\epsilon}}\odot g$，每个 head 通常有<strong>独立的可学习增益向量</strong> $g\in\mathbb{R}^{d_h}$（Chameleon/Gemma 3 是这么做的；少数实现只用全局标量）。这样 $\|\widetilde q_i\|,\|\widetilde k_j\|\approx \sqrt{d_h}$ 为常数，<strong>内积的尺度被钉死</strong>，温度 $\tau$ 可以固定为 $\sqrt{d_h}$ 甚至直接吸到 $g$ 里。</p>
+<p>显存与算力：每层每 head 多两次 norm，FLOPs 增量约 $4\cdot b L d$，相对 attention 主体 $2bL^2 d$ 几乎可忽略；对 KV cache 没有结构影响，但<strong>会改变 KV cache 的统计</strong>——常见实现把 norm 后的 $\widetilde K$ 缓存，省去解码时反复 norm，但要注意与<strong>RoPE 的顺序</strong>。</p>
+<p><strong>QK-Norm 与 RoPE 的顺序</strong>：当前主流（Gemma 3、Olmo、Chameleon）采用 <code>q,k → RMSNorm → RoPE → attn</code> 的顺序。原因：RoPE 是<strong>正交旋转</strong>，作用在 norm 之后不改变范数，仍保持 $\|\widetilde q\|=\mathrm{const}$；若 norm 放在 RoPE 之后，则会把按位置变化的相位再次"压平"，相对位置打分的方差被破坏，长程外推效果变差。</p>
+<p><strong>QK-Norm 与 MLA 的兼容性</strong>：DeepSeek-V2/V3 的 MLA 把 K 压成低秩 latent，推理时不显式物化 full K，QK-Norm 不能直接对未物化的 K 做 head-wise norm；DeepSeek 的折中是只对 <strong>RoPE 分支的 q,k</strong> 做 norm，或者把 norm 折算进 W 的初始化与训练期的辅助约束里——以官方技术报告为准。</p>
+
+
+<h4 id="sec1-3-h5">3.5 Soft-capping：Gemma 2 的 tanh 软上限</h4>
+<p>Gemma 2 在没有用 QK-Norm 的情况下，选择直接在 <strong>logits</strong> 上加 tanh 软压：</p>
+<div class="formula">$$\text{logits} \leftarrow c\cdot\tanh\!\left(\frac{\text{logits}}{c}\right)$$</div>
+<p>取自 Gemini 1.5。Gemma 2 的具体超参：<strong>attention logits 的 $c=50$，最终 vocab logits 的 $c=30$</strong>。梯度为</p>
+<div class="formula">$$\frac{\partial}{\partial z}\,c\tanh(z/c)=1-\tanh^2(z/c)\in(0,1]$$</div>
+<p>当 $|z|\ll c$ 时几乎是 identity，不影响小尺度；当 $|z|\gg c$ 时梯度趋 0，相当于"<strong>梯度软门控</strong>"，把可能引发 spike 的大 logits 的反向信号自然衰减。问题是它和 <strong>FlashAttention</strong> 不兼容（kernel 需重写，因为 softmax 前要先 tanh），所以 Gemma 2 早期推理需 eager attention 或 FlashInfer 的特化 kernel。</p>
+<p>Gemma 3 之后把 attn soft-cap 换成 QK-Norm，理由是后者从源头控制 logit 尺度、对 kernel 友好；nanochat 等社区项目也讨论过<strong>两者同时用是否冗余</strong>——主流结论是 QK-Norm 已足够稳定，soft-cap 可省。</p>
+
+
+<h4 id="sec1-3-h6">3.6 Embedding Norm、LayerScale 与小 init / μP 的协同</h4>
+<p><strong>Embedding Norm</strong>：很多新一代模型（Gemma、Olmo、MiniMax-01）对 token embedding 直接做 RMSNorm，或在 embed 输入第一层前加一个独立 RMSNorm。动机是 embedding 初始化常用 $\mathcal{N}(0,1/d)$ 或 $\mathcal{N}(0,1)$，与残差流尺度不匹配；不归一化会导致<strong>第一层 attention 的 q·k 尺度异常</strong>，并放大长尾 token 的方差。Gemma 还把 embedding 乘 $\sqrt{d}$，等价于 RMSNorm 后乘常数增益。</p>
+<p><strong>LayerScale</strong>（CaiT，2021）：$x_{l+1}=x_l+\mathrm{diag}(\gamma_l)\cdot F_l(\mathrm{LN}(x_l))$，$\gamma_l\in\mathbb{R}^d$ 初始化为 $10^{-4}\sim10^{-5}$。让训练初期每个子层贡献接近 0，模型先"近似恒等"再缓慢打开通道，深 Transformer / 大 ViT 的训练曲线明显更平。LLM 端常以"<strong>residual gating</strong>"形式出现（Jamba、MoBA 部分实现把 $\gamma$ 与 MoE expert balance 结合）。</p>
+<p><strong>与 μP / 小 init 的关系</strong>：μP（Maximal Update Parametrization）把每层学习率、初始化按宽度自适应，使<strong>每个权重的更新对输出的影响是 $\mathcal{O}(1)$</strong>，从而宽度变化不需重调超参。μP 的"输出层 1/n 缩放"与 LayerScale 思路一致；小 init（Wang 2024 的 $\sigma=1/\sqrt{d}\cdot N^{-1/4}$）和 DeepNorm 的 $\beta$ 同源。三者与 QK-Norm 不冲突——前者控制<strong>权重尺度</strong>，QK-Norm 控制<strong>激活尺度</strong>，组合后大模型可以从 0 训到底而不需要复杂的 warmup 调度。</p>
+<p>近一年的实践：DeepSeek-V3 用了 RMSNorm + QK-Norm + DeepSeekMoE 的 expert-balance loss；Gemma 3 用 sandwich-norm + QK-Norm + per-layer-embedding；MiniMax-01 在 Lightning Attention 的 K 通道单独做 norm；Jamba/Mamba-2 的 SSM 分支也借鉴了 head-wise RMSNorm 思想——以各自官方技术报告为准。</p>
+<hr />
+</article>
+
+
+<article class="qa" id="sec1-4">
+  <a class="top" href="#top">↑ 返回目录</a>
+  <h3>4. MoE 架构（DeepSeekMoE / Qwen-MoE）</h3>
+<h4 id="sec1-4-h1">4.1 基础范式：稀疏激活的 FFN 路由</h4>
 <p>MoE 的核心思路是把 Transformer block 里的 FFN 这一"参数大户"替换成 <strong>N 个并行的小 FFN（专家）+ 一个 router</strong>，每个 token 只激活 top-k 个专家。设 token 隐藏向量 $h\in\mathbb{R}^{d}$、专家共 $N$ 个、第 $i$ 个专家为 $E_i:\mathbb{R}^{d}\to\mathbb{R}^{d}$，最朴素的写法是：</p>
 <div class="formula">$$s = W_g h\in\mathbb{R}^{N},\quad g_i=\mathrm{Softmax}(s)_i,\quad \mathcal{T}=\mathrm{TopK}(g, k),\quad y = \sum_{i\in\mathcal{T}} \frac{g_i}{\sum_{j\in\mathcal{T}} g_j}\, E_i(h)$$</div>
 <p>其中 $W_g\in\mathbb{R}^{N\times d}$ 是 router，复杂度只有 $O(Nd)$，几乎免费；真正贵的是 $k$ 个 $E_i$ 的 FFN（每个 $\sim 2\cdot d\cdot d_{\text{ffn}}$ FLOPs）。一个 token 的<strong>计算量</strong>只与 $k$ 成正比，但<strong>参数量</strong>与 $N$ 成正比——这就是 MoE "<strong>总参 ≫ 激活参</strong>"的本质。例如 DeepSeek-V3 总参 671B、单 token 激活 37B，约 5–6% 激活率（具体以官方技术报告为准）。</p>
 <p>为什么基座模型都从 Switch 的 <code>top-1</code> 改回 <code>top-2</code> 或更多？因为 top-1 路由对小扰动极其敏感，gate 的不可导决策导致<strong>梯度只通过一条路径</strong>反传，专家之间互相竞争而无组合性；top-2 让 router 有了"加权融合"的余地，每个 token 也能从两个专家组合中学习，loss 通常显著下降。</p>
 
 
-<h5 id="sec1-3-h5-h2">3.5.2 DeepSeekMoE 的两板斧：Fine-grained + Shared Experts</h5>
+<h4 id="sec1-4-h2">4.2 DeepSeekMoE 的两板斧：Fine-grained + Shared Experts</h4>
 <p>DeepSeekMoE（2401.06066）认为传统 MoE 的瓶颈在于<strong>专家不够专</strong>：少量大专家既要学通用知识又要学细分知识，互相挤占容量。两个改造：</p>
 <p><strong>(a) Fine-grained expert segmentation.</strong> 在参数总量不变的前提下，把每个专家的 FFN 中间维 $d_{\text{ffn}}$ 切成 $m$ 份，得到 $mN$ 个"瘦"专家，top-k 也相应放大到 $mk$。组合数从 $\binom{N}{k}$ 暴涨到 $\binom{mN}{mk}$，比如 $N{=}16, k{=}2$ 切 $m{=}4$ 后变成 $N{=}64, k{=}8$，组合数从 120 涨到 $4.4\times 10^9$。每个细粒度专家承担更窄的知识子集，特化更彻底。</p>
 <p><strong>(b) Shared expert isolation.</strong> 单独划出 $N_s$ 个<strong>共享专家</strong>，对每个 token 都激活，专门承载"所有 token 都要用"的通用知识；剩下 $N_r$ 个<strong>路由专家</strong>只学差异化部分。最终 MoE 层输出：</p>
@@ -662,7 +699,7 @@ $$</div>
 <p>DeepSeek-V3 的 MoE 配置：每层 <strong>1 个共享专家 + 256 个路由专家</strong>，每个专家中间维 2048，每 token 激活 8 个路由专家，并启用<strong>节点限制路由</strong>（每 token 至多发往 $M{=}4$ 个节点）以控住 All-to-All 通信代价（具体数字以官方技术报告为准）。Qwen3-MoE 系列（如 Qwen3-235B-A22B）同样采用细粒度多专家 + 少量激活的范式（具体专家数/激活数以官方技术报告为准）。</p>
 
 
-<h5 id="sec1-3-h5-h3">3.5.3 负载均衡：从 aux loss 到 Auxiliary-Loss-Free</h5>
+<h4 id="sec1-4-h3">4.3 负载均衡：从 aux loss 到 Auxiliary-Loss-Free</h4>
 <p>MoE 训练最大的"暗礁"是<strong>路由塌缩</strong>：某几个专家被 router 选爆，其余专家无 token 可学，迅速死亡。传统解法是加辅助损失：</p>
 <p><strong>Switch Transformer 的 aux loss</strong>：设 $f_i$ 为分发到专家 $i$ 的 token 占比、$P_i$ 为 router 平均概率，</p>
 <div class="formula">$$\mathcal{L}_{\text{aux}} = \alpha \cdot N \sum_{i=1}^{N} f_i \cdot P_i$$</div>
@@ -673,7 +710,7 @@ $$</div>
 <p>此外 V3 还做了<strong>节点级均衡</strong>（每 token 发往 $\le M$ 个节点）与<strong>设备级均衡</strong>（device-level balance loss），以适配 EP 拓扑。</p>
 
 
-<h5 id="sec1-3-h5-h4">3.5.4 系统侧：EP、All-to-All、DeepEP 与推理瓶颈</h5>
+<h4 id="sec1-4-h4">4.4 系统侧：EP、All-to-All、DeepEP 与推理瓶颈</h4>
 <p>MoE 训练把专家切到不同 GPU 上叫 <strong>Expert Parallelism (EP)</strong>。一个 forward 包含两次 All-to-All：</p>
 <ul>
 <li><strong>dispatch</strong>：把每个 token 的隐藏向量按 router 决策发到对应专家所在 GPU；</li>
@@ -689,51 +726,13 @@ $$</div>
 </ul>
 <p><strong>训推一致性</strong>：训练时若使用 token dropping（capacity 满则丢），推理时不丢，会造成轻微分布偏移；常用对策是训练后期关掉 dropping，或推理也加 capacity 与训练对齐。</p>
 <p><strong>与长上下文方案的耦合</strong>：DeepSeek-V3 同时用了 MLA（KV cache 压缩）+ MoE；MLA 解决 KV cache 显存，MoE 解决参数容量，二者正交。V3.2-Exp 的 NSA / sparse attention 则进一步压 attention，FlashMLA + DeepEP 是这类模型的标配 kernel 栈。</p>
-
-
-
-
-
-<h4 id="sec1-3-h6">3.6 QK-Norm 与现代归一化进展</h4>
-<h5 id="sec1-3-h6-h1">3.6.1 为什么大模型 loss spike——从 q·k 范数爆炸说起</h5>
-<p>在标准 Pre-Norm Transformer 里，<strong>子层输入</strong>已经被 RMSNorm 约束到单位范数，但 $Q=X W_Q,\ K=X W_K$ 经过线性投影后会出现"非各向同性"的范数膨胀：训练到中后期，少数 head 的 $W_Q,W_K$ 谱范数显著增大，使 $q_i\cdot k_j$ 的尺度从初始的 $\mathcal{O}(\sqrt{d_h})$ 漂移到 $\mathcal{O}(10^2)$ 甚至更大。代入 softmax 后，<strong>注意力熵塌缩</strong>到接近 0，反向传播时 $\frac{\partial \mathrm{softmax}}{\partial \text{logit}}\approx p_i(\delta_{ij}-p_j)$ 几乎处处为 0 但偶发巨大值，于是出现典型的 <strong>loss spike</strong>。Gemma 2/3、Olmo、Chameleon、DeepSeek-V3 都在 tech report 里把这个现象作为引入 QK-Norm 的核心动机。</p>
-
-
-<h5 id="sec1-3-h6-h2">3.6.2 QK-Norm：在内积之前做 head-wise 归一化</h5>
-<p>QK-Norm（Henry 2020；ViT-22B；Chameleon；Gemma 3；DeepSeek-V3 系列）的形式非常直接：对每个 head 的 $Q,K\in\mathbb{R}^{L\times d_h}$ 沿 <strong>head 维度</strong>（最后一维）做 RMSNorm（或 LayerNorm），然后再做内积：</p>
-<div class="formula">$$\widetilde Q=\mathrm{RMSNorm}_{d_h}(Q),\quad \widetilde K=\mathrm{RMSNorm}_{d_h}(K),\quad A=\mathrm{softmax}\!\left(\tfrac{\widetilde Q\,\widetilde K^\top}{\tau}\right)V$$</div>
-<p>其中 $\mathrm{RMSNorm}(x)=\frac{x}{\sqrt{\frac{1}{d_h}\sum_i x_i^2+\epsilon}}\odot g$，每个 head 通常有<strong>独立的可学习增益向量</strong> $g\in\mathbb{R}^{d_h}$（Chameleon/Gemma 3 是这么做的；少数实现只用全局标量）。这样 $\|\widetilde q_i\|,\|\widetilde k_j\|\approx \sqrt{d_h}$ 为常数，<strong>内积的尺度被钉死</strong>，温度 $\tau$ 可以固定为 $\sqrt{d_h}$ 甚至直接吸到 $g$ 里。</p>
-<p>显存与算力：每层每 head 多两次 norm，FLOPs 增量约 $4\cdot b L d$，相对 attention 主体 $2bL^2 d$ 几乎可忽略；对 KV cache 没有结构影响，但<strong>会改变 KV cache 的统计</strong>——常见实现把 norm 后的 $\widetilde K$ 缓存，省去解码时反复 norm，但要注意与<strong>RoPE 的顺序</strong>。</p>
-<p><strong>QK-Norm 与 RoPE 的顺序</strong>：当前主流（Gemma 3、Olmo、Chameleon）采用 <code>q,k → RMSNorm → RoPE → attn</code> 的顺序。原因：RoPE 是<strong>正交旋转</strong>，作用在 norm 之后不改变范数，仍保持 $\|\widetilde q\|=\mathrm{const}$；若 norm 放在 RoPE 之后，则会把按位置变化的相位再次"压平"，相对位置打分的方差被破坏，长程外推效果变差。</p>
-<p><strong>QK-Norm 与 MLA 的兼容性</strong>：DeepSeek-V2/V3 的 MLA 把 K 压成低秩 latent，推理时不显式物化 full K，QK-Norm 不能直接对未物化的 K 做 head-wise norm；DeepSeek 的折中是只对 <strong>RoPE 分支的 q,k</strong> 做 norm，或者把 norm 折算进 W 的初始化与训练期的辅助约束里——以官方技术报告为准。</p>
-
-
-<h5 id="sec1-3-h6-h3">3.6.3 Soft-capping：Gemma 2 的 tanh 软上限</h5>
-<p>Gemma 2 在没有用 QK-Norm 的情况下，选择直接在 <strong>logits</strong> 上加 tanh 软压：</p>
-<div class="formula">$$\text{logits} \leftarrow c\cdot\tanh\!\left(\frac{\text{logits}}{c}\right)$$</div>
-<p>取自 Gemini 1.5。Gemma 2 的具体超参：<strong>attention logits 的 $c=50$，最终 vocab logits 的 $c=30$</strong>。梯度为</p>
-<div class="formula">$$\frac{\partial}{\partial z}\,c\tanh(z/c)=1-\tanh^2(z/c)\in(0,1]$$</div>
-<p>当 $|z|\ll c$ 时几乎是 identity，不影响小尺度；当 $|z|\gg c$ 时梯度趋 0，相当于"<strong>梯度软门控</strong>"，把可能引发 spike 的大 logits 的反向信号自然衰减。问题是它和 <strong>FlashAttention</strong> 不兼容（kernel 需重写，因为 softmax 前要先 tanh），所以 Gemma 2 早期推理需 eager attention 或 FlashInfer 的特化 kernel。</p>
-<p>Gemma 3 之后把 attn soft-cap 换成 QK-Norm，理由是后者从源头控制 logit 尺度、对 kernel 友好；nanochat 等社区项目也讨论过<strong>两者同时用是否冗余</strong>——主流结论是 QK-Norm 已足够稳定，soft-cap 可省。</p>
-
-
-<h5 id="sec1-3-h6-h4">3.6.4 Embedding Norm、LayerScale 与小 init / μP 的协同</h5>
-<p><strong>Embedding Norm</strong>：很多新一代模型（Gemma、Olmo、MiniMax-01）对 token embedding 直接做 RMSNorm，或在 embed 输入第一层前加一个独立 RMSNorm。动机是 embedding 初始化常用 $\mathcal{N}(0,1/d)$ 或 $\mathcal{N}(0,1)$，与残差流尺度不匹配；不归一化会导致<strong>第一层 attention 的 q·k 尺度异常</strong>，并放大长尾 token 的方差。Gemma 还把 embedding 乘 $\sqrt{d}$，等价于 RMSNorm 后乘常数增益。</p>
-<p><strong>LayerScale</strong>（CaiT，2021）：$x_{l+1}=x_l+\mathrm{diag}(\gamma_l)\cdot F_l(\mathrm{LN}(x_l))$，$\gamma_l\in\mathbb{R}^d$ 初始化为 $10^{-4}\sim10^{-5}$。让训练初期每个子层贡献接近 0，模型先"近似恒等"再缓慢打开通道，深 Transformer / 大 ViT 的训练曲线明显更平。LLM 端常以"<strong>residual gating</strong>"形式出现（Jamba、MoBA 部分实现把 $\gamma$ 与 MoE expert balance 结合）。</p>
-<p><strong>与 μP / 小 init 的关系</strong>：μP（Maximal Update Parametrization）把每层学习率、初始化按宽度自适应，使<strong>每个权重的更新对输出的影响是 $\mathcal{O}(1)$</strong>，从而宽度变化不需重调超参。μP 的"输出层 1/n 缩放"与 LayerScale 思路一致；小 init（Wang 2024 的 $\sigma=1/\sqrt{d}\cdot N^{-1/4}$）和 DeepNorm 的 $\beta$ 同源。三者与 QK-Norm 不冲突——前者控制<strong>权重尺度</strong>，QK-Norm 控制<strong>激活尺度</strong>，组合后大模型可以从 0 训到底而不需要复杂的 warmup 调度。</p>
-<p>近一年的实践：DeepSeek-V3 用了 RMSNorm + QK-Norm + DeepSeekMoE 的 expert-balance loss；Gemma 3 用 sandwich-norm + QK-Norm + per-layer-embedding；MiniMax-01 在 Lightning Attention 的 K 通道单独做 norm；Jamba/Mamba-2 的 SSM 分支也借鉴了 head-wise RMSNorm 思想——以各自官方技术报告为准。</p>
-
-
-
-
 <hr />
 </article>
 
+<article class="qa" id="sec1-5">
+  <h3>5. Multi-Token Prediction（MTP）</h3>
 
-<article class="qa" id="sec1-4">
-  <h3>4. Multi-Token Prediction（MTP）</h3>
-
-<h4 id="sec1-4-h1">4.1 动机：把 next-token 训练目标"加密"成密集监督</h4>
+<h4 id="sec1-5-h1">5.1 动机：把 next-token 训练目标"加密"成密集监督</h4>
 <p>原生的 causal LM 在每个位置只有一个监督信号——预测 <code>t+1</code>。这对长上下文、长输出、推理类任务来说监督相当"稀"。DeepSeek-V3 沿用 Gloeckle et al. 2024 的 <strong>Multi-Token Prediction</strong> 思路，但与原文"在主干顶部挂 D 个并行头"的设计不同，它采用 <strong>D 个串行因果 MTP 模块</strong>：在主头预测 <code>t+1</code> 的同时，额外让模块 <code>k=1..D</code> 分别预测 <code>t+2, t+3, ..., t+D</code>。一句话总结：把每个位置的标量监督拓宽成长度 <code>D+1</code> 的向量监督，等效于给主干 transformer 在隐空间提供了"前瞻表征"的归纳偏置。</p>
 <p><strong>为什么有用</strong>：</p>
 <ul>
@@ -743,7 +742,7 @@ $$</div>
 </ul>
 
 
-<h4 id="sec1-4-h2">4.2 MTP 模块结构与训练目标</h4>
+<h4 id="sec1-5-h2">5.2 MTP 模块结构与训练目标</h4>
 <p>记主干最后一层在位置 <code>i</code> 的隐表征为 <code>h_i^{(0)} \in \mathbb{R}^{d}</code>，共享 embedding 表 <code>E(\cdot) \in \mathbb{R}^{|V| \times d}</code>，共享 output head <code>\mathrm{Out}(\cdot)</code>。第 <code>k</code> 个 MTP 模块包含一个独立的 <strong>Transformer Block</strong> <code>T_k(\cdot)</code>、一个 <strong>投影矩阵</strong> <code>M_k \in \mathbb{R}^{d \times 2d}</code>、以及 LayerNorm。</p>
 <p>核心递推（沿深度 k 串行展开）：</p>
 <div class="formula">$$
@@ -780,7 +779,7 @@ $$</div>
 
 
 
-<h4 id="sec1-4-h3">4.3 推理期：MTP 头当 draft model 做 Speculative Decoding</h4>
+<h4 id="sec1-5-h3">5.3 推理期：MTP 头当 draft model 做 Speculative Decoding</h4>
 <p>训练完后，MTP 模块就是一个与主模型<strong>同 tokenizer、同 embedding、同 output head</strong> 的廉价"自蒸馏 drafter"。speculative decoding 的常规流程在此变成：</p>
 <ol>
 <li><strong>Draft</strong>：用 MTP 头连发 <code>γ</code> 个候选 token <code>\tilde t_{i+1},...,\tilde t_{i+\gamma}</code>。</li>
@@ -802,7 +801,7 @@ $$</div>
 
 
 
-<h4 id="sec1-4-h4">4.4 与 Medusa / EAGLE 的对比</h4>
+<h4 id="sec1-5-h4">5.4 与 Medusa / EAGLE 的对比</h4>
 <table>
 <thead><tr><th>方法</th><th>Draft 结构</th><th>是否与主模型联合训</th><th>是否需要主模型激活</th><th>典型接受率/τ</th><th>工程开销</th></tr></thead>
 <tbody>
@@ -827,14 +826,14 @@ $$</div>
 <hr />
 </article>
 
-<article class="qa" id="sec1-5">
-  <h3>5. 推理优化：KV Cache 与两阶段</h3>
+<article class="qa" id="sec1-6">
+  <h3>6. 推理优化：KV Cache 与两阶段</h3>
 
-<h4 id="sec1-5-h1">5.1 KV Cache 原理</h4>
+<h4 id="sec1-6-h1">6.1 KV Cache 原理</h4>
 <p>自回归解码逐 token 生成，每步只算当前 token 的 $q_t, k_t, v_t$，把 $k_t, v_t$ 追加到 cache，与历史 K/V 做 attention。<b>只缓存 K、V 不缓存 Q</b>——Q 每步只用一次就丢弃。把 attention 从 $O(L^2 d)$ 降到 $O(L d)$/step，代价是显存随 $L$ 线性增长。</p>
 
 
-<h4 id="sec1-5-h2">5.2 Prefill vs Decode 与现代推理优化</h4>
+<h4 id="sec1-6-h2">6.2 Prefill vs Decode 与现代推理优化</h4>
 <p><b>两阶段核心 insight</b>：</p>
 <table>
   <thead><tr><th>阶段</th><th>计算</th><th>瓶颈</th><th>算术强度</th></tr></thead>
@@ -859,7 +858,7 @@ $$</div>
 
 
 
-<h4 id="sec1-5-h3">5.3 KV Cache 显存估算与 MHA/GQA/MQA/MLA 对比</h4>
+<h4 id="sec1-6-h3">6.3 KV Cache 显存估算与 MHA/GQA/MQA/MLA 对比</h4>
 <p><b>通用公式</b>（单序列）：</p>
 <div class="formula">$$\text{KVCache} = 2 \times L \times n_{layers} \times n_{kv} \times d_h \times \text{bytes}$$</div>
 <p>其中 $2$ 来自 K 和 V，$n_{kv}$ 是 KV 头数（MHA 时 $=n_h$，GQA 时 $=n_h/g$，MQA 时 $=1$），$d_h$ 是每头维度。batch 维再乘 $b$。</p>
