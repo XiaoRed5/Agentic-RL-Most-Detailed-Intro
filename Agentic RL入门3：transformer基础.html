@@ -1,0 +1,902 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Agentic RL入门3：transformer 基础</title>
+<style>
+  :root{
+    --bg:#f7f8fa; --card:#ffffff; --ink:#1f2329; --sub:#5b6470;
+    --line:#e3e6eb; --accent:#2f6fed; --accentbg:#eaf1ff;
+    --code:#f3f4f7; --tableHead:#f0f3f8; --tag:#eef2ff; --tagink:#3a5bd9;
+    --mono:"SFMono-Regular",Consolas,"Liberation Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box;}
+  body{
+    margin:0; background:var(--bg); color:var(--ink);
+    font-family:-apple-system,BlinkMacSystemFont,"PingFang SC","Hiragino Sans GB","Microsoft YaHei","Source Han Sans SC",sans-serif;
+    line-height:1.8; font-size:16px;
+  }
+  .wrap{max-width:980px; margin:0 auto; padding:32px 20px 80px;}
+  header.page{margin-bottom:28px;}
+  header.page h1{font-size:30px; margin:0 0 6px; letter-spacing:.5px;}
+  header.page .meta{color:var(--sub); font-size:14px;}
+  header.page .meta a{color:var(--accent); text-decoration:none;}
+  header.page .meta a:hover{text-decoration:underline;}
+  nav.toc{
+    background:var(--card); border:1px solid var(--line); border-radius:12px;
+    padding:20px 24px; margin-bottom:36px;
+  }
+  nav.toc h2{font-size:18px; margin:0 0 12px;}
+  nav.toc .grp{margin:16px 0 6px; font-weight:700; color:var(--accent); font-size:15.5px; padding-bottom:4px; border-bottom:1px solid var(--line);}
+  nav.toc .grp a{color:var(--accent); text-decoration:none;}
+  nav.toc ul{margin:4px 0; padding-left:18px; list-style:none;}
+  nav.toc > ul{padding-left:0;}
+  nav.toc li{margin:3px 0;}
+  nav.toc li.card > a{font-weight:600; color:var(--ink);}
+  nav.toc li.dim{margin:8px 0 3px; font-weight:700; color:#384150; font-size:13.5px;}
+  nav.toc li.dim a{color:#384150;}
+  nav.toc li.sub{margin:2px 0;}
+  nav.toc li.sub a{color:var(--sub); font-size:13.5px;}
+  nav.toc a{color:var(--ink); text-decoration:none;}
+  nav.toc a:hover{color:var(--accent); text-decoration:underline;}
+  nav.toc .colcount{column-count:1;}
+  .group{margin:46px 0 20px;}
+  .group > h2{
+    font-size:22px; padding:8px 0 10px; border-bottom:2px solid var(--accent);
+    margin:0 0 8px;
+  }
+  .intro{color:var(--sub); font-size:14.5px; margin:10px 0 4px;}
+  .qa{
+    background:var(--card); border:1px solid var(--line); border-radius:12px;
+    padding:22px 26px; margin:18px 0; box-shadow:0 1px 2px rgba(0,0,0,.03);
+  }
+  .qa h3{font-size:19px; margin:4px 0 14px; line-height:1.5; color:var(--ink);}
+  .qa h4{font-size:16px; margin:18px 0 8px; color:var(--accent);}
+  .qa h5{font-size:15px; margin:14px 0 6px; color:#384150;}
+  .qa h6{font-size:14px; margin:12px 0 6px; color:#5b6470;}
+  .qa .qa-dim{
+    margin:18px 0 10px; padding:7px 10px; border-left:3px solid var(--accent);
+    border-radius:0 6px 6px 0; background:var(--accentbg); color:#2b3a52;
+    font-weight:700; font-size:15px;
+  }
+  .qa p{margin:8px 0;}
+  .qa ul,.qa ol{margin:8px 0; padding-left:26px;}
+  .qa li{margin:5px 0;}
+  .qa b,.qa strong{color:#111;}
+  .intro p{margin:6px 0;}
+  code{background:var(--code); padding:1px 6px; border-radius:5px; font-family:var(--mono); font-size:14px;}
+  pre{
+    background:var(--code); border:1px solid var(--line); border-radius:8px;
+    padding:12px 16px; overflow-x:auto; font-family:var(--mono); font-size:13.5px; line-height:1.6;
+  }
+  pre code{background:none; padding:0; font-size:13.5px;}
+  .formula{
+    background:#fbfcff; border-left:3px solid var(--accent); border-radius:0 6px 6px 0;
+    padding:10px 16px; margin:12px 0; overflow-x:auto; color:#111827;
+    line-height:1.55;
+  }
+  .formula mjx-container[display="true"]{margin:0.25em 0 !important;}
+  table{border-collapse:collapse; width:100%; margin:14px 0; font-size:14.5px;}
+  th,td{border:1px solid var(--line); padding:9px 12px; text-align:left; vertical-align:top;}
+  th{background:var(--tableHead); font-weight:700;}
+  blockquote{
+    background:var(--accentbg); border-radius:8px; padding:10px 16px; margin:12px 0;
+    font-size:14.5px; color:#2b3a52; border-left:3px solid var(--accent);
+  }
+  blockquote p{margin:6px 0;}
+  hr{border:0; border-top:1px solid var(--line); margin:20px 0;}
+  .top{float:right; font-size:12px; color:var(--sub); text-decoration:none;}
+  .top:hover{color:var(--accent);}
+  .series-nav{margin-top:48px; padding:18px 22px; background:var(--card); border:1px solid var(--line); border-radius:12px; font-size:14.5px;}
+  .series-nav b{color:var(--accent);}
+  .series-nav a{color:var(--ink); text-decoration:none; margin-right:14px;}
+  .series-nav a:hover{color:var(--accent); text-decoration:underline;}
+</style>
+
+<script>
+  window.MathJax = {
+    tex: { inlineMath: [['$','$']], displayMath: [['$$','$$']], processEscapes: true },
+    options: { skipHtmlTags: ['script','noscript','style','textarea','pre','code'] }
+  };
+</script>
+<script async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+
+</head>
+<body>
+<div class="wrap">
+<header class="page">
+  <h1>Agentic RL 入门 3：Transformer 基础</h1>
+  <div class="meta">位置编码 / Attention 全家桶 / FFN·MoE·LayerNorm / MTP / KV Cache · <a href="./index.html">返回入门系列首页</a></div>
+</header>
+<nav class="toc" id="top">
+  <h2>目录</h2>
+  <div class="grp"><a href="#sec1">§1 Transformer 基础</a></div>
+  <ul>
+    <li class="card"><a href="#sec1-1">1. 位置编码与 RoPE</a>
+      <ul>
+        <li class="sub"><a href="#sec1-1-h1">1.1 长上下文外推：PI / NTK-aware / YaRN / Dynamic NTK</a></li>
+        <li class="sub"><a href="#sec1-1-h2">1.2 RoPE 原理</a></li>
+      </ul>
+    </li>
+    <li class="card"><a href="#sec1-2">2. Attention 全家桶：MHA / MLA / DSA / NSA / SSM 与 hybrid 架构 / sliding window / MoBA</a>
+      <ul>
+        <li class="sub"><a href="#sec1-2-h1">2.1 MHA → MQA → GQA</a></li>
+        <li class="sub"><a href="#sec1-2-h2">2.2 DSA（DeepSeek Sparse Attention）</a></li>
+        <li class="sub"><a href="#sec1-2-h3">2.3 MLA（Multi-head Latent Attention）深入</a></li>
+        <li class="sub"><a href="#sec1-2-h4">2.4 NSA（Native Sparse Attention）</a></li>
+        <li class="sub"><a href="#sec1-2-h5">2.5 Sliding Window 与局部 + 全局混合注意力</a></li>
+        <li class="sub"><a href="#sec1-2-h6">2.6 Linear Attention / SSM 与 Hybrid 架构</a></li>
+        <li class="sub"><a href="#sec1-2-h7">2.7 MoBA（Mixture of Block Attention）</a></li>
+      </ul>
+    </li>
+    <li class="card"><a href="#sec1-3">3. FFN / MoE / LayerNorm / 现代归一化</a>
+      <ul>
+        <li class="sub"><a href="#sec1-3-h1">3.1 FFN 与 SwiGLU</a></li>
+        <li class="sub"><a href="#sec1-3-h2">3.2 LayerNorm vs RMSNorm</a></li>
+        <li class="sub"><a href="#sec1-3-h3">3.3 Residual 与梯度通路</a></li>
+        <li class="sub"><a href="#sec1-3-h4">3.4 Pre-Norm vs Post-Norm（含 DeepNorm / Sandwich）</a></li>
+        <li class="sub"><a href="#sec1-3-h5">3.5 MoE 架构（DeepSeekMoE / Qwen-MoE）</a></li>
+        <li class="sub"><a href="#sec1-3-h6">3.6 QK-Norm 与现代归一化进展</a></li>
+      </ul>
+    </li>
+    <li class="card"><a href="#sec1-4">4. Multi-Token Prediction（MTP）</a></li>
+    <li class="card"><a href="#sec1-5">5. 推理优化：KV Cache 与两阶段</a></li>
+  </ul>
+</nav>
+<section class="group" id="sec1">
+<h2>§1 Transformer 基础</h2>
+<div class="intro"><blockquote>
+<p>本节按一线大厂基座面试官标准逐条作答：先讲结构/原理，再给关键公式，标注矩阵维度与复杂度，。约定记号：$L$ 为序列长度，$d$（或 $d_{model}$）为隐藏维，$h$ 为头数，$d_h = d/h$ 为单头维度，$b$ 为 batch size。</p>
+</blockquote>
+<hr /></div>
+<article class="qa" id="sec1-1">
+  <a class="top" href="#top">↑ 返回目录</a>
+  <h3>1. 位置编码与 RoPE</h3>
+
+<h4 id="sec1-1-h1">1.1 长上下文外推：PI / NTK-aware / YaRN / Dynamic NTK</h4>
+<p>RoPE 模型直接在训练长度 $L_{train}$ 外推（如 4k → 32k）会因高频维度产生 OOD 旋转角而崩坏。下列方法都在<strong>不重训或仅短微调</strong>的前提下扩展上下文。</p>
+
+<p><strong>① Position Interpolation (PI, Meta 2023)</strong>：把推理位置 $m$ 线性压缩回训练范围。设扩展倍数 $s = L_{new}/L_{train}$：</p>
+<div class="formula">$$\theta_i^{PI} = \theta_i,\qquad m^{PI} = m/s$$</div>
+<p>所有维度同等压缩。优点：实现一行；通常需要 ~1000 步短微调恢复性能。缺点：高频维度被过度压缩，损失细粒度近距离分辨率。</p>
+
+<p><strong>② NTK-aware scaling (bloc97, 2023)</strong>：观察到高频维度（短波长）已经"看过"完整周期不需要插值，低频维度（长波长）才需要外推。做法是<strong>只改 base</strong>：</p>
+<div class="formula">$$b' = b \cdot s^{d/(d-2)},\qquad \theta_i' = (b')^{-2i/d}$$</div>
+<p>效果是高维（小 $\theta_i$）几乎按 PI 等效压缩，低维（大 $\theta_i$）几乎不变。无需微调即可工作，但仍非最优。</p>
+
+<p><strong>③ YaRN (Yet another RoPE extensioN, Peng et al. 2023)</strong> —— 当前 Llama-3.1/Qwen2 等长上下文模型的事实标准。三个关键改进：</p>
+<p><em>(a) 按频段分段（NTK-by-parts）</em>：按"该维度在 $L_{train}$ 内转过的圈数" $r_i = L_{train}\theta_i/(2\pi)$ 把维度分三段，定义斜坡函数 $\gamma(r)$：</p>
+<table>
+<thead><tr><th>频段</th><th>判据</th><th>处理</th><th>$\gamma$</th></tr></thead>
+<tbody>
+<tr><td>高频</td><td>$r_i > \beta$（默认 32，转得多）</td><td>不变（保留细粒度）</td><td>1</td></tr>
+<tr><td>中频</td><td>$\alpha &lt; r_i \le \beta$</td><td>线性过渡</td><td>$\in (0,1)$</td></tr>
+<tr><td>低频</td><td>$r_i \le \alpha$（默认 1，转不到一圈）</td><td>按 PI 压缩 $1/s$</td><td>0</td></tr>
+</tbody>
+</table>
+<p>有效频率：</p>
+<div class="formula">$$\theta_i^{YaRN} = (1-\gamma(r_i))\cdot \frac{\theta_i}{s} + \gamma(r_i)\cdot \theta_i$$</div>
+<p><em>(b) Attention temperature</em>：长序列下 softmax 熵增大、注意力变平。YaRN 在打分上乘 $1/t$（等价 logits 缩放）：</p>
+<div class="formula">$$\sqrt{1/t} = 0.1\ln(s) + 1$$</div>
+<p>通过缩放 cos/sin 实现零额外开销：$\cos^{YaRN} = \cos(m\theta^{YaRN})/\sqrt{t}$，sin 同理。</p>
+<p><em>(c) 短微调</em>：~400 步 LoRA 即可让模型对齐新分布，PPL 在 128k 上几乎不退化。</p>
+
+<p><strong>④ Dynamic NTK</strong>：推理时根据当前实际序列长度 $L_{cur}$ 动态算 $s = \max(1, L_{cur}/L_{train})$ 再代入 NTK 公式。短序列退化为原模型（$s=1$ 无修改），长序列才启用扩展。适合不知道目标长度的在线服务。</p>
+
+
+
+<h4 id="sec1-1-h2">1.2 RoPE 原理</h4>
+<p><strong>核心思想</strong>：不加在 embedding 上，而是<strong>旋转 Q、K</strong>，使内积 $q_m^\top k_n$ 只依赖相对位置 $m-n$。把 $d$ 维向量两两分组成 $d/2$ 个 2D 子空间，对位置 $m$、第 $i$ 组施加旋转：</p>
+<div class="formula">$$
+R(m,\theta_i)=\begin{pmatrix}\cos m\theta_i & -\sin m\theta_i\\ \sin m\theta_i & \cos m\theta_i\end{pmatrix},\qquad \theta_i = \text{base}^{-2i/d},\ \text{base}=10000
+$$</div>
+<p><strong>相对位置性质</strong>：旋转矩阵满足 $R_m^\top R_n = R_{n-m}$，因此：</p>
+<div class="formula">$$
+\tilde q_m^\top \tilde k_n \;=\; (R_m q)^\top (R_n k) \;=\; q^\top R_m^\top R_n\, k \;=\; q^\top R_{n-m}\, k
+$$</div>
+<p>—— 内积只与相对距离 $n-m$ 有关，绝对位置自动抵消。这是 RoPE 优于加性 PE 的根本原因。</p>
+<p><strong>频率分布的直觉</strong>：低维 $i$ 小 → $\theta_i$ 接近 1 → 波长短 → 编码细粒度近距离；高维 $i$ 大 → $\theta_i$ 极小 → 波长长（可达数万 token）→ 编码远距离。这种"频谱分层"是后续 YaRN 按维度分段处理的基础。</p>
+
+
+<hr />
+</article>
+<article class="qa" id="sec1-2">
+  <h3>2. Attention 全家桶: MHA/MLA/DSA/NSA/SSM与hybrid架构/sliding window/MoBA</h3>
+
+<h4 id="sec1-2-h1">2.1 MHA → MQA → GQA</h4>
+<p>演进核心是<strong>压 KV cache</strong>而不损表达力。Q 头数始终是 $h$，区别只在 KV 头数 $g$：</p>
+<table>
+  <thead><tr><th>变体</th><th>KV 头数</th><th>KV cache 比</th><th>表达力</th><th>代表</th></tr></thead>
+  <tbody>
+    <tr><td>MHA</td><td>$h$</td><td>1×</td><td>最强</td><td>原版 Transformer</td></tr>
+    <tr><td>MQA</td><td>1</td><td>$1/h$</td><td>明显下降</td><td>PaLM、Falcon</td></tr>
+    <tr><td>GQA</td><td>$g$（$1{<}g{<}h$）</td><td>$g/h$</td><td>接近 MHA</td><td>LLaMA-2/3、Qwen</td></tr>
+  </tbody>
+</table>
+<p>GQA 是当前 dense 模型的默认选择：典型 $h{=}32, g{=}8$，KV cache 砍 4×，质量几乎无损。</p>
+
+<h4 id="sec1-2-h2">2.2 DSA（DeepSeek Sparse Attention）</h4>
+<p>DeepSeek-V3.2-Exp 引入，目的是把长上下文 attention 从 $O(L^2)$ 降到 $O(Lk)$，同时<strong>不依赖固定窗口/全局 token 模板</strong>（区别于 Longformer/BigBird 这类<strong>静态稀疏</strong>）。DSA 是<strong>内容相关的动态 Top-k</strong>。</p>
+
+<p><strong>(1) Lightning Indexer（轻量打分头）。</strong>给每个 query 配一个低秩打分通路：</p>
+<div class="formula">$$s_{t,j}=\sum_{i=1}^{h_I} w_{t,i}\cdot\text{ReLU}\!\left(q_{t,i}^{I\top}k_{j}^{I}\right),\quad d_{I}\ll d_h,\ h_I\ll h$$</div>
+<p>其中 $q^{I},k^{I}\in\mathbb{R}^{d_I}$ 是<strong>极窄</strong>的索引向量（典型 $d_I{=}128$，头数 $h_I{=}64$ 但维度小），$w_{t,i}$ 是 query 学到的头权重。ReLU 提供稀疏激活、对硬件友好。Indexer 用 fp8 也能稳跑。</p>
+
+<p><strong>(2) Top-k 稀疏选择。</strong>对每个 query 取 $s_{t,j}$ 最大的 $k$ 个历史 token（典型 $k{=}2048$），只在这 $k$ 个上做<strong>完整的 MLA attention</strong>：</p>
+<div class="formula">$$\mathcal{S}_t=\text{TopK}_j(s_{t,j}),\quad o_t=\text{MLA}(q_t,\{k_j,v_j\}_{j\in\mathcal{S}_t})$$</div>
+
+<p><strong>(3) 与 MLA 的关系。</strong>DSA <strong>叠在 MLA（详见 §1.3）之上</strong>：底层 KV cache 仍是 MLA 的潜向量 $c^{KV}$，DSA 只决定"读哪些 token"。所以总成本 ≈ 索引 $O(L\cdot d_I)$（cheap）+ 注意力 $O(L\cdot k\cdot d_h)$。</p>
+
+<p><strong>(4) 训练。</strong>Top-k 是不可导的，DSA 用<strong>蒸馏</strong>解决：先冻结 dense（MLA full）模型，用其 attention 分布作为软标签，监督 indexer 的 $s_{t,j}$（KL 或排序 loss），再联合微调。</p>
+
+<p><strong>(5) 工程实现要点。</strong></p>
+<ul>
+  <li>kernel 用 <strong>block-sparse / gather-attention</strong>：把选中的 $k$ 个 token 索引出来拼成连续块，复用 FlashAttention varlen kernel。</li>
+  <li>$k$ 远大于"窗口"型稀疏（Longformer 通常 ~512），保证长程依赖不丢。</li>
+  <li>预填充阶段 indexer 可以分块并行；解码阶段每步只算一行 $s_{t,:}$。</li>
+</ul>
+
+<p><strong>常见追问：</strong></p>
+<ul>
+  <li>Indexer 为什么要单独学而不用主 attention 的 Q/K？—— 主 Q/K 太宽（带 RoPE 又有 MLA 解耦），算 $L^2$ 分数本身就违背初衷；indexer 必须 cheap。</li>
+  <li>Top-k 不可导怎么办？—— 蒸馏 dense attention 分布给 indexer，端到端只对选中分支回传。</li>
+  <li>$k$ 怎么选？—— 经验上 $k\approx 2048$ 在 128K 上下文下质量不掉，FLOPs 省 ~10×。</li>
+</ul>
+
+
+
+<h4 id="sec1-2-h3">2.3 MLA（Multi-head Latent Attention）深入</h4>
+<h5 id="sec1-2-h3-h1">2.3.1 动机：MHA 显存 vs MQA/GQA 质量的两难</h5>
+<p>标准 <strong>MHA</strong> 每 token 的 KV cache 大小是 $2 \cdot h \cdot d_h \cdot l$（$l$ 层数），对长上下文几乎是显存杀手；<strong>MQA</strong> 只留 1 套 KV、<strong>GQA</strong> 留 $g$ 套 KV，cache 缩到 $2 \cdot d_h \cdot l$ 或 $2 \cdot g \cdot d_h \cdot l$，但所有 query 头共享同一份 K/V，<strong>表达力下降、长上下文检索能力变弱</strong>，经验上 small model 还行，大模型 + 长文掉点明显。</p>
+<p>MLA 的目标很直接：<strong>cache 体积接近 MQA，端到端质量不输甚至超过 MHA</strong>。它的做法不是"共享头"，而是把 K/V <strong>联合低秩压缩</strong> 成一个 token 级潜向量 $c^{KV}$，cache 只存这一个低维向量；要算注意力时再用 up-projection 还原成 per-head 的 K/V。本质是把"按 head 复制"换成"按 token 压缩"。</p>
+
+
+<h5 id="sec1-2-h3-h2">2.3.2 核心公式：联合低秩压缩</h5>
+<p>记当前 token 隐状态 $h_t \in \mathbb{R}^{d}$，引入下投影矩阵 $W^{DKV} \in \mathbb{R}^{d_c \times d}$，潜向量</p>
+<div class="formula">$$c_t^{KV} = W^{DKV} h_t \in \mathbb{R}^{d_c}, \quad d_c \ll h \cdot d_h$$</div>
+<p>再用上投影还原 per-head K/V：</p>
+<div class="formula">$$k_t^{C} = W^{UK} c_t^{KV} \in \mathbb{R}^{h \cdot d_h}, \quad v_t = W^{UV} c_t^{KV} \in \mathbb{R}^{h \cdot d_h}$$</div>
+<p>Query 端 V3 也做了对称的低秩压缩（query 端只为省参数/激活，不为省 cache）：$c_t^{Q} = W^{DQ} h_t \in \mathbb{R}^{d_c'}$，$q_t^{C} = W^{UQ} c_t^{Q}$。</p>
+<p>cache 端 <strong>只需要存 $c_t^{KV}$</strong>（维度 $d_c$），相比 MHA 的 $2 h d_h$、GQA 的 $2 g d_h$ 通常小一个数量级。以 DeepSeek-V3 为例：$h=128, d_h=128, d_c=512$，per token KV "本体"维度 512，对比 MHA 的 $2 \times 128 \times 128 = 32768$，<strong>压缩比 ~32×</strong>（数字以官方技术报告为准）。</p>
+
+
+<h5 id="sec1-2-h3-h3">2.3.3 解耦 RoPE：为什么不能直接对 $c^{KV}$ 套 RoPE</h5>
+<p>标准 RoPE 把位置旋转作用在 <strong>per-head Q/K 的最终维度上</strong>：$\tilde k_t = R_t \cdot k_t$，其中 $R_t$ 是依赖位置 $t$ 的块对角旋转矩阵。如果我们想保留 MLA 的"cache $c^{KV}$、attention 时再 up-project"这条快路径，问题来了：</p>
+<div class="formula">$$\text{score}_{t,s} = q_t^\top (R_t R_s^\top) (W^{UK} c_s^{KV})$$</div>
+<p>$R_t R_s^\top$ 让位置 $t,s$ 耦合，<strong>无法把 $W^{UK}$ 和 $R$ 提前吸收</strong>，每个 query step 都得显式还原所有历史 K 再旋转，省 cache 的意义就没了。</p>
+<p>MLA 的解法是 <strong>把 K、Q 各拆成两部分</strong>：</p>
+<ul>
+<li><strong>内容部分</strong> $k_t^C, q_t^C$：从 $c^{KV}, c^{Q}$ up-project 出来，<strong>不带 RoPE</strong>；</li>
+<li><strong>解耦 RoPE 部分</strong> $k_t^R \in \mathbb{R}^{d_h^R}$、$q_t^R \in \mathbb{R}^{d_h^R}$：直接由 $h_t$ 投影并施加 RoPE，且 $k_t^R$ 在所有头之间 <strong>共享一份</strong>，独立缓存。</li>
+</ul>
+<p>最终 score：</p>
+<div class="formula">$$\text{score}_{t,s} = \underbrace{(q_t^C)^\top k_s^C}_{\text{内容匹配, MLA 路径}} + \underbrace{(q_t^R)^\top R_t R_s^\top (W^{KR} h_s)}_{\text{位置匹配, RoPE 路径}}$$</div>
+<p>位置耦合被隔离到一个 <strong>小维度 $d_h^R$ 的旁路</strong>，cache 增量极小：V3 取 $d_h^R = 64$，每 token 总 cache = $d_c + d_h^R = 512 + 64 = 576$（数字以官方技术报告为准）。</p>
+
+
+<h5 id="sec1-2-h3-h4">2.3.4 权重吸收（weight absorption）与推理路径</h5>
+<p>推理时算 score 的内容部分：</p>
+<div class="formula">$$(q_t^C)^\top k_s^C = (W^{UQ} c_t^Q)^\top (W^{UK} c_s^{KV}) = (c_t^Q)^\top \underbrace{(W^{UQ})^\top W^{UK}}_{\hat W \in \mathbb{R}^{d_c' \times d_c}} c_s^{KV}$$</div>
+<p>$\hat W$ 可以 <strong>离线预乘</strong>，于是 query 阶段根本不需要把 $c_s^{KV}$ 还原成 per-head $k$，而是直接在低维潜空间做内积，<strong>FLOPs 也省下</strong>。V 端类似把 $W^{UV}$ 和后面的输出投影 $W^O$ 吸收。这一步是 MLA <strong>推理高效</strong> 的另一半秘密，没有它，cache 虽小但 compute 暴涨。</p>
+<p>训练时通常 <strong>不做吸收</strong>：还是显式 up-project 出 per-head K/V 跑标准 attention kernel，方便用 FlashAttention 等；只有 prefill 也偶尔走吸收路径以省 KV 写入。<strong>训练-推理一致性</strong> 由数学等价保证，不需要二次蒸馏。</p>
+
+
+<h5 id="sec1-2-h3-h5">2.3.5 KV cache 显存对比</h5>
+<table>
+<thead><tr><th>变体</th><th>每 token 每层 KV cache 维度</th><th>典型设置（h=128, d_h=128）</th><th>质量</th></tr></thead>
+<tbody>
+<tr><td>MHA</td><td>$2 \cdot h \cdot d_h$</td><td>32,768</td><td>基线，长文最好</td></tr>
+<tr><td>MQA</td><td>$2 \cdot d_h$</td><td>256</td><td>掉点明显</td></tr>
+<tr><td>GQA (g=8)</td><td>$2 \cdot g \cdot d_h$</td><td>2,048</td><td>折中，Llama 3 主流</td></tr>
+<tr><td><strong>MLA</strong></td><td>$d_c + d_h^R$</td><td>$512 + 64 = 576$</td><td>≈ MHA，论文报告甚至略优</td></tr>
+</tbody>
+</table>
+<p>注意 MLA cache 是 <strong>不带 ×2 系数的</strong>，因为 K、V 共享同一个 $c^{KV}$；MHA/MQA/GQA 的 ×2 来自 K 和 V 各占一份。这就是为什么 MLA 能做到"显存接近 MQA 而效果接近 MHA"——压缩发生在 KV 联合上，加上 RoPE 旁路只增加极小 overhead。</p>
+<p>DeepSeek-V2 论文报告 KV cache 减少 <strong>93.3%</strong>、训练 FLOPs 减 42.5%、最大生成吞吐提升 5.76×；具体数字以官方技术报告为准。</p>
+
+
+<h5 id="sec1-2-h3-h6">2.3.6 训练 vs 推理路径、与相邻技术对比</h5>
+<p><strong>训练路径</strong>：down → up，per-head K/V 显式物化，走标准 FlashAttention；可以加 query 端低秩 $c^{Q}$ 省激活显存；RoPE 只作用在 $q^R, k^R$ 这条小旁路。<strong>推理 prefill</strong>：可选权重吸收，潜空间内积 + RoPE 旁路相加。<strong>推理 decode</strong>：cache 只存 $c^{KV}, k^R$，每步从 cache 取出 → 与当前 $q^C, q^R$ 在潜空间 / RoPE 旁路分别打分 → 加和 softmax → 用 $\hat W_V$ 输出。</p>
+<p>与相邻技术对比：</p>
+<ul>
+<li><strong>vs NSA</strong>（DeepSeek 后续提出的稀疏注意力）：MLA 压 cache 维度，NSA 压 cache token 数；二者正交，<strong>V3.2-Exp 把二者组合</strong>。</li>
+<li><strong>vs MoBA</strong>（Mixture of Block Attention）：MoBA 是 token-block 级稀疏，本质是 routing；MLA 是 dense 全连，但每 token 信息被低秩压缩。</li>
+<li><strong>vs Mamba-2 / Jamba / MiniMax-01 lightning attention</strong>：SSM/linear attention 把 cache 换成固定大小 state，理论上更省，但需要 chunk-wise 训练 kernel + 经验上长程检索仍弱于 attention；MLA 保留 softmax attention 的精度，只压 cache 维。</li>
+<li><strong>vs TPA</strong>（Tensor Product Attention）：TPA 用张量分解表达 Q/K/V，思想相近，但分解粒度更细；MLA 更工程实用，且与 RoPE 兼容方案已经成熟。</li>
+<li><strong>vs Gemma 2/3 的 local-global 交替 + GQA</strong>：那是稀疏化思路；MLA 是压缩思路。生产侧两类思路最终都会融合（V3.2 + NSA 即是）。</li>
+</ul>
+
+
+
+
+
+<h4 id="sec1-2-h4">2.4 NSA（Native Sparse Attention）</h4>
+<h5 id="sec1-2-h4-h1">2.4.1 为什么需要"原生稀疏":从 post-hoc sparsify 到 native sparse</h5>
+<p>在 NSA 之前,长上下文加速基本走两条路:一是 <strong>训练后稀疏化</strong>(StreamingLLM、H2O、SnapKV 这类在推理时砍 KV),问题是训练-推理 mismatch,丢掉的 token 在训练时是被"看见"的,推理时强行剔除会损精度;二是 <strong>固定模式稀疏</strong>(Longformer 的滑窗+全局 token、BigBird),表达能力有限,而且实际 wall-clock 上常常打不过 FlashAttention,因为非连续访存抵消了理论 FLOPs 的下降。</p>
+<p>DeepSeek 2025 年的 NSA 把稀疏性"内化"到了预训练阶段:稀疏选择器和主网络一起训、梯度从下游一路反传回打分,块大小、选块粒度都按 <strong>Tensor Core 友好</strong> 的连续块来切,真正做到了"理论 FLOPs 降下去、实测 token/s 抬上来"。它后来在 DeepSeek-V3.2-Exp 里以 <strong>DSA(DeepSeek Sparse Attention)</strong> 的形态实战落地,两者关系类似"论文版 NSA → 工程版 DSA"。</p>
+
+
+<h5 id="sec1-2-h4-h2">2.4.2 三路并行分支:Compressed / Selected / Sliding Window</h5>
+<p>NSA 的注意力被分解成三条并行的稀疏路径,每条覆盖一种时间尺度,最后用 <strong>per-head、per-token 的可学习门控</strong> 加权融合。记当前 query 为 $q_t \in \mathbb{R}^{d_h}$,完整历史 KV 为 $K_{1:t}, V_{1:t} \in \mathbb{R}^{t \times d_h}$,输出为:</p>
+<div class="formula">$$o_t^* = g_t^{\mathrm{cmp}} \cdot \mathrm{Attn}(q_t, \tilde{K}_t^{\mathrm{cmp}}, \tilde{V}_t^{\mathrm{cmp}}) + g_t^{\mathrm{slc}} \cdot \mathrm{Attn}(q_t, \tilde{K}_t^{\mathrm{slc}}, \tilde{V}_t^{\mathrm{slc}}) + g_t^{\mathrm{win}} \cdot \mathrm{Attn}(q_t, \tilde{K}_t^{\mathrm{win}}, \tilde{V}_t^{\mathrm{win}})$$</div>
+<p>其中三个门控由一个轻量 MLP 从 $q_t$ 出发,经 sigmoid 输出三个标量:$g_t^{\mathrm{cmp}}, g_t^{\mathrm{slc}}, g_t^{\mathrm{win}} \in (0,1)$。注意 <strong>不是 softmax 三选一</strong>,而是独立 sigmoid——这样允许某层"局部+全局"都开、不互相抢预算,作者观察到深层 sliding window 门控平均会涨到 ~0.5,说明模型偏好用局部精细信号收尾。</p>
+
+<p><strong>(1) Compressed Branch — 粗粒度全局视图</strong>。把历史 K/V 按块长 $l$、步幅 $d$ 滑窗切块,每块经一个带 <strong>intra-block 位置编码</strong> 的小 MLP $\varphi(\cdot)$ 压成一个 token:</p>
+<div class="formula">$$\tilde{K}_t^{\mathrm{cmp}} = \big\{\, \varphi(K_{id+1:\, id+l}) \,\big|\, 0 \le i < \lfloor (t-l)/d \rfloor \,\big\} \in \mathbb{R}^{\lfloor (t-l)/d \rfloor \times d_h}$$</div>
+<p>论文使用 $l=32, d=16$,即 50% overlap 的小块。这里用 <strong>可学习 MLP 而不是 mean pool</strong> 是有道理的:压缩分支输出会被门控、并参与最终输出的 loss,梯度可以一路反传到 $\varphi$ 的参数,这意味着压缩函数是"被任务监督优化的",远比 mean pool 表达力强。代价是每块多一次 $O(l \cdot d_h^2)$ 的小矩阵乘,但块数极少,可忽略。</p>
+
+<p><strong>(2) Selected Branch — 细粒度 top-n 选块</strong>。利用压缩分支的 attention logits <em>免费</em>得到块级 importance score $p_t^{\mathrm{slc}} \in \mathbb{R}^{N_{\mathrm{blk}}}$,然后取 top-$n$ 个原始 KV 块拼接成 $\tilde{K}_t^{\mathrm{slc}}, \tilde{V}_t^{\mathrm{slc}}$:</p>
+<div class="formula">$$\mathcal{I}_t = \big\{\, i \,\big|\, \mathrm{rank}\big(p_t^{\mathrm{slc}}[i]\big) \le n \,\big\}, \qquad \tilde{K}_t^{\mathrm{slc}} = \mathrm{concat}\big(K_{B_i}\big)_{i \in \mathcal{I}_t}$$</div>
+<p>选择块长 $l' = 64$,$n = 16$,即每个 query 实际看 $n \cdot l' = 1024$ 个细粒度 token。<strong>关键设计</strong>:打分块和选择块都是 <strong>连续</strong> 的,K/V 在显存里是一段段 contiguous 切片,FlashAttention kernel 的 inner loop 直接喂 Tensor Core,不会退化到 random gather。同时打分复用了 compressed 分支的 logits,几乎零额外算力。</p>
+
+<p><strong>(3) Sliding Window Branch — 局部精细 attention</strong>。保留最近 $w=512$ 个 token 的全连接 attention:$\tilde{K}_t^{\mathrm{win}} = K_{t-w+1:t}$。这一支单独存在是为了 <strong>解耦"长程检索"和"短程局部建模"</strong>:如果只有 compressed+selected,模型为了拿到刚出现的高频局部 pattern 会拼命把 top-n 都选到最近几块,反过来污染长程检索;独立给一支固定窗口后,局部 pattern 由 sliding 包办,top-n 才有空间真正用于长程检索。</p>
+
+
+
+<h5 id="sec1-2-h4-h3">2.4.3 端到端可训练 & 复杂度分析</h5>
+<p>NSA 最大的"原生"特征:<strong>选块器(indexer)的梯度是真梯度</strong>。block importance score $p_t^{\mathrm{slc}}$ 直接来自 compressed 分支的 attention softmax,而 compressed 分支的 K/V 来自 $\varphi$ 这个可训 MLP——所以下游 loss 一路回传:<code>loss → o_t* → g·Attn → softmax(q·K̃^cmp) → φ</code>,选块逻辑随主网络一起更新。top-$n$ 那个 hard selection 本身不可导,但 selected 分支输出端的 gate 和 attention softmax 仍然可导,等价于一种 <strong>straight-through</strong> 的稀疏路由,实测训练曲线和 full attention 一样平滑,且 loss 持续低于 full attention baseline(论文 27B 模型,260B tokens)。</p>
+
+<p><strong>复杂度</strong>(对单个 query token,序列长 $L$):</p>
+<div class="formula">$$C_{\mathrm{NSA}}(L) = \underbrace{\big\lfloor (L-l)/d \big\rfloor \cdot d_h}_{\text{compressed}} + \underbrace{n \cdot l' \cdot d_h}_{\text{selected}} + \underbrace{w \cdot d_h}_{\text{window}} \;\;=\;\; O\!\left(\tfrac{L}{d} + n l' + w\right) \cdot d_h$$</div>
+<p>整段序列 prefill 即 $O\!\big(L \cdot (L/d + n l' + w)\big)$。代入论文超参($d=16, n=16, l'=64, w=512$):每 query 实际访问 $L/16 + 1024 + 512$ 个 KV token。在 $L=64\text{k}$ 时 = $4096 + 1024 + 512 \approx 5.6\text{k}$,相比 full attention 的 $64\text{k}$ 约 <strong>11×</strong> 的访存压缩;而且这 $5.6\text{k}$ 还是按块连续存放,Tensor Core 利用率不退化。论文报告 prefill / decode 实测加速分别接近 <strong>9× / 11×</strong>(数字以官方技术报告为准)。</p>
+
+<p><strong>显存影响</strong>:KV cache 总大小不变(完整 K,V 必须留着供 selected 分支真正读取),NSA 节省的是 <strong>带宽</strong> 而不是容量。这一点和 MLA(节省容量)是互补的——MLA 把 KV 压低秩存,NSA 决定每个 query 实际读多少,二者可以叠加(DeepSeek-V3.2-Exp 里就是 MLA + 稀疏注意力的组合)。</p>
+
+<p><strong>与 GQA 的叠加</strong>:NSA 的块选择以 GQA group 为粒度共享,意味着 GQA 把"head 维度的 KV 复用"做完,NSA 再把"序列维度的 KV 选择"做完,两层稀疏正交叠加,没有干涉。kernel 实现上 query 按 GQA group 加载进 SRAM(grid loop),sparse KV 按预排序连续块拉入(inner loop),整体延续 FlashAttention-2 的 tiling 思想。</p>
+
+
+
+<h5 id="sec1-2-h4-h4">2.4.4 与 MoBA / Longformer / StreamingLLM / Mamba-2 的对比</h5>
+<table>
+<thead><tr><th>方法</th><th>稀疏粒度</th><th>是否原生可训</th><th>硬件友好</th><th>典型代价</th></tr></thead>
+<tbody>
+<tr><td><strong>Full Attention</strong></td><td>无</td><td>—</td><td>FlashAttn 极致</td><td>$O(L^2)$</td></tr>
+<tr><td><strong>Longformer / BigBird</strong></td><td>固定模式(滑窗+全局 token)</td><td>预训练即采用</td><td>一般(非连续 gather)</td><td>表达力弱、长程检索差</td></tr>
+<tr><td><strong>StreamingLLM</strong></td><td>attention sink + 滑窗</td><td>否(post-hoc)</td><td>好</td><td>长程检索几乎丢失</td></tr>
+<tr><td><strong>H2O / SnapKV</strong></td><td>token-level KV eviction</td><td>否(后训)</td><td>中等</td><td>训推 mismatch、长 CoT 掉分</td></tr>
+<tr><td><strong>MoBA(Moonshot)</strong></td><td>块级 gating + 选块</td><td>是</td><td>好</td><td>无 sliding 分支,需用 MoE-style routing</td></tr>
+<tr><td><strong>Mamba-2 / Jamba</strong></td><td>线性循环(状态压缩)</td><td>是</td><td>极好</td><td>精确召回弱、需 hybrid 层</td></tr>
+<tr><td><strong>NSA</strong></td><td>块级三路(粗+细+局部)</td><td>是(梯度回到 indexer)</td><td>极好(Tensor Core 块连续)</td><td>三套 attention kernel,实现工程量大</td></tr>
+</tbody>
+</table>
+<p>横向看:Longformer 是 "<em>固定稀疏</em>",NSA 是 "<em>可学习稀疏</em>";StreamingLLM 是 "<em>训完再砍</em>",NSA 是 "<em>训时就稀</em>";MoBA 思路最接近 NSA(都是块级 learnable routing),但 NSA 多了 compressed 分支(全局粗视图)和 sliding window 分支(局部精度兜底),把"全局-局部"双重保险显式分离;Mamba-2/Jamba 是另一条路线——干脆放弃 KV cache 用 SSM 线性循环,代价是精确检索弱,所以工业界目前更多走 NSA/DSA 这种"稀疏化的 attention"而不是"完全替换 attention"。</p>
+
+
+
+
+
+
+<h4 id="sec1-2-h5">2.5 Sliding Window 与局部+全局混合注意力</h4>
+<h5 id="sec1-2-h5-h1">2.5.1 动机：把 $O(L^2)$ 砍成 $O(L\cdot w)$</h5>
+<p>标准 causal attention 的计算量与显存都是 $O(L^2 d)$，KV cache 随上下文线性增长 $O(L \cdot 2 d_{kv})$；当 $L$ 推到 32K/128K，<strong>KV cache 才是显存瓶颈</strong>而非权重。<strong>Sliding Window Attention (SWA)</strong> 的核心 trick 是：每个 query 只看最近 $w$ 个 key，把单层复杂度压成 $O(L \cdot w)$，并把 KV cache 钉死在 $w$ 上，与 $L$ 解耦。注意力 mask 改为带状：</p>
+<div class="formula">$$M_{ij}=\begin{cases}0 & \text{if } i-w+1 \le j \le i \\ -\infty & \text{otherwise}\end{cases}, \quad A=\mathrm{softmax}\!\left(\frac{QK^\top}{\sqrt{d_h}}+M\right)V$$</div>
+<p>其中 $Q,K,V \in \mathbb{R}^{L\times d_h}$，单头 FLOPs 由 $2L^2 d_h$ 降为 $2L w d_h$；显存上注意力图从 $L\times L$ 变成 $L\times w$，配合 FlashAttention 的 block-sparse kernel 实测在 $L=16$K 时较 vanilla 提速约 2×。设计上"为什么不一上来就全砍掉"？因为<strong>多层堆叠产生层叠感受野</strong>：第 $k$ 层位置 $i$ 的隐状态能间接看到第 $0$ 层位置 $i-k\cdot(w-1)$ 的 token，等效感受野 $\approx N_{\text{layers}}\cdot w$。Mistral 7B 32 层、$w=4096$，理论感受野约 131K，远超训练上下文 32K。</p>
+
+
+
+<h5 id="sec1-2-h5-h2">2.5.2 Mistral 7B 的 Rolling Buffer KV Cache</h5>
+<p>SWA 的工程红利在解码阶段：cache 大小常数 $w$，不随 $L$ 增长。Mistral 7B 用 <strong>Rolling Buffer Cache</strong>：环形数组，时间步 $t$ 的 $(k_t, v_t)$ 写入位置 <code>t mod w</code>，老 token 直接被覆盖，无需任何搬运。</p>
+<div class="formula">$$\text{Cache}[t \bmod w] \leftarrow (k_t, v_t),\qquad |\text{Cache}|=w \cdot 2 \cdot d_{kv} \cdot N_{\text{layers}}$$</div>
+<p>以 Mistral 7B 配置：$N_{\text{layers}}=32$, GQA $\text{num\_kv\_heads}=8$, $d_h=128$, $w=4096$，FP16 下单序列 KV 仅 <code>32 × 4096 × 8 × 128 × 2 × 2 B ≈ 512 MB</code>，且<strong>长到 100K 也不会再涨</strong>。这是 Mistral 在消费级 GPU 上跑长上下文的根因。配合 <strong>chunked pre-fill</strong>（把 prompt 切成 $\le w$ 的 chunk 串行喂入），prefill 阶段也能把显存峰值压在 $O(w^2)$。</p>
+
+
+
+<h5 id="sec1-2-h5-h3">2.5.3 Gemma 2 / Gemma 3：local + global 交替</h5>
+<p>纯 SWA 在 NIAH 与长距共指消解上是有损的，Gemma 团队的方案是<strong>层级混合</strong>：少量 full attention 层注入全局信息，其余层用 SWA 控显存。比例与窗口大小如下表（以官方技术报告为准）：</p>
+<table>
+<thead><tr><th>模型</th><th>local:global</th><th>local 窗口 $w$</th><th>global span</th><th>训练 ctx</th></tr></thead>
+<tbody>
+<tr><td>Gemma 2 (9B/27B)</td><td><strong>1 : 1</strong> 交替</td><td>4096</td><td>8192（full）</td><td>8K</td></tr>
+<tr><td>Gemma 3</td><td><strong>5 : 1</strong>（每 5 层 SWA 夹 1 层 global）</td><td>1024</td><td>full（含 RoPE 长上下文扩展）</td><td>128K</td></tr>
+<tr><td>Mistral 7B</td><td>纯 SWA（无 global）</td><td>4096</td><td>—</td><td>32K</td></tr>
+</tbody>
+</table>
+<p>设计要点：(1) Gemma 3 把 $w$ 从 4096 砍到 1024、并把 global 比例降到 1/6，<strong>KV 显存开销从纯 global 的 60% 额外占用降到 &lt;15%</strong>，长上下文质量损失"minor"（消融见 Gemma 3 tech report §3）；(2) global 层仍配合 logit soft-cap $\mathrm{logit}\leftarrow c\cdot \tanh(\mathrm{logit}/c)$，$c=50$，防止 attention 在长 ctx 下出现 logit 爆炸；(3) global 层的 RoPE base 一般单独调大（Gemma 3 用 RoPE rescaling）以支持 128K，而 SWA 层用更小的 base 保持局部锐度。</p>
+
+<p>为什么"为什么仍需偶尔的 global 层"？纯 SWA 的层叠感受野只是<strong>必要条件</strong>，并非充分——长程信息必须经过 $L/w$ 跳传递，每跳都被 softmax 重新归一，远距 token 的<strong>有效注意力权重指数衰减</strong>。Global 层相当于在残差流里每隔几层做一次"全局 broadcast"，把任意距离的 KV 直接拉进 query 视野，恢复 NIAH 表现。</p>
+
+
+
+<h5 id="sec1-2-h5-h4">2.5.4 与相邻技术的横向对比</h5>
+<table>
+<thead><tr><th>技术</th><th>核心思想</th><th>典型 mask</th><th>训推一致？</th></tr></thead>
+<tbody>
+<tr><td><strong>SWA</strong>（Mistral/Gemma local 层）</td><td>固定窗 $w$ 带状 mask</td><td>带状 + causal</td><td>是</td></tr>
+<tr><td><strong>StreamingLLM</strong></td><td>SWA + 前 $k$ 个 sink token 永驻</td><td>带状 + 前 $k$ 列保留</td><td>仅推理 trick</td></tr>
+<tr><td><strong>Longformer</strong></td><td>SWA + dilated + 少数 task-specific global token</td><td>带状 + 列状 global</td><td>需训练</td></tr>
+<tr><td><strong>MoBA</strong>（Kimi）</td><td>Mixture-of-Block-Attention，每 query 选 top-k block</td><td>稀疏块选择</td><td>是，且 differentiable router</td></tr>
+<tr><td><strong>NSA</strong>（DeepSeek-V3.2-Exp）</td><td>Natively Sparse：compress + selected + sliding 三分支并行</td><td>分支级稀疏</td><td>是，端到端可训</td></tr>
+<tr><td><strong>Mamba-2 / Jamba</strong></td><td>用 SSM 替换部分 attention 层</td><td>无 mask（线性递推）</td><td>是，混合架构</td></tr>
+</tbody>
+</table>
+<p>关键区别：SWA 是"<strong>位置稀疏</strong>"（确定性 mask），MoBA/NSA 是"<strong>内容稀疏</strong>"（可学习选 block），SSM 是"<strong>无 mask 递推</strong>"。SWA 的优势是工程简单、训推完全一致、对现有 FlashAttention kernel 友好；缺点是稀疏 pattern 固定，不能根据语义动态聚焦，所以 DeepSeek-V3.2-Exp 才在 NSA 里专门为长上下文加 selected 分支。</p>
+
+
+
+
+
+<h4 id="sec1-2-h6">2.6 Linear Attention / SSM 与 Hybrid 架构</h4>
+<p>从 GPT-3 到 Llama、DeepSeek-V3，主流基座一直在 softmax attention 这条线上死磕，但 <strong>$O(L^2)$ 的计算和 KV cache 的 $O(L)$ 显存</strong> 在百万级上下文下被彻底打穿。线性注意力（Linear Attention）和 <strong>状态空间模型（SSM, State Space Model）</strong> 提供了另一条路：把全局 attention 退化成一个<strong>固定大小的隐藏状态</strong>，推理常数显存、训练 $O(L)$ FLOPs。但纯线性架构在精确检索（in-context retrieval）上有结构性缺陷，工程上的妥协就是 <strong>Hybrid 架构</strong>——大部分线性层 + 少量 full attention 层。这一节按"原理 → 工程实现 → 混合架构 → 与 RoPE 的耦合"的顺序拆。</p>
+
+<h5 id="sec1-2-h6-h1">2.6.1 线性注意力：从 softmax 到核函数与递归</h5>
+
+<p>标准 attention 的核心是 $\text{Attn}(Q,K,V)=\text{softmax}(QK^\top/\sqrt{d_h})V$，其中 $Q,K,V\in\mathbb{R}^{L\times d_h}$。瓶颈在 $QK^\top\in\mathbb{R}^{L\times L}$——存不下、算不动。Katharopoulos et al. (2020) 提出的 trick 是把 softmax 用一个<strong>非负特征映射</strong> $\phi(\cdot)$ 近似：</p>
+
+<div class="formula">$$\text{Attn}(Q,K,V)_i \;\approx\; \frac{\phi(q_i)^\top \sum_{j\le i} \phi(k_j) v_j^\top}{\phi(q_i)^\top \sum_{j\le i} \phi(k_j)}.$$</div>
+
+<p>关键是利用矩阵乘法的<strong>结合律</strong>：先算 $\phi(K)^\top V \in \mathbb{R}^{d_h\times d_v}$（与 $L$ 无关），再左乘 $\phi(Q)$，整体复杂度从 $O(L^2 d_h)$ 降到 $O(L d_h^2)$。在 causal 设定下，分子分母都可以写成<strong>前缀和（prefix sum）</strong>，进一步给出递归形式：</p>
+
+<div class="formula">$$S_t = S_{t-1} + \phi(k_t)\, v_t^\top \in \mathbb{R}^{d_h\times d_v}, \qquad z_t = z_{t-1} + \phi(k_t), \qquad y_t = \frac{S_t^\top \phi(q_t)}{z_t^\top \phi(q_t)}.$$</div>
+
+<p>这就是<strong>线性 attention 的 RNN 化</strong>：隐藏状态 $S_t$ 是一个固定大小的矩阵（与 $L$ 无关），推理时<strong>常数显存、常数 FLOPs/token</strong>，没有 KV cache。常用的 $\phi$ 有 <code>elu(x)+1</code>、<code>ReLU</code>、Performer 的随机特征、以及更现代的 <code>SiLU</code> + <code>L2 norm</code>。</p>
+
+<p><strong>为什么会丢长程？</strong>因为所有历史 token 都被压进了固定大小的 $S_t \in \mathbb{R}^{d_h\times d_v}$ —— 这是一个<strong>有限容量瓶颈</strong>。当需要在 100k 上下文里精确取出某个 token（associative recall），固定状态会发生 <em>spectral leakage</em>（频谱泄漏，arXiv:2511.17388 的说法），无法做到 softmax 那种与历史精确匹配。</p>
+
+
+
+<h5 id="sec1-2-h6-h2">2.6.2 Lightning Attention：IO-aware 的线性 attention</h5>
+
+<p>MiniMax-01（arXiv:2501.08313）落地的 Lightning Attention 把上面的理论变成了<strong>真正在 H100 上比 FlashAttention 快</strong>的 kernel。核心思想：</p>
+
+<ul>
+<li><strong>分块（tiling）</strong>：把长度 $L$ 切成大小为 $B$ 的 chunk。<em>chunk 内</em>用 $O(B^2 d_h)$ 的 quadratic 形式计算（因为 $B$ 很小，能塞进 SRAM 跑满 tensor core），<em>chunk 间</em>用 $O(L/B \cdot d_h^2)$ 的递归形式传递隐藏状态 $S$。整体 $O(Ld_h^2)$。</li>
+<li><strong>Decay</strong>：加入位置相关的衰减项 $\gamma$，让状态递归变成 $S_t=\gamma S_{t-1}+\phi(k_t)v_t^\top$，缓解状态饱和。</li>
+<li><strong>Normalization</strong>：用类 RMSNorm 稳定，去掉了 softmax 那种归一化分母。</li>
+</ul>
+
+<p>这与 FlashAttention 的设计哲学一脉相承：<strong>所有可以矩阵乘的部分尽量走 tensor core，所有必须串行的部分压到 chunk 之间</strong>。推理时只保留 $S\in\mathbb{R}^{d_h\times d_v}$（每层每 head 一份），与 $L$ 无关——百万上下文推理的<strong>显存几乎不增长</strong>，这是 MiniMax-Text-01 敢报 4M context 的硬件基础。</p>
+
+
+
+<h5 id="sec1-2-h6-h3">2.6.3 Mamba / Mamba-2：选择性 SSM 与并行扫描</h5>
+
+<p>SSM 来自控制论里的连续状态空间方程 $h'(t)=Ah(t)+Bx(t),\, y(t)=Ch(t)$，离散化后得到</p>
+<div class="formula">$$h_t = \bar{A}\, h_{t-1} + \bar{B}\, x_t,\qquad y_t = C\, h_t,$$</div>
+<p>其中 $h_t\in\mathbb{R}^{N}$ 是隐藏状态。早期 S4 用<strong>对角化 + 卷积形式</strong>训练，但 $A,B,C$ 都是<strong>时不变（time-invariant）</strong>的，没有内容选择能力。</p>
+
+<p>Mamba（Gu & Dao, 2024）的关键改动是 <strong>Selective SSM</strong>：让 $\bar{B}(x_t), C(x_t), \Delta(x_t)$ 都成为<strong>输入相关</strong>的（通过线性投影从 $x_t$ 算出），这就把"什么信息进状态、什么信息读出"变成 content-aware。代价是不能再写成卷积，必须做 scan。Mamba 的工程贡献是 <strong>hardware-aware parallel scan</strong>：</p>
+
+<ul>
+<li>因为加法/乘法是 associative，递归 $h_t = \bar{A}_t h_{t-1} + \bar{B}_t x_t$ 可以用 <strong>Blelloch 并行前缀和</strong> 在 $O(\log L)$ 深度算完；</li>
+<li>kernel fusion + recompute：状态 $h_t$ 不落 HBM，只在 SRAM 里走完一遍 scan，反向传播时重算。</li>
+</ul>
+
+<p><strong>Mamba-2</strong>（Dao & Gu, 2024）进一步引入 <strong>SSD（Structured State Space Duality）</strong>：如果 $\bar{A}_t=\alpha_t I$ 退化为标量，递归可以重写成一个<strong>半可分（semiseparable）矩阵</strong>的矩阵乘，等价于一种 masked 线性 attention。带来两个工程红利：</p>
+<ul>
+<li>计算从 Mamba-1 的自定义 scan 变成<strong>分块 matmul 为主</strong>，跑满 tensor core，A100 上比 Mamba-1 的 scan 快 2–8×；</li>
+<li>状态维度 $N$ 从 16（Mamba-1 极限）扩到 128+（HF 默认 <code>state_size=128</code>），表达力大幅提升。</li>
+</ul>
+
+<p><strong>SSM 与 RNN 的区别</strong>：经典 RNN 用非线性激活（tanh/GRU/LSTM 门）耦合状态，因此严格串行；SSM 的状态更新是<strong>线性</strong>的（非线性放在 SiLU/MLP 中独立处理），从而具备 associative 性质，可以并行扫描。这是"训练能并行"的根因。</p>
+
+
+
+<h5 id="sec1-2-h6-h4">2.6.4 Hybrid 架构：为什么不是纯 SSM</h5>
+
+<p>纯 SSM/线性 attention 的<strong>有限状态瓶颈</strong>在 needle-in-a-haystack、MMLU 多跳推理上系统性丢分。工程上的共识是：<strong>大部分层走线性、少量层走 full softmax attention 来补 retrieval</strong>。当前的代表方案：</p>
+
+<table>
+<thead><tr><th>模型</th><th>线性组件</th><th>full attention 比例</th><th>MoE</th><th>规模</th></tr></thead>
+<tbody>
+<tr><td>Jamba (AI21)</td><td>Mamba-1</td><td>1 : 7（每 8 层 1 层 attention）</td><td>每 2 层 1 个 MoE，16 experts，top-2</td><td>52B 总 / 12B 激活</td></tr>
+<tr><td>MiniMax-Text-01</td><td>Lightning Attention</td><td>1 : 7（每 8 层 1 层 softmax）</td><td>32 experts，top-2，hidden 9216</td><td>456B 总 / 45.9B 激活，80 层</td></tr>
+<tr><td>MiniMax-M1</td><td>Lightning Attention</td><td>1 : 7</td><td>同上</td><td>原生 1M context，100k 生成时 FLOPs ≈ DeepSeek-R1 的 25%</td></tr>
+<tr><td>Falcon-Mamba</td><td>Mamba-1</td><td>0（纯 SSM 的对照组）</td><td>无</td><td>7B</td></tr>
+</tbody>
+</table>
+
+<p><strong>为什么是 1:7？</strong> Jamba 和 MiniMax 都做了系统 ablation：减到 1:15 内存收益小但 retrieval 掉得多；加到 1:3 已经接近全 attention 的开销但收益边际递减。MiniMax 还观察到 <strong>层深越深，所需 softmax 层越少</strong>——浅模型需要更频繁地"刷新"精确检索能力。<strong>放置位置</strong>也有讲究：Jamba 的 ablation 显示把 attention 层放在<em>中间</em>比放在头尾效果更好，避免最浅层就把状态压缩死、或最深层来不及修正。</p>
+
+<p><strong>显存影响</strong>：256k 上下文下，Jamba 的 attention KV cache 仅 <strong>4 GB</strong>（只有 1/8 的层有 KV cache），而 Mixtral 同长度需要 ~32 GB、Llama-2-70B 需要 ~128 GB。这是 hybrid 架构敢做百万级 context 的根因。</p>
+
+
+
+<h5 id="sec1-2-h6-h5">2.6.5 KV cache 替代品、RoPE 不兼容与位置编码</h5>
+
+<p><strong>"KV cache 在线性 attention 里换成什么？"</strong> 换成<strong>每层一个固定大小的状态矩阵</strong> $S\in\mathbb{R}^{d_h\times d_v}$（或对 Mamba 而言是 $h\in\mathbb{R}^{N}$）。生成时只需 <code>S = S + phi(k_t) @ v_t.T</code>、<code>y_t = phi(q_t) @ S</code>，与序列长度无关，<strong>百万 context 下的 decode 显存与 1k context 几乎相同</strong>。这跟 GQA/MQA 只是常数倍压缩 KV 是<strong>本质不同</strong>的——后者还是 $O(L)$ 增长。</p>
+
+<p><strong>RoPE 为什么难直接套到 linear attention？</strong> 表面上 RoFormer 原论文说 RoPE 与 Performer 兼容（rotation 不破坏 $\phi$ 的非负性，也保留 associative 性），$\phi(Re^{i\theta_t}q)^\top \phi(Re^{i\theta_s}k)$ 在 $\phi=\text{identity}$ 时仍能写成 $f(t-s)$。但实际上有两个深层问题：</p>
+<ul>
+<li><strong>语义不兼容</strong>：softmax attention 里 RoPE 的相对相位 $e^{i(\theta_t-\theta_s)}$ 在 query-key 内积后被 softmax <strong>非线性重新加权</strong>，远距离低能量项被自然压制；线性递归没这个非线性筛选器，纯旋转项会在固定状态里产生 <em>spectral leakage</em>（频谱泄漏），把不相关位置的能量泄漏到状态里，反而降低 recall。</li>
+<li><strong>外推困难</strong>：标准 RoPE 的相位 $\theta_i=10000^{-2i/d}$ 是 hard-coded，linear recurrence 的有限状态没法像 softmax 那样"动态忽略"训练范围外的相位组合，常常需要配合<strong>输入相关 decay</strong>（如 RetNet 的 $\gamma$、Mamba 的 $\Delta$、GLA 的 gate）才不崩。Selective RoPE（arXiv:2511.17388）就是把 RoPE 改成 input-dependent rotation + decay 组合后才让 GLA 的 recall 上得去。</li>
+</ul>
+
+<p>因此，<strong>现代 hybrid 模型的标准做法</strong>是：线性/SSM 层<strong>不用 RoPE</strong>，靠 SSM 的时间结构或可学习 decay 提供位置信息；少量 softmax attention 层正常用 RoPE，承担精确相对位置的角色。MiniMax-01 与 Jamba 都遵循这个思路（具体参数以官方技术报告为准）。</p>
+
+
+
+
+
+
+<h4 id="sec1-2-h7">2.7 MoBA（Mixture of Block Attention）</h4>
+<p>MoBA 是 Moonshot/Kimi 在 2025 年 2 月提出的长上下文注意力方案（arXiv 2502.13189），核心想法一句话概括：<strong>把 MoE 的 Top-K routing 思想搬到注意力上</strong>——KV 历史被切成若干 block，每个 query 只对自己选出来的 Top-k 个 block 做 full attention，其余 block 一律跳过。它已经在 Kimi 线上长文本服务里跑起来了，是面 base 时绕不开的稀疏注意力代表作之一（另一篇是 DeepSeek 的 NSA）。下面从分块、路由、因果性、训练、复杂度几个维度系统讲。</p>
+
+<h5 id="sec1-2-h7-h1">2.7.1 分块与"代表向量"</h5>
+
+<p>设序列长度为 $L$，隐藏维 $d$，按头数 $h$ 拆出 $d_h=d/h$。MoBA 把 KV 缓存按位置切成 $n=\lceil L/B \rceil$ 个 block，每块大小 $B$（典型 $B\!\in\![512,4096]$，<em>以官方技术报告为准</em>）。对每个 block $i$，先算一个 <strong>block 代表向量</strong>，最直接的实现是对该 block 内的 key 取 mean pooling：</p>
+
+<div class="formula">$$\tilde{\mathbf{k}}_i \;=\; \frac{1}{B}\sum_{t\in \mathcal{I}_i} \mathbf{k}_t \;\in\; \mathbb{R}^{d_h}, \qquad i=1,\dots,n.$$</div>
+
+<p>为什么用 mean K 而不用 token-level routing？两点：一是<strong>粒度</strong>——token 级 routing 复杂度等价于 full attention 还多一层 gating，毫无收益；二是<strong>硬件友好</strong>——按 block 做 gather/dense GEMM 才能吃满 Tensor Core，否则 sparse indexing 在 GPU 上极慢（FlashMoBA 论文专门优化了这部分）。block 代表向量只需要 $O(L\cdot d_h)$ 一次预计算，分摊到每个 head/layer 几乎零成本。</p>
+
+
+
+<h5 id="sec1-2-h7-h2">2.7.2 Routing：Top-k block 选择 + Softmax gate</h5>
+
+<p>对每个 query $\mathbf{q}\in\mathbb{R}^{d_h}$，计算与所有 block 的 affinity score 并取 Top-k：</p>
+
+<div class="formula">$$s_i \;=\; \mathbf{q}^\top \tilde{\mathbf{k}}_i,\qquad \mathcal{S}(\mathbf{q}) \;=\; \mathrm{TopK}_k\big(\{s_1,\dots,s_n\}\big),\qquad g_i \;=\; \mathbb{1}[i\in \mathcal{S}(\mathbf{q})].$$</div>
+
+<p>选中的 block 集合 $\mathcal{S}(\mathbf{q})$ 对应的 token 拼起来组成稀疏 KV 子集，再做<strong>标准 Flash full attention</strong>：</p>
+
+<div class="formula">$$\mathrm{Attn}(\mathbf{q}) \;=\; \mathrm{Softmax}\!\left(\frac{\mathbf{q}\,[\mathbf{K}_{i_1},\dots,\mathbf{K}_{i_k}]^\top}{\sqrt{d_h}}\right)[\mathbf{V}_{i_1},\dots,\mathbf{V}_{i_k}].$$</div>
+
+<p>注意 MoBA 的 Top-K 与 MoE 一样<strong>不可导</strong>，没有 STE 也没有 router loss——sparsity pattern 完全靠 q 与 mean K 的几何对齐"自动学出来"，所以它必须从 full-attention checkpoint 继续训才稳。</p>
+
+
+
+<h5 id="sec1-2-h7-h3">2.7.3 因果性：current block + 未来 mask</h5>
+
+<p>这是 MoBA 最容易被追问的点。Causal 必须严格保留，做法分两块：</p>
+
+<ul>
+<li><strong>屏蔽未来 block</strong>：对任意 $i$ 满足 $\mathrm{pos}(\mathbf{q}) < i\cdot B$，强制 $s_i = -\infty$、$g_i = 0$，永远不能 route 到未来。</li>
+<li><strong>强制 current block</strong>：query 所在的当前 block，<strong>不通过 routing 决定</strong>而是恒置 $g_i = 1$，并在块内部叠加<strong>下三角 causal mask</strong>。原因：mean K 把当前 block 全部 token 平均了，含未来信息会泄漏；只有强制走 causal local attention 才安全。这相当于 MoE 里的 <strong>shared expert</strong>——一条"恒激活"的静态路由，兼当 local window。</li>
+</ul>
+
+
+
+<h5 id="sec1-2-h7-h4">2.7.4 与 NSA / Longformer / DSA 的对比</h5>
+
+<table>
+<thead><tr><th>方法</th><th>稀疏结构</th><th>routing 类型</th><th>是否含 hierarchical 压缩支路</th><th>训练方式</th></tr></thead>
+<tbody>
+<tr><td><strong>MoBA</strong></td><td>block-level top-k（学到的）</td><td>mean K 内积 + Top-K（hard）</td><td>否</td><td>从 full attention ckpt 继续训</td></tr>
+<tr><td><strong>NSA (DeepSeek)</strong></td><td>compressed + selected + local 三分支并联</td><td>分支级 hard select，块级 score</td><td>是（compressed branch）</td><td>from scratch 可训</td></tr>
+<tr><td><strong>Longformer</strong></td><td>local window + 固定 global token</td><td>无学习路由（固定）</td><td>否</td><td>固定 pattern</td></tr>
+<tr><td><strong>DSA (DeepSeek-V3.2-Exp)</strong></td><td>per-token selection，更细粒度</td><td>token 级 score + Top-K</td><td>否</td><td>continual pretrain</td></tr>
+</tbody>
+</table>
+
+<p>关键区别：<strong>MoBA 没有 NSA 那条 hierarchical compressed branch</strong>，结构上极简（"less structure"原则），所以可以做到 "<strong>flip a switch</strong>" 在 full / sparse 间无缝切换——只需把 $k=n$ 即退化为 full attention，便于 SFT、长文本 finetune 等阶段灵活组合。Longformer 的 global token 是<strong>人工指定</strong>位置（如 [CLS]），MoBA 的"全局连接"是<strong>学出来</strong>的，更通用。</p>
+
+
+
+<h5 id="sec1-2-h7-h5">2.7.5 训练与兼容性</h5>
+
+<p>MoBA 论文给出的训练 recipe 要点：</p>
+<ul>
+<li><strong>从 full attention checkpoint 继续训</strong>：把部分（不是全部）层的 attention 替换为 MoBA，配合长上下文继续预训练（在 Kimi 的实践中拓到 <strong>1M token</strong>）。</li>
+<li><strong>层混合策略</strong>：通常顶层若干层保留 full attention（对 retrieval-heavy 子任务关键），中间层换 MoBA，省下大部分长上下文 KV 计算。<em>具体配比以官方技术报告为准</em>。</li>
+<li><strong>与 GQA / MLA / RoPE / Flash 完全兼容</strong>：routing 只看 q 和 mean K，head 共享、位置编码、Flash kernel 都是正交维度；GQA 下 group 内 head 共用同一个 K，连 mean K 的计算量也省了。</li>
+<li><strong>推理 KV cache</strong> 与 full attention 完全一样（所有 block 的 KV 都得留着待选），所以 <strong>MoBA 省的是 compute，不是 KV 显存</strong>——这是面试常被搞混的点，要和 MLA、SWA 区分清楚。</li>
+</ul>
+
+
+
+<h5 id="sec1-2-h7-h6">2.7.6 复杂度与显存影响</h5>
+
+<p>设每 query 选 $k$ 个 block，块大小 $B$，序列长 $L$，则单个 query 的 attention 复杂度：</p>
+
+<div class="formula">$$\underbrace{O(n\cdot d_h)}_{\text{router score}} \;+\; \underbrace{O(k\cdot B\cdot d_h)}_{\text{block attention}} \;=\; O\!\left(\frac{L}{B}d_h + kB d_h\right).$$</div>
+
+<p>整序列累加得 <strong>$O(L\cdot k B \cdot d_h)$</strong>，与 $L$ 线性相关；选择 $kB = O(\sqrt{L})$ 时综合复杂度 $\sim O(L\sqrt{L})$（实践中 $kB$ 设为常数，直接得 $O(L)$）。对比 full attention 的 $O(L^2 d_h)$，在 $L=1\text{M}$ 时收益巨大。</p>
+
+<ul>
+<li><strong>FLOPs</strong>：相对 full attention 节省比 $\approx \frac{kB}{L}$，典型 10–20%。</li>
+<li><strong>HBM 读写</strong>：原始实现因为 gather/reindex 反而占主导（>70% runtime），FlashMoBA（arXiv 2511.11571）用 fused kernel 把 forward 从 99ms→49ms（N=64K）。<strong>面试想拉满分一定要提这个工程细节</strong>。</li>
+<li><strong>KV 显存</strong>：与 full attention 相同，不变。</li>
+<li><strong>反向</strong>：因为 Top-K 给出的是位置 mask，backward 只在选中的稀疏 block 内做标准 attention 反传，router 自身不需要反传（mean K 用 K 的反传链路即可）。</li>
+</ul>
+
+
+
+
+
+<hr />
+</article>
+
+<article class="qa" id="sec1-3">
+  <h3>3. FFN / MoE / LayerNorm / 现代归一化</h3>
+
+<h4 id="sec1-3-h1">3.1 FFN 与 SwiGLU</h4>
+<p>原始 FFN 一行带过：$\text{FFN}(x)=W_2\,\text{ReLU}(W_1 x)$，中间维 $d_{ff}=4d$，对每个 position 独立计算。</p>
+<p><b>SwiGLU（LLaMA / PaLM / Qwen / DeepSeek 全系标配）</b>是 GLU 家族 + Swish 门控的组合：</p>
+<div class="formula">$$\text{SwiGLU}(x) = \big(\text{Swish}(xW_{\text{gate}}) \odot xW_{\text{up}}\big)\,W_{\text{down}}, \quad \text{Swish}(z)=z\cdot\sigma(z)$$</div>
+<p>关键工程点：</p>
+<ul>
+  <li><b>三个权重矩阵</b>（gate / up / down），比 ReLU-FFN 多一个矩阵。为保持总参数量与 4d 的 ReLU-FFN 相当，把 $d_{ff}$ 从 $4d$ 缩到 $\tfrac{8}{3}d$（$3 \times \tfrac{8}{3}d = 8d \approx 2 \times 4d$ 的算量），LLaMA 还会向上对齐到 256 的倍数便于 TP/张量并行切分。</li>
+  <li><b>GLU 家族对比</b>：GeGLU 用 GELU、ReGLU 用 ReLU、SwiGLU 用 Swish。Noam Shazeer 的 GLU Variants 论文里 SwiGLU 在等参对比下 PPL 最低，工程上也最稳，遂成事实标准。</li>
+  <li><b>门控 = 软稀疏</b>：$\sigma$ 给 up 投影一个 0~1 的逐通道 mask，等价于"按 token 动态选神经元"，表达力高于硬 ReLU。</li>
+  <li><b>参数与知识</b>：FFN 约占模型 2/3 参数（LLaMA-7B 中 FFN ≈ 4.3B），是事实知识的主要载体；ROME / 知识编辑都改 FFN 的 down-proj。</li>
+</ul>
+
+
+<h4 id="sec1-3-h2">3.2 LayerNorm vs RMSNorm</h4>
+<p>LN 一行：$\text{LN}(x)=\gamma\odot(x-\mu)/\sqrt{\sigma^2+\epsilon}+\beta$，对最后一维做均值方差归一。BN 不行的原因：序列长度变化、batch 内 token 分布异质、推理时 batch=1 统计量无意义。</p>
+<p><b>RMSNorm（LLaMA / GPT-NeoX / Qwen / DeepSeek 全系）</b>：</p>
+<div class="formula">$$\text{RMSNorm}(x) = \gamma \odot \frac{x}{\text{RMS}(x)}, \quad \text{RMS}(x)=\sqrt{\frac{1}{d}\sum_{i=1}^{d} x_i^2 + \epsilon}$$</div>
+<p>关键差异与现代选型理由：</p>
+<ul>
+  <li><b>去掉均值中心化与 $\beta$</b>：少一次求均值、少一次减法、少一个可学参数。Zhang & Sennrich 2019 实验显示去 mean 几乎不掉点，作者推测 LN 的主要收益来自 re-scaling 而非 re-centering。</li>
+  <li><b>更快</b>：在 BF16 大模型上 RMSNorm 比 LN 省约 7~15% 的 norm 算子时间，更重要的是数值更稳——没有 $x-\mu$ 的 catastrophic cancellation。</li>
+  <li><b>梯度尺度</b>：RMS 只依赖 $\|x\|_2$，与 residual stream 的"尺度增长"耦合更直接，配合 Pre-Norm 训练曲线更平。</li>
+  <li><b>实现要点</b>:权重 $\gamma$ 初始化为 1，$\epsilon$ 一般 $10^{-6}$（FP16 时调到 $10^{-5}$ 防下溢）；很多实现把 norm 的 reduce 放在 FP32 算，再 cast 回 BF16。</li>
+</ul>
+
+
+<h4 id="sec1-3-h3">3.3 Residual 与梯度通路</h4>
+<p>$y = x + \text{Sublayer}(x)$，提供恒等映射的"梯度高速公路"，使 100+ 层 Transformer 可训。$\partial y/\partial x = I + \partial \text{Sublayer}/\partial x$，恒等项保底防止梯度消失。现代实现中残差 stream 还承担"信息总线"角色——每层读/写共享 hidden state，可解释性研究（logit lens / residual stream analysis）都基于此。</p>
+
+<h4 id="sec1-3-h4">3.4 Pre-Norm vs Post-Norm（含 DeepNorm / Sandwich）</h4>
+<table>
+<thead><tr><th>结构</th><th>公式</th><th>稳定性</th><th>需要 warmup？</th><th>代表模型</th></tr></thead>
+<tbody>
+<tr><td>Post-Norm</td><td>$x_{l+1}=\text{LN}(x_l+\text{Sub}(x_l))$</td><td>深层易爆/消失</td><td>必须，且 lr 小</td><td>原版 Transformer / BERT</td></tr>
+<tr><td>Pre-Norm</td><td>$x_{l+1}=x_l+\text{Sub}(\text{LN}(x_l))$</td><td>稳，深层可训</td><td>几乎不用</td><td>GPT-2+/LLaMA/Qwen</td></tr>
+<tr><td>Sandwich</td><td>$x_{l+1}=x_l+\text{LN}_2(\text{Sub}(\text{LN}_1(x_l)))$</td><td>更稳但稍慢</td><td>否</td><td>CogView / GLM-130B</td></tr>
+<tr><td>DeepNorm</td><td>$x_{l+1}=\text{LN}(\alpha x_l+\text{Sub}(x_l))$, $\alpha=(2N)^{1/4}$</td><td>1000 层可训</td><td>否</td><td>GLM / 部分 MT</td></tr>
+</tbody>
+</table>
+<p><b>Pre-Norm 为什么稳</b>：残差路径是干净的恒等通道，$x_L = x_0 + \sum_{l<L} \text{Sub}_l(\text{LN}(x_l))$，反向梯度始终有一条直达 $x_0$ 的 1 倍路径，不会被 LN 的 Jacobian 反复缩放。代价是 forward 时 residual stream 的方差随层数线性累加（$\text{Var}(x_L) \approx \text{Var}(x_0) + \sum \text{Var}(\text{Sub}_l)$），所以**最后必须再加一个 final LN/RMSNorm** 把输出方差拉回，否则 LM head 的 logits 会爆掉。</p>
+<p><b>Post-Norm 为什么难训</b>：LN 套在残差外面，每层把 $x_l + \text{Sub}$ 重新归一，反向时梯度要穿过每一层的 LN Jacobian，深层会指数级衰减/放大，必须用大 warmup + 小 lr 才能稳，BERT-large 训不动的经典坑就在这。</p>
+<p><b>DeepNorm（Wang et al. 2022）</b>：在残差加权 $\alpha>1$ 放大 identity 路径，同时把 sublayer 权重初始化缩小 $\beta=(8N)^{-1/4}$，证明 1000 层 Transformer 可稳定训练；GLM-130B 用了它的变体。<b>Sandwich-Norm</b>：在 sublayer 前后各加一个 norm，进一步约束 residual 方差爆炸，CogView/GLM 训超大模型时用。</p>
+
+
+
+<h4 id="sec1-3-h5">3.5 MoE 架构（DeepSeekMoE / Qwen-MoE）</h4>
+<h5 id="sec1-3-h5-h1">3.5.1 基础范式：稀疏激活的 FFN 路由</h5>
+<p>MoE 的核心思路是把 Transformer block 里的 FFN 这一"参数大户"替换成 <strong>N 个并行的小 FFN（专家）+ 一个 router</strong>，每个 token 只激活 top-k 个专家。设 token 隐藏向量 $h\in\mathbb{R}^{d}$、专家共 $N$ 个、第 $i$ 个专家为 $E_i:\mathbb{R}^{d}\to\mathbb{R}^{d}$，最朴素的写法是：</p>
+<div class="formula">$$s = W_g h\in\mathbb{R}^{N},\quad g_i=\mathrm{Softmax}(s)_i,\quad \mathcal{T}=\mathrm{TopK}(g, k),\quad y = \sum_{i\in\mathcal{T}} \frac{g_i}{\sum_{j\in\mathcal{T}} g_j}\, E_i(h)$$</div>
+<p>其中 $W_g\in\mathbb{R}^{N\times d}$ 是 router，复杂度只有 $O(Nd)$，几乎免费；真正贵的是 $k$ 个 $E_i$ 的 FFN（每个 $\sim 2\cdot d\cdot d_{\text{ffn}}$ FLOPs）。一个 token 的<strong>计算量</strong>只与 $k$ 成正比，但<strong>参数量</strong>与 $N$ 成正比——这就是 MoE "<strong>总参 ≫ 激活参</strong>"的本质。例如 DeepSeek-V3 总参 671B、单 token 激活 37B，约 5–6% 激活率（具体以官方技术报告为准）。</p>
+<p>为什么基座模型都从 Switch 的 <code>top-1</code> 改回 <code>top-2</code> 或更多？因为 top-1 路由对小扰动极其敏感，gate 的不可导决策导致<strong>梯度只通过一条路径</strong>反传，专家之间互相竞争而无组合性；top-2 让 router 有了"加权融合"的余地，每个 token 也能从两个专家组合中学习，loss 通常显著下降。</p>
+
+
+<h5 id="sec1-3-h5-h2">3.5.2 DeepSeekMoE 的两板斧：Fine-grained + Shared Experts</h5>
+<p>DeepSeekMoE（2401.06066）认为传统 MoE 的瓶颈在于<strong>专家不够专</strong>：少量大专家既要学通用知识又要学细分知识，互相挤占容量。两个改造：</p>
+<p><strong>(a) Fine-grained expert segmentation.</strong> 在参数总量不变的前提下，把每个专家的 FFN 中间维 $d_{\text{ffn}}$ 切成 $m$ 份，得到 $mN$ 个"瘦"专家，top-k 也相应放大到 $mk$。组合数从 $\binom{N}{k}$ 暴涨到 $\binom{mN}{mk}$，比如 $N{=}16, k{=}2$ 切 $m{=}4$ 后变成 $N{=}64, k{=}8$，组合数从 120 涨到 $4.4\times 10^9$。每个细粒度专家承担更窄的知识子集，特化更彻底。</p>
+<p><strong>(b) Shared expert isolation.</strong> 单独划出 $N_s$ 个<strong>共享专家</strong>，对每个 token 都激活，专门承载"所有 token 都要用"的通用知识；剩下 $N_r$ 个<strong>路由专家</strong>只学差异化部分。最终 MoE 层输出：</p>
+<div class="formula">$$h'_t \;=\; u_t \;+\; \sum_{i=1}^{N_s}\mathrm{FFN}_i^{(s)}(u_t)\;+\;\sum_{i=1}^{N_r} g_{i,t}\cdot \mathrm{FFN}_i^{(r)}(u_t)$$</div>
+<p>其中 $g_{i,t}$ 由路由器在 $N_r$ 个路由专家上做 top-$K_r$ 选出（$K_r$ 通常已扣掉共享专家的容量）。<strong>为什么这样设计</strong>：共享专家把"任何 token 都要做的语法、词形、常识"那部分基础变换吸走，路由专家就不必每个都重复学一遍；这等价于把 MoE 的"残差通用基底"显式抽离，给路由专家留下纯粹的"特化预算"。</p>
+<p>DeepSeek-V3 的 MoE 配置：每层 <strong>1 个共享专家 + 256 个路由专家</strong>，每个专家中间维 2048，每 token 激活 8 个路由专家，并启用<strong>节点限制路由</strong>（每 token 至多发往 $M{=}4$ 个节点）以控住 All-to-All 通信代价（具体数字以官方技术报告为准）。Qwen3-MoE 系列（如 Qwen3-235B-A22B）同样采用细粒度多专家 + 少量激活的范式（具体专家数/激活数以官方技术报告为准）。</p>
+
+
+<h5 id="sec1-3-h5-h3">3.5.3 负载均衡：从 aux loss 到 Auxiliary-Loss-Free</h5>
+<p>MoE 训练最大的"暗礁"是<strong>路由塌缩</strong>：某几个专家被 router 选爆，其余专家无 token 可学，迅速死亡。传统解法是加辅助损失：</p>
+<p><strong>Switch Transformer 的 aux loss</strong>：设 $f_i$ 为分发到专家 $i$ 的 token 占比、$P_i$ 为 router 平均概率，</p>
+<div class="formula">$$\mathcal{L}_{\text{aux}} = \alpha \cdot N \sum_{i=1}^{N} f_i \cdot P_i$$</div>
+<p>它鼓励 $f_i$ 和 $P_i$ 都接近 $1/N$。但 $\alpha$ 太大会污染主任务梯度（router 为了均衡牺牲准确路由），太小又压不住塌缩——超参极敏感。<strong>Z-loss</strong>（$\mathcal{L}_z = \alpha\,\mathbb{E}_t[(\log\sum_i e^{s_{i,t}})^2]$）则压住 router logits 数值漂移，提升数值稳定性。</p>
+<p><strong>DeepSeek V3 的 Auxiliary-Loss-Free 策略</strong>（Wang et al., 2408.15664）：给每个专家加一个<strong>仅用于 top-K 选择、不进入最终 gating 值</strong>的可调偏置 $b_i$：</p>
+<div class="formula">$$\tilde{s}_{i,t} = \sigma(W_g h_t)_i + b_i,\qquad \mathcal{T}_t = \mathrm{TopK}_i(\tilde{s}_{i,t}),\qquad g_{i,t} \propto \sigma(W_g h_t)_i\ \text{for}\ i\in\mathcal{T}_t$$</div>
+<p>每个 step 监测专家负载 $f_i$，若 $f_i$ 高于目标 $\Rightarrow b_i \leftarrow b_i - \gamma$；低于目标 $\Rightarrow b_i \leftarrow b_i + \gamma$。<strong>关键洞察</strong>：$b_i$ 是按规则更新而非梯度更新，<strong>不进入反传图</strong>，因此完全不污染主任务梯度；而 $g_{i,t}$ 用的是原始 $\sigma(\cdot)$ 不含 $b_i$，保证 gating 数值意义不被偏置扭曲。DeepSeek-V3 报告 $\gamma{=}0.001$ 用于前 14.3T tokens，后 500B tokens 设为 0；同时配一个非常小的 $\alpha{=}10^{-4}$ 互补 balance loss 作为兜底（具体以官方技术报告为准）。</p>
+<p>此外 V3 还做了<strong>节点级均衡</strong>（每 token 发往 $\le M$ 个节点）与<strong>设备级均衡</strong>（device-level balance loss），以适配 EP 拓扑。</p>
+
+
+<h5 id="sec1-3-h5-h4">3.5.4 系统侧：EP、All-to-All、DeepEP 与推理瓶颈</h5>
+<p>MoE 训练把专家切到不同 GPU 上叫 <strong>Expert Parallelism (EP)</strong>。一个 forward 包含两次 All-to-All：</p>
+<ul>
+<li><strong>dispatch</strong>：把每个 token 的隐藏向量按 router 决策发到对应专家所在 GPU；</li>
+<li><strong>combine</strong>：把专家算完的输出回收回原 token 所在 GPU 加权求和。</li>
+</ul>
+<p>通信量与 $k\cdot d\cdot L$ 成正比；当 $k$ 大或 $d$ 大时，All-to-All 极易成为瓶颈。DeepSeek 开源的 <strong>DeepEP</strong> 就是为此设计的高性能 EP 通信库，关键优化包括：低延迟 NVLink/RDMA 双通道、warp 级 dispatch kernel、节点限制路由减少跨机流量、计算与通信 overlap。DeepSeek-V3 的"每 token 最多 4 节点"约束正是为了把 inter-node All-to-All 通信约束在可控带宽内（具体以官方技术报告为准）。</p>
+<p><strong>显存影响</strong>：MoE 的<strong>总参</strong>必须全部装进 HBM（或通过 EP 跨 GPU 分片），即便单 token 只算 $k$ 个。671B 总参在 BF16 下约 1.3 TB，必须靠 EP（如 EP=32/64）+ FP8 权重 + DP/PP 复合并行才能塞下。<strong>推理</strong>更尴尬：</p>
+<ul>
+<li>单卡放不下，必须 EP，导致每 token 都有 All-to-All；</li>
+<li>访问的专家随机，<strong>HBM 带宽利用率</strong>低（专家权重无法被连续 batch 复用）；</li>
+<li>Prefill 阶段 token 多还能撑住 GEMM 利用率，<strong>decode 阶段</strong> batch 小且专家访问稀疏，几乎 100% memory-bound；</li>
+<li>因此 MoE 推理常配合 <strong>专家批处理</strong>（把同一专家的 token 聚到一起做大 GEMM）、<strong>动态 EP</strong>、<strong>专家缓存淘汰</strong>等策略。</li>
+</ul>
+<p><strong>训推一致性</strong>：训练时若使用 token dropping（capacity 满则丢），推理时不丢，会造成轻微分布偏移；常用对策是训练后期关掉 dropping，或推理也加 capacity 与训练对齐。</p>
+<p><strong>与长上下文方案的耦合</strong>：DeepSeek-V3 同时用了 MLA（KV cache 压缩）+ MoE；MLA 解决 KV cache 显存，MoE 解决参数容量，二者正交。V3.2-Exp 的 NSA / sparse attention 则进一步压 attention，FlashMLA + DeepEP 是这类模型的标配 kernel 栈。</p>
+
+
+
+
+
+<h4 id="sec1-3-h6">3.6 QK-Norm 与现代归一化进展</h4>
+<h5 id="sec1-3-h6-h1">3.6.1 为什么大模型 loss spike——从 q·k 范数爆炸说起</h5>
+<p>在标准 Pre-Norm Transformer 里，<strong>子层输入</strong>已经被 RMSNorm 约束到单位范数，但 $Q=X W_Q,\ K=X W_K$ 经过线性投影后会出现"非各向同性"的范数膨胀：训练到中后期，少数 head 的 $W_Q,W_K$ 谱范数显著增大，使 $q_i\cdot k_j$ 的尺度从初始的 $\mathcal{O}(\sqrt{d_h})$ 漂移到 $\mathcal{O}(10^2)$ 甚至更大。代入 softmax 后，<strong>注意力熵塌缩</strong>到接近 0，反向传播时 $\frac{\partial \mathrm{softmax}}{\partial \text{logit}}\approx p_i(\delta_{ij}-p_j)$ 几乎处处为 0 但偶发巨大值，于是出现典型的 <strong>loss spike</strong>。Gemma 2/3、Olmo、Chameleon、DeepSeek-V3 都在 tech report 里把这个现象作为引入 QK-Norm 的核心动机。</p>
+
+
+<h5 id="sec1-3-h6-h2">3.6.2 QK-Norm：在内积之前做 head-wise 归一化</h5>
+<p>QK-Norm（Henry 2020；ViT-22B；Chameleon；Gemma 3；DeepSeek-V3 系列）的形式非常直接：对每个 head 的 $Q,K\in\mathbb{R}^{L\times d_h}$ 沿 <strong>head 维度</strong>（最后一维）做 RMSNorm（或 LayerNorm），然后再做内积：</p>
+<div class="formula">$$\widetilde Q=\mathrm{RMSNorm}_{d_h}(Q),\quad \widetilde K=\mathrm{RMSNorm}_{d_h}(K),\quad A=\mathrm{softmax}\!\left(\tfrac{\widetilde Q\,\widetilde K^\top}{\tau}\right)V$$</div>
+<p>其中 $\mathrm{RMSNorm}(x)=\frac{x}{\sqrt{\frac{1}{d_h}\sum_i x_i^2+\epsilon}}\odot g$，每个 head 通常有<strong>独立的可学习增益向量</strong> $g\in\mathbb{R}^{d_h}$（Chameleon/Gemma 3 是这么做的；少数实现只用全局标量）。这样 $\|\widetilde q_i\|,\|\widetilde k_j\|\approx \sqrt{d_h}$ 为常数，<strong>内积的尺度被钉死</strong>，温度 $\tau$ 可以固定为 $\sqrt{d_h}$ 甚至直接吸到 $g$ 里。</p>
+<p>显存与算力：每层每 head 多两次 norm，FLOPs 增量约 $4\cdot b L d$，相对 attention 主体 $2bL^2 d$ 几乎可忽略；对 KV cache 没有结构影响，但<strong>会改变 KV cache 的统计</strong>——常见实现把 norm 后的 $\widetilde K$ 缓存，省去解码时反复 norm，但要注意与<strong>RoPE 的顺序</strong>。</p>
+<p><strong>QK-Norm 与 RoPE 的顺序</strong>：当前主流（Gemma 3、Olmo、Chameleon）采用 <code>q,k → RMSNorm → RoPE → attn</code> 的顺序。原因：RoPE 是<strong>正交旋转</strong>，作用在 norm 之后不改变范数，仍保持 $\|\widetilde q\|=\mathrm{const}$；若 norm 放在 RoPE 之后，则会把按位置变化的相位再次"压平"，相对位置打分的方差被破坏，长程外推效果变差。</p>
+<p><strong>QK-Norm 与 MLA 的兼容性</strong>：DeepSeek-V2/V3 的 MLA 把 K 压成低秩 latent，推理时不显式物化 full K，QK-Norm 不能直接对未物化的 K 做 head-wise norm；DeepSeek 的折中是只对 <strong>RoPE 分支的 q,k</strong> 做 norm，或者把 norm 折算进 W 的初始化与训练期的辅助约束里——以官方技术报告为准。</p>
+
+
+<h5 id="sec1-3-h6-h3">3.6.3 Soft-capping：Gemma 2 的 tanh 软上限</h5>
+<p>Gemma 2 在没有用 QK-Norm 的情况下，选择直接在 <strong>logits</strong> 上加 tanh 软压：</p>
+<div class="formula">$$\text{logits} \leftarrow c\cdot\tanh\!\left(\frac{\text{logits}}{c}\right)$$</div>
+<p>取自 Gemini 1.5。Gemma 2 的具体超参：<strong>attention logits 的 $c=50$，最终 vocab logits 的 $c=30$</strong>。梯度为</p>
+<div class="formula">$$\frac{\partial}{\partial z}\,c\tanh(z/c)=1-\tanh^2(z/c)\in(0,1]$$</div>
+<p>当 $|z|\ll c$ 时几乎是 identity，不影响小尺度；当 $|z|\gg c$ 时梯度趋 0，相当于"<strong>梯度软门控</strong>"，把可能引发 spike 的大 logits 的反向信号自然衰减。问题是它和 <strong>FlashAttention</strong> 不兼容（kernel 需重写，因为 softmax 前要先 tanh），所以 Gemma 2 早期推理需 eager attention 或 FlashInfer 的特化 kernel。</p>
+<p>Gemma 3 之后把 attn soft-cap 换成 QK-Norm，理由是后者从源头控制 logit 尺度、对 kernel 友好；nanochat 等社区项目也讨论过<strong>两者同时用是否冗余</strong>——主流结论是 QK-Norm 已足够稳定，soft-cap 可省。</p>
+
+
+<h5 id="sec1-3-h6-h4">3.6.4 Embedding Norm、LayerScale 与小 init / μP 的协同</h5>
+<p><strong>Embedding Norm</strong>：很多新一代模型（Gemma、Olmo、MiniMax-01）对 token embedding 直接做 RMSNorm，或在 embed 输入第一层前加一个独立 RMSNorm。动机是 embedding 初始化常用 $\mathcal{N}(0,1/d)$ 或 $\mathcal{N}(0,1)$，与残差流尺度不匹配；不归一化会导致<strong>第一层 attention 的 q·k 尺度异常</strong>，并放大长尾 token 的方差。Gemma 还把 embedding 乘 $\sqrt{d}$，等价于 RMSNorm 后乘常数增益。</p>
+<p><strong>LayerScale</strong>（CaiT，2021）：$x_{l+1}=x_l+\mathrm{diag}(\gamma_l)\cdot F_l(\mathrm{LN}(x_l))$，$\gamma_l\in\mathbb{R}^d$ 初始化为 $10^{-4}\sim10^{-5}$。让训练初期每个子层贡献接近 0，模型先"近似恒等"再缓慢打开通道，深 Transformer / 大 ViT 的训练曲线明显更平。LLM 端常以"<strong>residual gating</strong>"形式出现（Jamba、MoBA 部分实现把 $\gamma$ 与 MoE expert balance 结合）。</p>
+<p><strong>与 μP / 小 init 的关系</strong>：μP（Maximal Update Parametrization）把每层学习率、初始化按宽度自适应，使<strong>每个权重的更新对输出的影响是 $\mathcal{O}(1)$</strong>，从而宽度变化不需重调超参。μP 的"输出层 1/n 缩放"与 LayerScale 思路一致；小 init（Wang 2024 的 $\sigma=1/\sqrt{d}\cdot N^{-1/4}$）和 DeepNorm 的 $\beta$ 同源。三者与 QK-Norm 不冲突——前者控制<strong>权重尺度</strong>，QK-Norm 控制<strong>激活尺度</strong>，组合后大模型可以从 0 训到底而不需要复杂的 warmup 调度。</p>
+<p>近一年的实践：DeepSeek-V3 用了 RMSNorm + QK-Norm + DeepSeekMoE 的 expert-balance loss；Gemma 3 用 sandwich-norm + QK-Norm + per-layer-embedding；MiniMax-01 在 Lightning Attention 的 K 通道单独做 norm；Jamba/Mamba-2 的 SSM 分支也借鉴了 head-wise RMSNorm 思想——以各自官方技术报告为准。</p>
+
+
+
+
+<hr />
+</article>
+
+
+<article class="qa" id="sec1-4">
+  <h3>4. Multi-Token Prediction（MTP）</h3>
+
+<h4 id="sec1-4-h1">4.1 动机：把 next-token 训练目标"加密"成密集监督</h4>
+<p>原生的 causal LM 在每个位置只有一个监督信号——预测 <code>t+1</code>。这对长上下文、长输出、推理类任务来说监督相当"稀"。DeepSeek-V3 沿用 Gloeckle et al. 2024 的 <strong>Multi-Token Prediction</strong> 思路，但与原文"在主干顶部挂 D 个并行头"的设计不同，它采用 <strong>D 个串行因果 MTP 模块</strong>：在主头预测 <code>t+1</code> 的同时，额外让模块 <code>k=1..D</code> 分别预测 <code>t+2, t+3, ..., t+D</code>。一句话总结：把每个位置的标量监督拓宽成长度 <code>D+1</code> 的向量监督，等效于给主干 transformer 在隐空间提供了"前瞻表征"的归纳偏置。</p>
+<p><strong>为什么有用</strong>：</p>
+<ul>
+<li><strong>样本效率</strong>：单位 token 反传的梯度信号变多，等价于在不增加序列长度的前提下提高了 loss 的"密度"。</li>
+<li><strong>表征质量</strong>：要预测 <code>t+k</code>，主干 <code>h_i</code> 必须保留足够长尺度的语义，而不是只保留下一个 token 的"局部 next-letter"信息。</li>
+<li><strong>免训 draft 模型</strong>：训练完成后，MTP 头天然就是一个与主模型共享 embedding/output 的"自蒸馏 draft head"，可直接拿去做 <strong>speculative decoding</strong>。</li>
+</ul>
+
+
+<h4 id="sec1-4-h2">4.2 MTP 模块结构与训练目标</h4>
+<p>记主干最后一层在位置 <code>i</code> 的隐表征为 <code>h_i^{(0)} \in \mathbb{R}^{d}</code>，共享 embedding 表 <code>E(\cdot) \in \mathbb{R}^{|V| \times d}</code>，共享 output head <code>\mathrm{Out}(\cdot)</code>。第 <code>k</code> 个 MTP 模块包含一个独立的 <strong>Transformer Block</strong> <code>T_k(\cdot)</code>、一个 <strong>投影矩阵</strong> <code>M_k \in \mathbb{R}^{d \times 2d}</code>、以及 LayerNorm。</p>
+<p>核心递推（沿深度 k 串行展开）：</p>
+<div class="formula">$$
+h_i^{\prime (k)} \;=\; M_k \begin{bmatrix} \mathrm{RMSNorm}\!\bigl(h_i^{(k-1)}\bigr) \\[2pt] \mathrm{RMSNorm}\!\bigl(E(t_{i+k})\bigr) \end{bmatrix},\qquad h_{1:T-k}^{(k)} \;=\; T_k\!\bigl(h_{1:T-k}^{\prime (k)}\bigr)
+$$</div>
+<p>其中 <code>[\,\cdot\,;\,\cdot\,]</code> 表示沿特征维拼接，前一项是<strong>上一深度的隐表征</strong>，后一项是<strong>下一个 ground-truth token 的 embedding</strong>。然后用共享输出头做 logits：</p>
+<div class="formula">$$
+P_k(\,\cdot\, \mid t_{\le i+k-1}) \;=\; \mathrm{softmax}\!\bigl(\mathrm{Out}(h_i^{(k)})\bigr)\in\mathbb{R}^{|V|}
+$$</div>
+<p><strong>逐深度的交叉熵</strong>与<strong>总训练目标</strong>：</p>
+<div class="formula">$$
+\mathcal{L}_{\mathrm{MTP}}^{k} \;=\; -\,\frac{1}{T-k}\sum_{i=1}^{T-k}\log P_k\!\bigl(t_{i+k}\mid t_{\le i+k-1}\bigr),\qquad
+\mathcal{L} \;=\; \mathcal{L}_{\mathrm{main}} \;+\; \frac{\lambda}{D}\sum_{k=1}^{D}\mathcal{L}_{\mathrm{MTP}}^{k}
+$$</div>
+<p>注意几个工程要点：</p>
+<ul>
+<li><strong>因果链严格保留</strong>：第 <code>k</code> 个模块的输入 <code>E(t_{i+k})</code> 是已经"看过"的下一个真实 token，相当于在 teacher-forcing 下递推 D 步——这与原版 Gloeckle 并行多头(各头独立从同一 <code>h_i^{(0)}</code> 出发)是本质区别。</li>
+<li><strong>共享 embedding/output head</strong>：词表很大（DeepSeek 词表约 12.9 万，<code>|V|d</code> 量级巨大），共享可以省内存并避免 D 份 output head 的梯度噪声。</li>
+<li><strong>只增 1 个 Transformer block × D 份</strong>，远小于主干 61 层，所以额外参数量约 <strong>+2%</strong>（在 671B MoE 上约 14B，以官方技术报告为准）。</li>
+<li><strong>序列被剪短</strong>：第 <code>k</code> 个模块只能在前 <code>T-k</code> 个位置算损失，因此 <code>D</code> 不宜过大，否则有效监督数下降。</li>
+</ul>
+
+<table>
+<thead><tr><th>变量</th><th>形状</th><th>说明</th></tr></thead>
+<tbody>
+<tr><td><code>h_i^{(k)}</code></td><td><code>\mathbb{R}^{d}</code></td><td>第 k 深度位置 i 的隐表征，<code>k=0</code> 即主干输出</td></tr>
+<tr><td><code>M_k</code></td><td><code>\mathbb{R}^{d \times 2d}</code></td><td>投影矩阵，把 <code>[h;E]</code> 压回 d 维</td></tr>
+<tr><td><code>T_k</code></td><td>1 层 Transformer Block</td><td>各深度独立参数；不与主干共享</td></tr>
+<tr><td><code>\mathrm{Out}</code></td><td><code>\mathbb{R}^{d \times |V|}</code></td><td>与主头共享</td></tr>
+</tbody>
+</table>
+
+<p><strong>复杂度与显存</strong>：每个 MTP 模块前向 = 1 个 transformer block + 1 个 output head。前者对长度 <code>L</code> 的开销 <code>O(L^2 d + L d^2)</code>，后者 <code>O(L d |V|)</code>，后者通常是大头（output head 反传需要 logits 的全词表 softmax，显存峰值 <code>b\,L\,|V|</code>）。因此<strong>训练中 MTP 模块往往是显存瓶颈</strong>，工程上做法是 (1) <code>D</code> 取 1；(2) 在 MTP 模块上启用 selective recomputation / chunked CE。</p>
+
+
+
+<h4 id="sec1-4-h3">4.3 推理期：MTP 头当 draft model 做 Speculative Decoding</h4>
+<p>训练完后，MTP 模块就是一个与主模型<strong>同 tokenizer、同 embedding、同 output head</strong> 的廉价"自蒸馏 drafter"。speculative decoding 的常规流程在此变成：</p>
+<ol>
+<li><strong>Draft</strong>：用 MTP 头连发 <code>γ</code> 个候选 token <code>\tilde t_{i+1},...,\tilde t_{i+\gamma}</code>。</li>
+<li><strong>Verify</strong>：把这 <code>γ</code> 个 draft 一次性塞给主模型做一次并行前向，得到主模型在每个位置上的 <code>P_{\mathrm{target}}</code>。</li>
+<li><strong>Accept/Resample</strong>：按经典 Leviathan-Chen 接受准则 <code>r_j=\min\!\bigl(1, P_{\mathrm{target}}(\tilde t_{i+j})/P_{\mathrm{draft}}(\tilde t_{i+j})\bigr)</code> 逐位置 Bernoulli 采样；首个被拒处用残差分布 <code>(P_{\mathrm{target}}-P_{\mathrm{draft}})_+</code> 重采。</li>
+</ol>
+<p>关键优势是<strong>免训 draft model</strong>：传统 vanilla SD 要单独训一个 0.5B-1B 的小模型，不仅训练贵、还存在与目标模型 vocabulary/embedding 错配的问题；MTP 头 share embedding/output head，draft 与 target 的<strong>分布对齐</strong>天然就好。</p>
+
+<p><strong>DeepSeek-V3 的报道数据</strong>：默认 <code>D=1</code>，MTP1 的<strong>接受率 &gt; 85%</strong>（不同 domain 在 80%~90%），端到端生成吞吐约 <strong>1.8×</strong>（以官方技术报告为准）。<code>D=2</code> 时第 2 个 draft 的接受率显著下滑（训练只到 <code>D=1</code>，autoregress 复用第 1 个 MTP 头会跑出分布），所以 DeepSeek-V3 没继续堆 D。</p>
+
+<p><strong>为什么对长输出有效、对 prefill 不显著</strong>：speculative decoding 节省的是 <strong>decode 阶段</strong>每步 1 个 token 的<strong>访存瓶颈</strong>——把 K 步访存合并成 1 步并行前向，让 GPU 算力打满；prefill 阶段本来就是 compute-bound、batch-friendly，MTP 并不能再减少 FLOPs，因此收益微乎其微。</p>
+
+<p><strong>显存与吞吐取舍</strong>：</p>
+<ul>
+<li>Draft 阶段需要在 GPU 上额外驻留 MTP 模块（虽然小，但 MoE 体系下 embedding/output head 已经是主要常驻显存）；</li>
+<li>Verify 阶段主模型需要"按 draft 长度 γ"做并行前向，KV cache 一次性扩展 γ 行；</li>
+<li>高 batch 并发场景下，speculative decoding 的相对收益会下降——因为 batch 已经把访存平摊掉了。生产实践中（SGLang / vLLM）常根据 concurrency 自动开关 MTP。</li>
+</ul>
+
+
+
+<h4 id="sec1-4-h4">4.4 与 Medusa / EAGLE 的对比</h4>
+<table>
+<thead><tr><th>方法</th><th>Draft 结构</th><th>是否与主模型联合训</th><th>是否需要主模型激活</th><th>典型接受率/τ</th><th>工程开销</th></tr></thead>
+<tbody>
+<tr><td><strong>Medusa</strong></td><td>主干顶部 N 个<strong>并行</strong>头（FFN），各自独立预测 <code>t+1..t+N</code></td><td>事后微调，head 独立</td><td>否</td><td>低-中，τ ≈ 2.0–2.6</td><td>最简单；head 间无因果链，长程接受率掉得快</td></tr>
+<tr><td><strong>EAGLE / EAGLE-3</strong></td><td>独立的<strong>小 transformer</strong> drafter，输入主模型的<strong>倒数第二层特征</strong>+ embedding，递归 draft；tree verification</td><td>事后训练 drafter，需要主模型 forward 出特征</td><td>是（需要主模型 hidden state）</td><td>高，τ ≈ 3.5–5.0</td><td>需要训 drafter；但接受率最高</td></tr>
+<tr><td><strong>DeepSeek-V3 MTP</strong></td><td><strong>串行</strong> D 个 transformer block，输入<code>[h^{(k-1)};E(t_{i+k})]</code>；teacher-forced 训练</td><td>与主模型<strong>联合预训练</strong></td><td>是（用主干 <code>h^{(0)}</code> 当输入）</td><td>中高，τ ≈ 2.5–3.0（D=1，AR &gt; 85%）</td><td>训练阶段额外 2% 参数+显存；推理免训 drafter</td></tr>
+</tbody>
+</table>
+
+<p>三者的<strong>设计哲学差</strong>可以归结为一句话：</p>
+<ul>
+<li><strong>Medusa</strong>：最便宜的事后补救——但牺牲了远距离 token 的接受率；</li>
+<li><strong>EAGLE</strong>：把"用主模型的特征"做到极致，效果好但工程最重；</li>
+<li><strong>MTP</strong>：把 speculative head 直接<strong>烤进预训练目标</strong>，不仅当 drafter 还能提升主模型本身（这是 Medusa/EAGLE 完全没有的收益）。</li>
+</ul>
+
+<p>顺带提一句产线现状：SGLang / vLLM / TensorRT-LLM 实际部署 DeepSeek-V3 MTP 时，<strong>底层路由的是 EAGLE 或 Medusa 的 verification kernel</strong>——也就是 MTP 提供 "NextN draft head"，EAGLE/Medusa 提供 "tree verify"，二者解耦。所以面试时若问"MTP 和 EAGLE 是不是同一个东西"，答案是：<strong>MTP 是训练侧 + draft 侧的方案，EAGLE 是推理 verify 侧的算法，二者可以拼起来用</strong>。</p>
+
+
+
+
+<hr />
+</article>
+
+<article class="qa" id="sec1-5">
+  <h3>5. 推理优化：KV Cache 与两阶段</h3>
+
+<h4 id="sec1-5-h1">5.1 KV Cache 原理</h4>
+<p>自回归解码逐 token 生成，每步只算当前 token 的 $q_t, k_t, v_t$，把 $k_t, v_t$ 追加到 cache，与历史 K/V 做 attention。<b>只缓存 K、V 不缓存 Q</b>——Q 每步只用一次就丢弃。把 attention 从 $O(L^2 d)$ 降到 $O(L d)$/step，代价是显存随 $L$ 线性增长。</p>
+
+
+<h4 id="sec1-5-h2">5.2 Prefill vs Decode 与现代推理优化</h4>
+<p><b>两阶段核心 insight</b>：</p>
+<table>
+  <thead><tr><th>阶段</th><th>计算</th><th>瓶颈</th><th>算术强度</th></tr></thead>
+  <tbody>
+    <tr><td>Prefill</td><td>处理 prompt $L_p$ 个 token，GEMM</td><td>compute-bound（FLOPs）</td><td>高（~$L_p$）</td></tr>
+    <tr><td>Decode</td><td>每步 1 个 token，GEMV + 读全量 KV cache</td><td>memory-bound（HBM 带宽）</td><td>低（~1）</td></tr>
+  </tbody>
+</table>
+<p>Decode 的瓶颈是<b>把 KV cache 从 HBM 搬到 SM</b>，所以提 batch、压 KV、加速搬运是主线。</p>
+
+<p><b>关键优化手段</b>：</p>
+<ul>
+  <li><b>Continuous batching（iteration-level scheduling）</b>：vLLM/TGI 的核心。不再等整个 batch 全部生成完再换批，而是每个 decode step 都重新组 batch——新请求随时插入，完成的请求立即弹出，GPU 利用率从 ~20% 提到 80%+。</li>
+  <li><b>PagedAttention（vLLM）</b>：把 KV cache 切成固定大小 block（如 16 token/block），用<b>页表</b>映射逻辑序列到物理 block，类似 OS 虚拟内存。消除碎片（内部碎片 &lt; 4%）、支持<b>共享 prefix</b>（多个序列指向同一物理 block，beam search / 并行采样 / system prompt 复用）、动态扩展无需预分配 max_len。</li>
+  <li><b>Chunked prefill</b>：把长 prompt 拆成小 chunk（如 512 token），<b>把 prefill chunk 与 decode step 混在同一 batch</b>。好处：(1) 解决长 prompt 阻塞短请求 decode 的问题（TTFT vs TBT 权衡）；(2) prefill chunk 是 compute-bound、decode 是 memory-bound，混合后算力和带宽都吃满（Sarathi-Serve）。</li>
+  <li><b>Prefix cache（Automatic Prefix Caching, APC）</b>：跨请求复用相同 prefix 的 KV（system prompt、few-shot、多轮对话历史）。用 prefix hash 索引到已算好的 KV block，命中即跳过重算。结合 PagedAttention 的 block 粒度天然适配。</li>
+  <li><b>Speculative decoding（投机解码）</b>：用一个小 draft model 一次生成 $k$ 个候选 token，target model <b>并行 verify</b>（一次 forward 验证 $k$ 个位置），接受最长前缀。把 memory-bound 的串行 decode 变成接近 prefill 的并行计算，理想下加速 2–3×。变体：EAGLE（draft 用 target 的 hidden state）、Medusa（多头同时预测后续 token）、自投机（同模型早退）。</li>
+  <li><b>FlashAttention / FlashDecoding</b>：prefill 用 FlashAttention 省 HBM 读写；decode 阶段 $L_q=1$，FlashDecoding 沿 KV 维度并行切分（split-KV），解决短 query 的 SM 利用率问题。</li>
+  <li><b>KV 量化 / 压缩</b>：INT8/FP8 KV cache 直接省一半带宽；H2O、StreamingLLM 用 attention sink + 滑窗淘汰旧 KV；MLA 从架构上压 KV（见 6.3）。</li>
+  <li><b>Disaggregated serving（PD 分离）</b>：把 prefill 和 decode 部署到不同 GPU 池（DistServe、Mooncake），分别按各自最优配置调度，避免 prefill 长 stall 影响 decode 的 TBT SLO。</li>
+</ul>
+
+
+
+<h4 id="sec1-5-h3">5.3 KV Cache 显存估算与 MHA/GQA/MQA/MLA 对比</h4>
+<p><b>通用公式</b>（单序列）：</p>
+<div class="formula">$$\text{KVCache} = 2 \times L \times n_{layers} \times n_{kv} \times d_h \times \text{bytes}$$</div>
+<p>其中 $2$ 来自 K 和 V，$n_{kv}$ 是 KV 头数（MHA 时 $=n_h$，GQA 时 $=n_h/g$，MQA 时 $=1$），$d_h$ 是每头维度。batch 维再乘 $b$。</p>
+
+<p><b>LLaMA2-7B 示例</b>（$n_{layers}=32, n_h=32, d_h=128, d=4096$，MHA，fp16=2B，$L=2048$，b=1）：</p>
+<div class="formula">$$2 \times 2048 \times 32 \times 32 \times 128 \times 2 \approx 1.07 \text{ GiB / seq}$$</div>
+<p>跑 batch=32、$L=4096$ 就是 ~64 GiB——单张 80G H100 装不下几个长序列，这就是为什么所有现代 LLM 都不再用纯 MHA。</p>
+
+<p><b>各方案 KV cache 缩减比</b>（以 LLaMA2-7B 为基准）：</p>
+<table>
+  <thead><tr><th>方案</th><th>$n_{kv}$ 或等效</th><th>压缩比</th><th>2048 长度大小</th><th>代表模型</th></tr></thead>
+  <tbody>
+    <tr><td>MHA</td><td>32</td><td>1×</td><td>1.0 GiB</td><td>LLaMA2-7B、GPT-3</td></tr>
+    <tr><td>GQA (g=8)</td><td>4</td><td>8×</td><td>128 MiB</td><td>LLaMA2-70B、LLaMA3、Qwen2</td></tr>
+    <tr><td>MQA</td><td>1</td><td>32×</td><td>32 MiB</td><td>PaLM、Falcon</td></tr>
+    <tr><td>MLA</td><td>$d_c \approx 512$（合并 KV）</td><td>~30–40×</td><td>~30 MiB</td><td>DeepSeek-V2/V3</td></tr>
+  </tbody>
+</table>
+
+<p><b>MLA 与 KV cache 的关系</b>（重点）：MLA 不再缓存 $n_{kv} \cdot d_h$ 维的 K/V，而是缓存<b>低秩压缩潜变量</b> $c^{KV}_t \in \mathbb{R}^{d_c}$（DeepSeek-V2 中 $d_c=512$），外加一个解耦的 RoPE 小头 $k^R_t \in \mathbb{R}^{d_h^R}$（$d_h^R=64$）。推理时单层每 token 的 KV cache 只有：</p>
+<div class="formula">$$\text{MLA KV/token/layer} = (d_c + d_h^R) \times \text{bytes} = (512 + 64) \times 2 = 1152 \text{ B}$$</div>
+<p>对比 LLaMA2-7B MHA 的 $2 \times 32 \times 128 \times 2 = 16384$ B/token/layer，<b>压 ~14×</b>；对比 GQA(g=8) 的 $2 \times 4 \times 128 \times 2 = 2048$ B 仍小 ~1.8×。关键技巧：W^{UK}、W^{UV} 这两个上投影矩阵在推理时<b>吸收</b>进 W^Q、W^O，所以省 cache 不增加 attention 的计算量。</p>
+
+
+
+
+<hr />
+</article>
+
+</section>
+
+<div class="series-nav">
+  <b>Agentic RL 入门系列</b>
+  <a href="./Agentic%20RL%E5%85%A5%E9%97%A81%EF%BC%9A%E5%9F%BA%E7%A1%80%E3%80%81%E4%BB%A3%E7%A0%81.html">1：基础、代码</a>
+  <a href="./Agentic%20RL%E5%85%A5%E9%97%A82%EF%BC%9A%E4%BF%A1%E7%94%A8%E5%88%86%E9%85%8D.html">2：信用分配</a>
+  <a href="./Agentic%20RL%E5%85%A5%E9%97%A83%EF%BC%9Atransformer%E5%9F%BA%E7%A1%80.html">3：transformer 基础（当前）</a>
+</div>
+</div>
+</body>
+</html>
