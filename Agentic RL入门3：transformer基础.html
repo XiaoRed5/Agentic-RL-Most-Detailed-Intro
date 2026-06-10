@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Agentic RL入门3：transformer 基础</title>
+<title>Agentic RL入门3：transformer 架构</title>
 <style>
   :root{
     --bg:#f7f8fa; --card:#ffffff; --ink:#1f2329; --sub:#5b6470;
@@ -106,17 +106,18 @@
 <body>
 <div class="wrap">
 <header class="page">
-  <h1>Agentic RL 入门 3：Transformer 基础</h1>
-  <div class="meta">位置编码 / Attention 全家桶 / 归一化体系 / MoE / MTP / KV Cache · <a href="./index.html">返回入门系列首页</a></div>
+  <h1>Agentic RL 入门 3：Transformer 架构</h1>
+  <div class="meta">位置编码 / Attention 全家桶 / 归一化全家桶 / MoE / MTP / KV Cache · <a href="./index.html">返回入门系列首页</a></div>
 </header>
 <nav class="toc" id="top">
   <h2>目录</h2>
-  <div class="grp"><a href="#sec1">§1 Transformer 基础</a></div>
+  <div class="grp"><a href="#sec1">§1 Transformer 架构</a></div>
   <ul>
-    <li class="card"><a href="#sec1-1">1. 位置编码与 RoPE</a>
+    <li class="card"><a href="#sec1-1">1. 位置编码：当代基座全景（DeepSeek / Qwen / GLM / Kimi 等）</a>
       <ul>
-        <li class="sub"><a href="#sec1-1-h1">1.1 长上下文外推：PI / NTK-aware / YaRN / Dynamic NTK</a></li>
-        <li class="sub"><a href="#sec1-1-h2">1.2 RoPE 原理</a></li>
+        <li class="sub"><a href="#sec1-1-h1">1.1 RoPE 原理</a></li>
+        <li class="sub"><a href="#sec1-1-h2">1.2 长上下文外推：PI / NTK / YaRN</a></li>
+        <li class="sub"><a href="#sec1-1-h3">1.3 当代基座的位置编码全景（DeepSeek / Qwen / GLM / Kimi 等）</a></li>
       </ul>
     </li>
     <li class="card"><a href="#sec1-2">2. Attention 全家桶：MHA / MLA / DSA / NSA / SSM 与 hybrid 架构 / sliding window / MoBA</a>
@@ -130,11 +131,11 @@
         <li class="sub"><a href="#sec1-2-h7">2.7 MoBA（Mixture of Block Attention）</a></li>
       </ul>
     </li>
-    <li class="card"><a href="#sec1-3">3. 归一化体系</a>
+    <li class="card"><a href="#sec1-3">3. 归一化全家桶：RMSNorm / DeepNorm / QK-Norm / Soft-cap / Embed-Norm</a>
       <ul>
-        <li class="sub"><a href="#sec1-3-h1">3.1 FFN 与 SwiGLU</a></li>
-        <li class="sub"><a href="#sec1-3-h2">3.2 LayerNorm / RMSNorm 与残差结构</a></li>
-        <li class="sub"><a href="#sec1-3-h3">3.3 为什么大模型 loss spike</a></li>
+        <li class="sub"><a href="#sec1-3-h1">3.1 LayerNorm vs RMSNorm</a></li>
+        <li class="sub"><a href="#sec1-3-h2">3.2 Pre-Norm / Post-Norm / Sandwich / DeepNorm</a></li>
+        <li class="sub"><a href="#sec1-3-h3">3.3 大模型 loss spike 与 q·k 范数</a></li>
         <li class="sub"><a href="#sec1-3-h4">3.4 QK-Norm</a></li>
         <li class="sub"><a href="#sec1-3-h5">3.5 Soft-capping</a></li>
         <li class="sub"><a href="#sec1-3-h6">3.6 Embedding Norm / LayerScale / μP</a></li>
@@ -153,16 +154,29 @@
   </ul>
 </nav>
 <section class="group" id="sec1">
-<h2>§1 Transformer 基础</h2>
+<h2>§1 Transformer 架构</h2>
 <div class="intro"><blockquote>
 <p>本节按一线大厂基座面试官标准逐条作答：先讲结构/原理，再给关键公式，标注矩阵维度与复杂度，。约定记号：$L$ 为序列长度，$d$（或 $d_{model}$）为隐藏维，$h$ 为头数，$d_h = d/h$ 为单头维度，$b$ 为 batch size。</p>
 </blockquote>
 <hr /></div>
 <article class="qa" id="sec1-1">
   <a class="top" href="#top">↑ 返回目录</a>
-  <h3>1. 位置编码与 RoPE</h3>
+  <h3>1. 位置编码：当代基座全景（DeepSeek / Qwen / GLM / Kimi 等）</h3>
 
-<h4 id="sec1-1-h1">1.1 长上下文外推：PI / NTK-aware / YaRN / Dynamic NTK</h4>
+<h4 id="sec1-1-h1">1.1 RoPE 原理</h4>
+<p><strong>核心思想</strong>：不加在 embedding 上，而是<strong>旋转 Q、K</strong>，使内积 $q_m^\top k_n$ 只依赖相对位置 $m-n$。把 $d$ 维向量两两分组成 $d/2$ 个 2D 子空间，对位置 $m$、第 $i$ 组施加旋转：</p>
+<div class="formula">$$
+R(m,\theta_i)=\begin{pmatrix}\cos m\theta_i & -\sin m\theta_i\\ \sin m\theta_i & \cos m\theta_i\end{pmatrix},\qquad \theta_i = \text{base}^{-2i/d},\ \text{base}=10000
+$$</div>
+<p><strong>相对位置性质</strong>：旋转矩阵满足 $R_m^\top R_n = R_{n-m}$，因此：</p>
+<div class="formula">$$
+\tilde q_m^\top \tilde k_n \;=\; (R_m q)^\top (R_n k) \;=\; q^\top R_m^\top R_n\, k \;=\; q^\top R_{n-m}\, k
+$$</div>
+<p>—— 内积只与相对距离 $n-m$ 有关，绝对位置自动抵消。这是 RoPE 优于加性 PE 的根本原因。</p>
+<p><strong>频率分布的直觉</strong>：低维 $i$ 小 → $\theta_i$ 接近 1 → 波长短 → 编码细粒度近距离；高维 $i$ 大 → $\theta_i$ 极小 → 波长长（可达数万 token）→ 编码远距离。这种"频谱分层"是后续所有 RoPE 扩展（PI / NTK / YaRN）按维度分段处理的基础。</p>
+<p><strong>RoPE 为什么只作用在 Q/K，不作用在 V</strong>：位置信息只需进入打分 $q^\top k$；V 是被加权的内容，旋转 V 不产生相对位置收益、反而破坏内容语义。</p>
+
+<h4 id="sec1-1-h2">1.2 长上下文外推：PI / NTK / YaRN</h4>
 <p>RoPE 模型直接在训练长度 $L_{train}$ 外推（如 4k → 32k）会因高频维度产生 OOD 旋转角而崩坏。下列方法都在<strong>不重训或仅短微调</strong>的前提下扩展上下文。</p>
 
 <p><strong>① Position Interpolation (PI, Meta 2023)</strong>：把推理位置 $m$ 线性压缩回训练范围。设扩展倍数 $s = L_{new}/L_{train}$：</p>
@@ -173,7 +187,7 @@
 <div class="formula">$$b' = b \cdot s^{d/(d-2)},\qquad \theta_i' = (b')^{-2i/d}$$</div>
 <p>效果是高维（小 $\theta_i$）几乎按 PI 等效压缩，低维（大 $\theta_i$）几乎不变。无需微调即可工作，但仍非最优。</p>
 
-<p><strong>③ YaRN (Yet another RoPE extensioN, Peng et al. 2023)</strong> —— 当前 Llama-3.1/Qwen2 等长上下文模型的事实标准。三个关键改进：</p>
+<p><strong>③ YaRN (Yet another RoPE extensioN, Peng et al. 2023)</strong> —— Llama-3.1 / Qwen2 / Mistral-Large 等长上下文模型的事实标准。三个关键改进：</p>
 <p><em>(a) 按频段分段（NTK-by-parts）</em>：按"该维度在 $L_{train}$ 内转过的圈数" $r_i = L_{train}\theta_i/(2\pi)$ 把维度分三段，定义斜坡函数 $\gamma(r)$：</p>
 <table>
 <thead><tr><th>频段</th><th>判据</th><th>处理</th><th>$\gamma$</th></tr></thead>
@@ -192,20 +206,31 @@
 
 <p><strong>④ Dynamic NTK</strong>：推理时根据当前实际序列长度 $L_{cur}$ 动态算 $s = \max(1, L_{cur}/L_{train})$ 再代入 NTK 公式。短序列退化为原模型（$s=1$ 无修改），长序列才启用扩展。适合不知道目标长度的在线服务。</p>
 
+<h4 id="sec1-1-h3">1.3 当代基座的位置编码全景（DeepSeek / Qwen / GLM / Kimi 等）</h4>
+<p>RoPE 已是事实标准，但<strong>差异集中在 base、scaling、是否与 KV 压缩解耦</strong>。下面按"主流基座实际在用什么"梳理：</p>
 
+<p><strong>(1) 直接放大 base —— Llama-3 / Llama-3.1 路线</strong>。Llama-3 把 RoPE base 从 10000 直接拉到 <strong>500000</strong>，等价于"低频维度波长变更长"，先天就有更好的长程表征能力，预训练即支持 8k；Llama-3.1 在此基础上再叠 YaRN 扩到 128k。Qwen2.5 / GLM-4 也都拉大了 base（1e6 量级）作为长上下文起点。</p>
 
-<h4 id="sec1-1-h2">1.2 RoPE 原理</h4>
-<p><strong>核心思想</strong>：不加在 embedding 上，而是<strong>旋转 Q、K</strong>，使内积 $q_m^\top k_n$ 只依赖相对位置 $m-n$。把 $d$ 维向量两两分组成 $d/2$ 个 2D 子空间，对位置 $m$、第 $i$ 组施加旋转：</p>
-<div class="formula">$$
-R(m,\theta_i)=\begin{pmatrix}\cos m\theta_i & -\sin m\theta_i\\ \sin m\theta_i & \cos m\theta_i\end{pmatrix},\qquad \theta_i = \text{base}^{-2i/d},\ \text{base}=10000
-$$</div>
-<p><strong>相对位置性质</strong>：旋转矩阵满足 $R_m^\top R_n = R_{n-m}$，因此：</p>
-<div class="formula">$$
-\tilde q_m^\top \tilde k_n \;=\; (R_m q)^\top (R_n k) \;=\; q^\top R_m^\top R_n\, k \;=\; q^\top R_{n-m}\, k
-$$</div>
-<p>—— 内积只与相对距离 $n-m$ 有关，绝对位置自动抵消。这是 RoPE 优于加性 PE 的根本原因。</p>
-<p><strong>频率分布的直觉</strong>：低维 $i$ 小 → $\theta_i$ 接近 1 → 波长短 → 编码细粒度近距离；高维 $i$ 大 → $\theta_i$ 极小 → 波长长（可达数万 token）→ 编码远距离。这种"频谱分层"是后续 YaRN 按维度分段处理的基础。</p>
+<p><strong>(2) Partial / Decoupled RoPE —— MLA 系（DeepSeek-V2 / V3 / V3.2、Kimi-K1.5）</strong>。MLA（Multi-head Latent Attention）把 KV 压成低秩潜向量缓存，但 RoPE 与低秩压缩不兼容（旋转矩阵无法穿过低秩投影）。解法：把 head dim 拆成<strong>两段</strong>——一段小维度 $d_r$ 单独保留并施加 RoPE，另一段大维度走 MLA 压缩、<strong>不</strong>旋转。打分时两段拼接：</p>
+<div class="formula">$$q^\top k = q_{\text{rope}}^\top k_{\text{rope}} + q_{\text{nope}}^\top k_{\text{nope}}$$</div>
+<p>这就是 "decoupled RoPE"，是 MLA 能落地的关键工程妥协。</p>
 
+<p><strong>(3) Hybrid scaling 长上下文 —— Qwen2.5 / Mistral-Large-2 / DeepSeek-V3</strong>。预训练用大 base，下游扩长统一走 YaRN（按频段分段 + attention 温度），不再回到纯 PI。Mistral 系把这套配方叫 "rope_theta + YaRN"，Qwen 系叫 "extended context with YaRN"，本质相同。</p>
+
+<p><strong>主流基座今日位置编码一览（粗口径）</strong>：</p>
+<table>
+<thead><tr><th>模型家族</th><th>位置编码</th><th>关键参数 / 扩展</th></tr></thead>
+<tbody>
+<tr><td>Llama-3 / 3.1 / 3.3</td><td>RoPE</td><td>base=500000，长上下文叠 YaRN 到 128k</td></tr>
+<tr><td>Qwen2.5 / Qwen3</td><td>RoPE</td><td>大 base + YaRN / Dynamic NTK，原生 128k</td></tr>
+<tr><td>DeepSeek-V2 / V3 / V3.2</td><td>Decoupled RoPE</td><td>MLA 配套，拆 rope / no-rope 两段</td></tr>
+<tr><td>Mistral / Mixtral / Large-2</td><td>RoPE</td><td>大 base + YaRN</td></tr>
+<tr><td>GLM-4 / 4.5 / 4.6</td><td>RoPE</td><td>2D-RoPE 变体 + Dynamic NTK</td></tr>
+<tr><td>Kimi-K1.5 / K2</td><td>Decoupled RoPE</td><td>MLA 路线</td></tr>
+</tbody>
+</table>
+
+<p><strong>面试一句话总结</strong>：RoPE 已是事实标准，差异只在 (a) base 多大 / (b) 用哪种 scaling 扩长（PI → NTK → YaRN 是技术演进顺序，YaRN 是当前默认）/ (c) 是否与 KV 压缩解耦（MLA 系必须用 Decoupled RoPE）。</p>
 
 <hr />
 </article>
@@ -606,24 +631,9 @@ $$</div>
 </article>
 
 <article class="qa" id="sec1-3">
-  <h3>3. 归一化体系</h3>
+  <h3>3. 归一化全家桶: RMSNorm/DeepNorm/QK-Norm/Soft-cap/Embed-Norm</h3>
 
-<h4 id="sec1-3-h1">3.1 FFN 与 SwiGLU</h4>
-<p>原始 FFN 一行带过：$\text{FFN}(x)=W_2\,\text{ReLU}(W_1 x)$，中间维 $d_{ff}=4d$，对每个 position 独立计算。</p>
-<p><b>SwiGLU（LLaMA / PaLM / Qwen / DeepSeek 全系标配）</b>是 GLU 家族 + Swish 门控的组合：</p>
-<div class="formula">$$\text{SwiGLU}(x) = \big(\text{Swish}(xW_{\text{gate}}) \odot xW_{\text{up}}\big)\,W_{\text{down}}, \quad \text{Swish}(z)=z\cdot\sigma(z)$$</div>
-<p>关键工程点：</p>
-<ul>
-  <li><b>三个权重矩阵</b>（gate / up / down），比 ReLU-FFN 多一个矩阵。为保持总参数量与 4d 的 ReLU-FFN 相当，把 $d_{ff}$ 从 $4d$ 缩到 $\tfrac{8}{3}d$（$3 \times \tfrac{8}{3}d = 8d \approx 2 \times 4d$ 的算量），LLaMA 还会向上对齐到 256 的倍数便于 TP/张量并行切分。</li>
-  <li><b>GLU 家族对比</b>：GeGLU 用 GELU、ReGLU 用 ReLU、SwiGLU 用 Swish。Noam Shazeer 的 GLU Variants 论文里 SwiGLU 在等参对比下 PPL 最低，工程上也最稳，遂成事实标准。</li>
-  <li><b>门控 = 软稀疏</b>：$\sigma$ 给 up 投影一个 0~1 的逐通道 mask，等价于"按 token 动态选神经元"，表达力高于硬 ReLU。</li>
-  <li><b>参数与知识</b>：FFN 约占模型 2/3 参数（LLaMA-7B 中 FFN ≈ 4.3B），是事实知识的主要载体；ROME / 知识编辑都改 FFN 的 down-proj。</li>
-</ul>
-
-<h4 id="sec1-3-h2">3.2 LayerNorm / RMSNorm 与残差结构</h4>
-<p>Transformer 每层的标准范式是<strong>子层 + 残差 + 归一化</strong>：$y = x + \text{Sublayer}(x)$ 的残差提供恒等映射的"梯度高速公路"，使上百层 Transformer 可训；再用 LN/RMSNorm 约束数值尺度。下面分别讲归一化算子选型与"残差/归一化"的组合顺序。</p>
-
-<h5 id="sec1-3-h2-h1">3.2.1 LayerNorm vs RMSNorm</h5>
+<h4 id="sec1-3-h1">3.1 LayerNorm vs RMSNorm</h4>
 <p>LN 一行：$\text{LN}(x)=\gamma\odot(x-\mu)/\sqrt{\sigma^2+\epsilon}+\beta$，对最后一维做均值方差归一。BN 不行的原因：序列长度变化、batch 内 token 分布异质、推理时 batch=1 统计量无意义。</p>
 <p><b>RMSNorm（LLaMA / GPT-NeoX / Qwen / DeepSeek 全系）</b>：</p>
 <div class="formula">$$\text{RMSNorm}(x) = \gamma \odot \frac{x}{\text{RMS}(x)}, \quad \text{RMS}(x)=\sqrt{\frac{1}{d}\sum_{i=1}^{d} x_i^2 + \epsilon}$$</div>
@@ -635,7 +645,7 @@ $$</div>
   <li><b>实现要点</b>:权重 $\gamma$ 初始化为 1，$\epsilon$ 一般 $10^{-6}$（FP16 时调到 $10^{-5}$ 防下溢）；很多实现把 norm 的 reduce 放在 FP32 算，再 cast 回 BF16。</li>
 </ul>
 
-<h5 id="sec1-3-h2-h2">3.2.2 Pre-Norm vs Post-Norm（含 DeepNorm / Sandwich）</h5>
+<h4 id="sec1-3-h2">3.2 Pre-Norm / Post-Norm / Sandwich / DeepNorm</h4>
 <table>
 <thead><tr><th>结构</th><th>公式</th><th>稳定性</th><th>需要 warmup？</th><th>代表模型</th></tr></thead>
 <tbody>
@@ -649,11 +659,11 @@ $$</div>
 <p><b>Post-Norm 为什么难训</b>：LN 套在残差外面，每层把 $x_l + \text{Sub}$ 重新归一，反向时梯度要穿过每一层的 LN Jacobian，深层会指数级衰减/放大，必须用大 warmup + 小 lr 才能稳，BERT-large 训不动的经典坑就在这。</p>
 <p><b>DeepNorm（Wang et al. 2022）</b>：在残差加权 $\alpha>1$ 放大 identity 路径，同时把 sublayer 权重初始化缩小 $\beta=(8N)^{-1/4}$，证明 1000 层 Transformer 可稳定训练；GLM-130B 用了它的变体。<b>Sandwich-Norm</b>：在 sublayer 前后各加一个 norm，进一步约束 residual 方差爆炸，CogView/GLM 训超大模型时用。</p>
 
-<h4 id="sec1-3-h3">3.3 为什么大模型 loss spike——从 q·k 范数爆炸说起</h4>
+<h4 id="sec1-3-h3">3.3 大模型 loss spike 与 q·k 范数</h4>
 <p>在标准 Pre-Norm Transformer 里，<strong>子层输入</strong>已经被 RMSNorm 约束到单位范数，但 $Q=X W_Q,\ K=X W_K$ 经过线性投影后会出现"非各向同性"的范数膨胀：训练到中后期，少数 head 的 $W_Q,W_K$ 谱范数显著增大，使 $q_i\cdot k_j$ 的尺度从初始的 $\mathcal{O}(\sqrt{d_h})$ 漂移到 $\mathcal{O}(10^2)$ 甚至更大。代入 softmax 后，<strong>注意力熵塌缩</strong>到接近 0，反向传播时 $\frac{\partial \mathrm{softmax}}{\partial \text{logit}}\approx p_i(\delta_{ij}-p_j)$ 几乎处处为 0 但偶发巨大值，于是出现典型的 <strong>loss spike</strong>。Gemma 2/3、Olmo、Chameleon、DeepSeek-V3 都在 tech report 里把这个现象作为引入 QK-Norm 的核心动机。</p>
 
 
-<h4 id="sec1-3-h4">3.4 QK-Norm：在内积之前做 head-wise 归一化</h4>
+<h4 id="sec1-3-h4">3.4 QK-Norm</h4>
 <p>QK-Norm（Henry 2020；ViT-22B；Chameleon；Gemma 3；DeepSeek-V3 系列）的形式非常直接：对每个 head 的 $Q,K\in\mathbb{R}^{L\times d_h}$ 沿 <strong>head 维度</strong>（最后一维）做 RMSNorm（或 LayerNorm），然后再做内积：</p>
 <div class="formula">$$\widetilde Q=\mathrm{RMSNorm}_{d_h}(Q),\quad \widetilde K=\mathrm{RMSNorm}_{d_h}(K),\quad A=\mathrm{softmax}\!\left(\tfrac{\widetilde Q\,\widetilde K^\top}{\tau}\right)V$$</div>
 <p>其中 $\mathrm{RMSNorm}(x)=\frac{x}{\sqrt{\frac{1}{d_h}\sum_i x_i^2+\epsilon}}\odot g$，每个 head 通常有<strong>独立的可学习增益向量</strong> $g\in\mathbb{R}^{d_h}$（Chameleon/Gemma 3 是这么做的；少数实现只用全局标量）。这样 $\|\widetilde q_i\|,\|\widetilde k_j\|\approx \sqrt{d_h}$ 为常数，<strong>内积的尺度被钉死</strong>，温度 $\tau$ 可以固定为 $\sqrt{d_h}$ 甚至直接吸到 $g$ 里。</p>
@@ -662,7 +672,7 @@ $$</div>
 <p><strong>QK-Norm 与 MLA 的兼容性</strong>：DeepSeek-V2/V3 的 MLA 把 K 压成低秩 latent，推理时不显式物化 full K，QK-Norm 不能直接对未物化的 K 做 head-wise norm；DeepSeek 的折中是只对 <strong>RoPE 分支的 q,k</strong> 做 norm，或者把 norm 折算进 W 的初始化与训练期的辅助约束里——以官方技术报告为准。</p>
 
 
-<h4 id="sec1-3-h5">3.5 Soft-capping：Gemma 2 的 tanh 软上限</h4>
+<h4 id="sec1-3-h5">3.5 Soft-capping</h4>
 <p>Gemma 2 在没有用 QK-Norm 的情况下，选择直接在 <strong>logits</strong> 上加 tanh 软压：</p>
 <div class="formula">$$\text{logits} \leftarrow c\cdot\tanh\!\left(\frac{\text{logits}}{c}\right)$$</div>
 <p>取自 Gemini 1.5。Gemma 2 的具体超参：<strong>attention logits 的 $c=50$，最终 vocab logits 的 $c=30$</strong>。梯度为</p>
@@ -671,7 +681,7 @@ $$</div>
 <p>Gemma 3 之后把 attn soft-cap 换成 QK-Norm，理由是后者从源头控制 logit 尺度、对 kernel 友好；nanochat 等社区项目也讨论过<strong>两者同时用是否冗余</strong>——主流结论是 QK-Norm 已足够稳定，soft-cap 可省。</p>
 
 
-<h4 id="sec1-3-h6">3.6 Embedding Norm、LayerScale 与小 init / μP 的协同</h4>
+<h4 id="sec1-3-h6">3.6 Embedding Norm / LayerScale / μP</h4>
 <p><strong>Embedding Norm</strong>：很多新一代模型（Gemma、Olmo、MiniMax-01）对 token embedding 直接做 RMSNorm，或在 embed 输入第一层前加一个独立 RMSNorm。动机是 embedding 初始化常用 $\mathcal{N}(0,1/d)$ 或 $\mathcal{N}(0,1)$，与残差流尺度不匹配；不归一化会导致<strong>第一层 attention 的 q·k 尺度异常</strong>，并放大长尾 token 的方差。Gemma 还把 embedding 乘 $\sqrt{d}$，等价于 RMSNorm 后乘常数增益。</p>
 <p><strong>LayerScale</strong>（CaiT，2021）：$x_{l+1}=x_l+\mathrm{diag}(\gamma_l)\cdot F_l(\mathrm{LN}(x_l))$，$\gamma_l\in\mathbb{R}^d$ 初始化为 $10^{-4}\sim10^{-5}$。让训练初期每个子层贡献接近 0，模型先"近似恒等"再缓慢打开通道，深 Transformer / 大 ViT 的训练曲线明显更平。LLM 端常以"<strong>residual gating</strong>"形式出现（Jamba、MoBA 部分实现把 $\gamma$ 与 MoE expert balance 结合）。</p>
 <p><strong>与 μP / 小 init 的关系</strong>：μP（Maximal Update Parametrization）把每层学习率、初始化按宽度自适应，使<strong>每个权重的更新对输出的影响是 $\mathcal{O}(1)$</strong>，从而宽度变化不需重调超参。μP 的"输出层 1/n 缩放"与 LayerScale 思路一致；小 init（Wang 2024 的 $\sigma=1/\sqrt{d}\cdot N^{-1/4}$）和 DeepNorm 的 $\beta$ 同源。三者与 QK-Norm 不冲突——前者控制<strong>权重尺度</strong>，QK-Norm 控制<strong>激活尺度</strong>，组合后大模型可以从 0 训到底而不需要复杂的 warmup 调度。</p>
