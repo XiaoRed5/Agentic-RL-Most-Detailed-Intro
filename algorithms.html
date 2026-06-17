@@ -1,0 +1,407 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agentic RL 入门 3：从 credit 错分到算法接口</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});"></script>
+<style>
+:root{--fg:#222;--muted:#666;--accent:#333;--rule:#ccc;--bg:#fff;--bg2:#f7f7f7;--link:#1a0dab}
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:var(--bg);color:var(--fg);font-family:'STIX Two Text','Noto Serif SC','Latin Modern Roman','Georgia','Times New Roman',serif;font-size:15px;line-height:1.9}
+.wrap{max-width:780px;margin:0 auto;padding:40px 24px 60px}
+code{font-family:"Fira Code","SF Mono","Consolas",monospace;font-size:.85em;background:#f3f4f6;padding:1px 5px;border-radius:3px;color:#d6336c}
+.katex-display{margin:10px 0!important;padding:10px 16px;background:#f8f9fa;border-left:3px solid #6C63FF;border-radius:0 4px 4px 0;overflow-x:auto}
+.katex-display>.katex{font-size:1.05em}
+.katex{font-size:1.0em}
+.hero{padding:0;border-bottom:none}
+.hero h1{font-size:26px;font-weight:700;letter-spacing:-.01em;color:#000;line-height:1.35;margin-bottom:6px;text-align:left}
+.wrap{max-width:760px;margin:0 auto;padding:48px 40px 120px}
+h2.sec{font-size:19px;font-weight:700;margin:48px 0 14px;padding-bottom:6px;border-bottom:2px solid #000;color:#000}
+h3.subsec{font-size:15.5px;font-weight:700;margin:28px 0 10px;padding:0;color:#000;background:none;border-left:none}
+p{margin:4px 0;text-align:justify;hyphens:auto}
+.paper{padding:6px 0 6px 0;margin:4px 0}
+.paper h4{font-size:.95em;font-weight:700;margin-bottom:4px}
+.paper h4 a{color:var(--fg);text-decoration:none}
+.paper h4 a:hover{text-decoration:underline}
+.paper p{font-size:.9em;color:var(--muted);margin:2px 0}
+.paper p.body{color:var(--fg)}
+.paper a.deep{color:var(--link);text-decoration:none;font-size:.85em}
+.paper a.deep:hover{text-decoration:underline}
+.tag{display:inline-block;padding:0 6px;font-size:.75em;color:var(--muted);border:1px solid var(--rule);border-radius:3px;margin:0 2px;font-family:system-ui,sans-serif}
+.tag-star{color:#000;border-color:#000;font-weight:700}
+table{width:100%;border-collapse:collapse;margin:14px 0;font-size:.88em}
+th{border-top:2px solid var(--fg);border-bottom:1px solid var(--fg);padding:6px 10px;text-align:left;font-weight:700;font-size:.85em;text-transform:uppercase;letter-spacing:.03em}
+td{padding:5px 10px;border-bottom:1px solid var(--rule)}
+tr:last-child td{border-bottom:2px solid var(--fg)}
+.note{padding:8px 14px;margin:8px 0;font-size:.88em;border:1px solid var(--rule);background:var(--bg2)}
+.note strong{font-weight:700}
+strong{font-weight:700}
+.back{display:inline-block;color:var(--link);text-decoration:none;font-size:.85em;margin-bottom:8px}
+.back:hover{text-decoration:underline}
+@media(max-width:600px){.wrap{padding:20px 14px}.hero h1{font-size:1.4em}}
+@media print{body{font-size:11pt}}
+.pipeline-map{margin:18px 0 20px;border:1px solid #ddd;background:#fff}
+.agentic-credit{display:grid;gap:0;border-bottom:1px solid #ddd}
+.credit-section{padding:12px 14px;border-bottom:1px solid #ddd}
+.credit-section:last-child{border-bottom:none}
+.credit-section-title{font-weight:700;color:#000;font-size:.88em;margin-bottom:8px}
+.traj-list{display:grid;gap:7px}
+.traj-row{display:grid;grid-template-columns:42px 1fr 48px;gap:8px;align-items:center;font-size:.78em;line-height:1.45}
+.traj-id{font-family:'Fira Code','SF Mono',monospace;color:#555;font-weight:700}
+.traj-path{display:flex;flex-wrap:wrap;align-items:center;gap:5px}
+.traj-token{background:#fff;border:1px solid #ccc;padding:3px 7px}
+.traj-token.decision{border-color:#333}
+.traj-token.obs{border-style:dashed;color:#666;background:#fafafa}
+.traj-token.bad{border-color:#9f2e2e;color:#7a2727}
+.traj-arrow{color:#999}
+.traj-reward{font-family:'Fira Code','SF Mono',monospace;text-align:center;border:1px solid #ddd;padding:3px 4px;background:#fafafa;color:#555}
+.traj-reward.good{border-color:#333;color:#000;font-weight:700}
+.traj-reward.fail{border-style:dashed}
+.credit-legend{margin-top:7px;color:#666;font-size:.76em;line-height:1.45;text-align:left}
+.broadcast-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:10px;align-items:stretch}
+.broadcast-card{border:1px solid #ddd;background:#fafafa;padding:9px 10px;font-size:.8em;line-height:1.5;text-align:left}
+.broadcast-card strong{display:block;color:#000;font-size:.98em;margin-bottom:4px}
+.broadcast-card.bad{background:#fff7f7;border-color:#e2b8b8;color:#7a2727}
+.broadcast-line{display:flex;flex-wrap:wrap;align-items:center;gap:6px;margin-top:5px}
+.broadcast-pill{border:1px solid #ddd;background:#fff;padding:3px 7px;font-family:'Fira Code','SF Mono',monospace;font-size:.9em;color:#444}
+.broadcast-pill.hot{border-color:#333;color:#000;font-weight:700}
+.credit-map{display:grid;grid-template-columns:92px 22px 1fr;gap:8px;align-items:center;margin-bottom:9px}
+.credit-map-from,.credit-map-to{border:1px solid #ddd;background:#fafafa;padding:7px 9px;font-size:.82em;line-height:1.45;text-align:left}
+.credit-map-from{font-family:'Fira Code','SF Mono',monospace;text-align:center;color:#000;font-weight:700}
+.credit-map-arrow{text-align:center;color:#777;font-weight:700}
+.step-credit-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:7px}
+.step-credit{border:1px solid #ddd;border-top:3px solid #333;background:#fff;padding:8px 8px;min-height:74px}
+.step-credit.neg{border-top-color:#9f2e2e}
+.step-credit.mask{border-top-style:dashed;color:#666;background:#fafafa}
+.step-credit .sym{display:block;font-family:'Fira Code','SF Mono',monospace;color:#777;font-size:.76em;margin-bottom:3px}
+.step-credit strong{display:block;color:#000;font-family:'Fira Code','SF Mono',monospace;font-size:.86em;margin-bottom:3px}
+.step-credit small{display:block;color:#555;font-size:.76em;line-height:1.35}
+.credit-update-note{margin-top:8px;color:#555;font-size:.78em;line-height:1.5;text-align:left}
+.interface-map{display:grid;gap:8px;margin:12px 0 22px;background:transparent}
+.interface-row{display:grid;grid-template-columns:132px 1fr 1fr 112px;gap:8px;align-items:stretch;min-height:78px;padding:8px;border:1px solid #ddd;background:#fafafa}
+.interface-head{display:flex;flex-direction:column;justify-content:center;padding:9px 10px;border-left:4px solid #333;background:#fff}
+.interface-num{display:block;font-family:'Fira Code','SF Mono',monospace;color:#777;font-size:.72em;margin-bottom:3px}
+.interface-title{display:block;color:#000;font-weight:700;font-size:.86em;line-height:1.35}
+.interface-cell{padding:9px 10px;border:1px solid #e2e2e2;background:#fff;font-size:.8em;line-height:1.5;text-align:left;color:#444}
+.interface-label{display:block;color:#999;font-size:.72em;font-weight:700;letter-spacing:.03em;text-transform:uppercase;margin-bottom:3px;font-family:system-ui,sans-serif}
+.interface-paper{display:flex;align-items:center;justify-content:center;border:1px solid #e2e2e2;padding:9px 8px;background:#fff;color:#333;font-family:'Fira Code','SF Mono',monospace;font-size:.76em;line-height:1.45;text-align:center}
+.interface-row[data-layer="rollout"] .interface-head{border-left-color:#666}
+.interface-row[data-layer="credit"] .interface-head{border-left-color:#3d5a80}
+.interface-row[data-layer="reward"] .interface-head{border-left-color:#6b705c}
+.interface-row[data-layer="skill"] .interface-head{border-left-color:#7d5a50}
+.interface-row[data-layer="loss"] .interface-head{border-left-color:#8a4f7d}
+@media(max-width:760px){
+  .traj-row{grid-template-columns:1fr;gap:5px}
+  .traj-reward{text-align:left;width:max-content}
+  .broadcast-grid,.credit-map{grid-template-columns:1fr}
+  .credit-map-arrow{text-align:left}
+  .step-credit-grid{grid-template-columns:1fr 1fr}
+  .interface-row{grid-template-columns:1fr}
+  .interface-paper{justify-content:flex-start;text-align:left}
+}
+/* 方案 1：左标签贴左对齐 + 右侧正文 */
+.paper-grid p.body{display:grid;grid-template-columns:64px 1fr;gap:14px;align-items:start;margin:10px 0}
+.paper-grid p.body > strong:first-child{color:#666;font-weight:700;font-size:.82em;text-align:left;line-height:1.7;padding-top:1px}
+.paper-grid p.body > span{display:block}
+.paper-grid p.body.p-cont{display:block;margin-left:78px}
+.paper-grid .katex-display{margin:6px 0 6px 78px!important}
+
+/* 方案 2：彩色左边框小卡片 */
+.paper-cards p.body{border-left:3px solid #ccc;padding:8px 0 8px 14px;margin:12px 0;background:#fdfdfd}
+.paper-cards p.body[data-kind="motive"]{border-left-color:#888}
+.paper-cards p.body[data-kind="method"]{border-left-color:#3b82f6}
+.paper-cards p.body[data-kind="formula"]{border-left-color:#8b5cf6;background:#faf9ff}
+.paper-cards p.body[data-kind="result"]{border-left-color:#10b981}
+.paper-cards p.body[data-kind="note"]{border-left-color:#f59e0b}
+.paper-cards .katex-display{border-left:3px solid #8b5cf6;background:#faf9ff;margin:12px 0!important;padding-left:14px}
+
+/* 方案 3：at-a-glance 三格 */
+.glance{display:grid;grid-template-columns:1fr 1fr 1fr;gap:0;margin:10px 0 16px;border:1px solid #ddd;font-size:.85em}
+.glance > div{padding:8px 12px;border-right:1px solid #ddd}
+.glance > div:last-child{border-right:none}
+.glance .g-label{font-size:.72em;color:#999;text-transform:uppercase;letter-spacing:.06em;font-weight:700;margin-bottom:3px}
+.glance .g-body{color:#333;line-height:1.5}
+</style>
+</head>
+<body>
+<div class="wrap">
+<h1>Agentic RL 入门 3：从 credit 错分到算法接口</h1>
+
+<p>本系列前两篇已经交代了 agentic RL 的基础知识、以及信用分配的介绍。本篇做的事是：<strong>先把 agentic RL 最容易错分 credit 的地方画清楚，再看 2026 年 4-6 月窗口里的工作分别改哪个接口</strong>。</p>
+
+<p>agentic RL 的核心难点是：<strong>长轨迹只拿到终点 0/1 reward，credit 很容易错分</strong>——成功轨迹里的坏工具会被奖励，失败轨迹里的好搜索也会被惩罚：</p>
+
+<div class="pipeline-map">
+  <div class="agentic-credit">
+    <div class="credit-section">
+      <div class="credit-section-title">1. Agentic rollout：模型 action 和环境 observation 交错</div>
+      <div class="traj-list">
+        <div class="traj-row">
+          <div class="traj-id">$\tau_1$</div>
+          <div class="traj-path">
+            <span class="traj-token decision">读任务</span><span class="traj-arrow">→</span>
+            <span class="traj-token decision">好搜索</span><span class="traj-arrow">→</span>
+            <span class="traj-token obs">网页返回</span><span class="traj-arrow">→</span>
+            <span class="traj-token bad">多余工具</span><span class="traj-arrow">→</span>
+            <span class="traj-token decision">答对</span>
+          </div>
+          <div class="traj-reward good">$R=1$</div>
+        </div>
+        <div class="traj-row">
+          <div class="traj-id">$\tau_2$</div>
+          <div class="traj-path">
+            <span class="traj-token decision">读任务</span><span class="traj-arrow">→</span>
+            <span class="traj-token decision">好搜索</span><span class="traj-arrow">→</span>
+            <span class="traj-token obs">网页返回</span><span class="traj-arrow">→</span>
+            <span class="traj-token bad">证据误读</span><span class="traj-arrow">→</span>
+            <span class="traj-token decision">答错</span>
+          </div>
+          <div class="traj-reward fail">$R=0$</div>
+        </div>
+        <div class="traj-row">
+          <div class="traj-id">$\tau_3$</div>
+          <div class="traj-path">
+            <span class="traj-token decision">读任务</span><span class="traj-arrow">→</span>
+            <span class="traj-token bad">错搜索</span><span class="traj-arrow">→</span>
+            <span class="traj-token obs">工具返回</span><span class="traj-arrow">→</span>
+            <span class="traj-token bad">无效工具</span><span class="traj-arrow">→</span>
+            <span class="traj-token decision">答错</span>
+          </div>
+          <div class="traj-reward fail">$R=0$</div>
+        </div>
+      </div>
+      <div class="credit-legend">实线框是模型生成的 decision tokens；虚线框是网页 / 工具 observation，只进入上下文，训练时通常 masked。</div>
+    </div>
+    <div class="credit-section">
+      <div class="credit-section-title">2. Trajectory-level RL 的错分：整条轨迹一起奖惩</div>
+      <div class="broadcast-grid">
+        <div class="broadcast-card">
+          <strong>标准广播</strong>
+          <div>GRPO / PPO 先把每条轨迹的 reward 变成一个 trajectory-level advantage，再乘到该轨迹的模型 token 上。</div>
+          <div class="broadcast-line">
+            <span class="broadcast-pill hot">$A(\tau)$</span>
+            <span class="traj-arrow">×</span>
+            <span class="broadcast-pill">all decision tokens</span>
+          </div>
+        </div>
+        <div class="broadcast-card bad">
+          <strong>agentic 断点</strong>
+          <div>成功轨迹里的"多余工具"也吃正 credit；失败轨迹里的"好搜索"也吃负 credit。最终分数知道这一局成没成，却不知道哪一步该负责。</div>
+        </div>
+      </div>
+    </div>
+    <div class="credit-section">
+      <div class="credit-section-title">3. Credit assignment 要补的一层：从轨迹分数到 step-level signal</div>
+      <div class="credit-map">
+        <div class="credit-map-from">$R(\tau_i)$</div>
+        <div class="credit-map-arrow">→</div>
+        <div class="credit-map-to">$\{A_{i,1}, A_{i,2}, \ldots, A_{i,T}\}$：每一步自己的 credit，再落到对应 action tokens。</div>
+      </div>
+      <div class="step-credit-grid">
+        <div class="step-credit"><span class="sym">$A_{\text{read}}$</span><strong>+</strong><small>读清任务约束</small></div>
+        <div class="step-credit"><span class="sym">$A_{\text{search}}$</span><strong>+</strong><small>搜索命中方向</small></div>
+        <div class="step-credit mask"><span class="sym">$A_{\text{obs}}$</span><strong>mask</strong><small>网页/工具返回不更新</small></div>
+        <div class="step-credit neg"><span class="sym">$A_{\text{tool}}$</span><strong>-</strong><small>工具调用带偏</small></div>
+        <div class="step-credit"><span class="sym">$A_{\text{answer}}$</span><strong>+</strong><small>答案整合有效</small></div>
+      </div>
+      <div class="credit-update-note">训练时真正更新的是 $A_{i,t}\times \log\pi_\theta(a_{i,t}\mid h_{i,t})$：credit 只乘到模型生成的 action tokens 上，环境 observation 保持 masked。</div>
+    </div>
+  </div>
+</div>
+
+<p>围绕这个 credit 错分问题，近期工作大致从五个接口切入：</p>
+
+<div class="interface-map">
+  <div class="interface-row" data-layer="rollout">
+    <div class="interface-head"><span class="interface-num">01</span><span class="interface-title">Intrinsic / Rollout 信号</span></div>
+    <div class="interface-cell"><span class="interface-label">动什么</span>分支 / 截断 / 重采</div>
+    <div class="interface-cell"><span class="interface-label">修什么</span>关键决策点被长轨迹淹没，坏 rollout 污染组内比较</div>
+    <div class="interface-paper">APPO<br>T2PO</div>
+  </div>
+  <div class="interface-row" data-layer="credit">
+    <div class="interface-head"><span class="interface-num">02</span><span class="interface-title">信用分配 / 中间信号</span></div>
+    <div class="interface-cell"><span class="interface-label">动什么</span>process reward / retrospective value</div>
+    <div class="interface-cell"><span class="interface-label">修什么</span>末端结果无法定位哪一步贡献最大</div>
+    <div class="interface-paper">Orchard<br>PiCA</div>
+  </div>
+  <div class="interface-row" data-layer="reward">
+    <div class="interface-head"><span class="interface-num">03</span><span class="interface-title">Reward 设计</span></div>
+    <div class="interface-cell"><span class="interface-label">动什么</span>reward source / composition / density</div>
+    <div class="interface-cell"><span class="interface-label">修什么</span>0/1 太稀疏，组级方差归零</div>
+    <div class="interface-paper">SRL<br>ToolOmni<br>OpenWebRL</div>
+  </div>
+  <div class="interface-row" data-layer="skill">
+    <div class="interface-head"><span class="interface-num">04</span><span class="interface-title">Skill 信号 / 生命周期</span></div>
+    <div class="interface-cell"><span class="interface-label">动什么</span>skill prompt、skill 蒸馏、skill 库增删</div>
+    <div class="interface-cell"><span class="interface-label">修什么</span>高层经验只在外部说明书里，不能稳定内化或维护</div>
+    <div class="interface-paper">SDAR<br>SLIM</div>
+  </div>
+  <div class="interface-row" data-layer="loss">
+    <div class="interface-head"><span class="interface-num">05</span><span class="interface-title">Loss 旁路监督</span></div>
+    <div class="interface-cell"><span class="interface-label">动什么</span>PPO / GRPO 主项旁加 SFT-style aux loss</div>
+    <div class="interface-cell"><span class="interface-label">修什么</span>主 reward 不教的局部行为学不到</div>
+    <div class="interface-paper">AKBE</div>
+  </div>
+</div>
+
+
+<h2 class="sec">1. 信用分配：从终点 reward 到中间决策</h2>
+<p>按"信号来源"分两支：<strong>1.1 Intrinsic Signal</strong> 从 policy 自身的不确定性 / 未来策略升值里挖信号（无外部模型）；<strong>1.2 Progress Reward</strong> 借助外部 step-PRM / 事后价值打分把"进展"显式注入。</p>
+
+<h3 class="subsec">1.1 Intrinsic Signal：用策略自身信号定位关键决策点</h3>
+<p>共性：不额外训练 PRM，而是从 policy 自身的不确定性、迟疑度或未来升值里找信号；这些信号可以用于截断、重采、branch，也可以辅助 advantage 加权。</p>
+
+<div class="paper paper-grid">
+<h4><a href="17_appo.html">[1] APPO — Agentic Procedural Policy Optimization</a> <span class="tag tag-star">★ 2026/06 NEW</span> <span class="tag">USTC × Alibaba AMAP</span> <span class="tag">token 级 branching</span> <span class="tag">未来感 advantage</span></h4>
+<p class="body" style="font-style:italic;color:#666;font-size:.9em;margin:2px 0 6px;display:block">一句话：同一个"未来升值量"，既挑 token 分叉点又放大功劳。</p>
+<p class="body"><strong>动机</strong><span>前作 ARPO 只在 tool-call 边界 branching（即同一前缀派生多条 continuation 做 credit 局部化）。APPO 想把粒度推到每个 token，但 pilot 发现"光挑高熵 token"会大量命中 march/november 这类罕见词，而不是真正的决策点——需要再加一个信号来过滤。</span></p>
+<p class="body"><strong>$\Omega$ 升值</strong><span>对 rollout 第 $i$ 个 token，把之后所有 token 的新旧策略概率比 $\rho_{i'}$ 按距离衰减地累乘起来。$\Omega$ 大就意味着沿这条路走下去，新模型相对旧模型显著更看好——它在量化"这个位置的选择对后续轨迹有多重要"。</span></p>
+$$\Omega_{n,i} = \exp\Big(\sum_{i' \ge i} \gamma^{i'-i} \log \rho_{i'}\Big)$$
+<p class="body"><strong>BS 选位置</strong><span>Branching Score = 熵 × 未来升值——两个信号分别 z-score 归一再相乘，任一项接近 0 都会被压掉。所以只有"现在不确定 + 未来真的会改变模型偏好"的 token 才能拿高分，自动过滤掉高熵罕见词。$\Omega$ 先做不对称 clip 防止离群 token 主宰排名：</span></p>
+$$\mathrm{BS}_{n,i} = Z\big(\mathrm{clip}(\Omega_{n,i})\big) \cdot Z(H_{n,i})$$
+<p class="body"><strong>$\Omega$ 复用</strong><span>每条 rollout 取 BS top-B 的 token 用当前策略续写 branch（init 和 branch 因采样分布不同需分组各算 advantage）。然后 base advantage 再被 $\Omega$ 派生的项放大一次——同一个未来升值量，前面用来选位置，后面用来分功劳。这是 APPO 比同期 step-PRM 注入、固定 workflow 模板等方案"轻"的核心原因。</span></p>
+<p class="body"><strong>结果</strong><span><strong>GAIA Qwen3-14B 46.6 新 SOTA</strong>；消融显示去掉 $\Omega$ 派生的 advantage 放大项就掉 3.4 点（Qwen2.5-7B），说明"选位置"和"分功劳"两处复用都有贡献。<a class="deep" href="17_appo.html">→ 深读</a></span></p>
+</div>
+
+<div class="paper paper-grid">
+<h4><a href="12_t2po.html">[2] T2PO — Two-level Trajectory Policy Optimization</a> <span class="tag">UCLA</span> <span class="tag">ICML Spotlight</span> <span class="tag">token 不确定性</span> <span class="tag">turn 重采</span></h4>
+<p class="body" style="font-style:italic;color:#666;font-size:.9em;margin:2px 0 6px;display:block">一句话：loss 和 reward 都不动，靠一个迟疑度信号在 rollout 当下截断卡壳段、重采重复轮。</p>
+<p class="body"><strong>承接</strong><span>前几篇都在动 reward / advantage / loss 三件套，T2PO 反过来——这三件全不改，只改 rollout 本身。理由是：多轮 agentic RL 的崩塌有相当一部分来自坏 rollout 污染了组内对比（一条轨迹在 think 里磨蹭半天、或者这一轮跟上一轮在重复同一套推理），把这些样本砍掉，组内方差自然就稳了。</span></p>
+<p class="body"><strong>迟疑度</strong><span>两个钩子共用一个 token 级标量 $M_t$:把每步的 Shannon 熵 $H_t$（分布平不平）和 top-$j$ 负对数概率均值 $C_t$（头部确不确定）各自沿轨迹 min-max 归一化后线性融合，落在 $[0,1]$:</span></p>
+$$M_t = \alpha \cdot \tilde{H}_t + (1-\alpha) \cdot \tilde{C}_t$$
+<p class="body"><strong>token 层 TTI</strong><span>判 over-thinking 不看 $M_t$ 绝对值（商品名等关键词本就高熵），而是看相邻步差 $\Delta_t = |M_t - M_{t-1}|$ 在滑动窗口 $N$ 步内的均值是否塌到阈值以下——塌了就说明思考在原地踏步，直接覆写下一步 logits 强制收尾 <code>&lt;/think&gt;</code> 进入动作段。每条轨迹只允许触发一次，防止模型学到"先吐两个废 token 就被切"的退化解。</span></p>
+<p class="body"><strong>turn 层 TDS</strong><span>把这一轮所有 token 的 $M_t$ 做几何平均得到整轮迟疑度 $\Phi^k$，再看跨轮差 $\Gamma^k = |\Phi^k - \Phi^{k-1}|$。若 $\Gamma^k$ 小于阈值，说明这一轮和上一轮的"迟疑 profile"几乎一模一样（典型如反复 search 同款商品却又选错颜色），同 state 重采本轮。与 SimpleTIR 那种"reward=0 / 无 tool call 就过滤"不同，TDS 判的是<strong>跨轮不确定性变化</strong>，而非单轮内的合法性。</span></p>
+<p class="body"><strong>收益</strong><span>两个钩子都跑在采样路径上，零反向传播、零额外模型，可直接叠到 GRPO / GiGPO / DAPO 之上。WebShop 上 Qwen3-4B 把 SR 推到 <strong>81.64</strong>，三 seed 方差从 ±4.11 压到 ±0.39——稳定性才是真正的护城河。<a class="deep" href="12_t2po.html">→ 深读</a></span></p>
+</div>
+
+<div class="note"><strong>这条线的判别标志：</strong>所有改动都发生在 <code>generate</code> 调用内部或两次 rollout 之间，从不进 loss 公式。Orchard 的 BAR 自适应采样思路类似（动态调 $N$），但 Orchard 主贡献在 §1.2 CA-SFT，故放在那里。</div>
+
+<h3 class="subsec">1.2 Progress Reward：给中间步骤打进展分</h3>
+<p>共性：借助一个事后价值 $V(s_t)$ 或 step-PRM 给中间步打"进展分"，再按方法差异把信号落到 SFT 监督、reward tensor 或 GAE 回流路径上。</p>
+
+<div class="paper paper-grid">
+<h4><a href="05_orchard.html">[3] Orchard — CA-SFT + Balanced Adaptive Rollout</a> <span class="tag">Microsoft Research</span> <span class="tag">CA-SFT</span> <span class="tag">自适应采样</span> <span class="tag">SWE+GUI</span></h4>
+<p class="body" style="font-style:italic;color:#666;font-size:.9em;margin:2px 0 6px;display:block">一句话：失败轨迹里仍有"做对的子段"，事后给每步打价值，把上升段捞出来当 SFT 监督。</p>
+<p class="body"><strong>动机</strong><span>SWE 任务里约 30% 的轨迹最终测试不过，常规做法是整条丢掉。但失败轨迹里往往有几步确实在朝对的方向走，全扔等于把这部分免费监督也浪费了。</span></p>
+<p class="body"><strong>事后价值</strong><span>关键铺垫是 $V(s_t)$ <strong>不是要训的 critic</strong>，而是 teacher 已经知道最终结果之后回头打的事后分数，含义是"站在这一步往后看，通过测试的概率有多少"。它只在数据准备阶段算一次，不进训练 loop。</span></p>
+<p class="body"><strong>上升段 SFT</strong><span>由 $V(s_t)$ 派生出每步的功劳信号 $c_t = V(s_{t+1}) - V(s_t)$，找出连续若干步满足 $c_t \ge 0.05$ 的子段 $S(\tau)$（rise segment），只在这些 token 上算 SFT loss：</span></p>
+$$\mathcal{L} = -\sum_{t \in S(\tau)} \log \pi_\theta(a_t \mid h_t)$$
+<p class="body p-cont"><strong>注意 $c_t$ 只用来定位高功劳子段，定位完之后做的是 SFT，不是把它当 advantage 喂给 PPO</strong>——所以也不需要外挂 step-PRM 这种步级奖励模型，是纯 trajectory-internal 的信用分配。</p>
+<p class="body"><strong>BAR 采样</strong><span>组内全对或全错时 advantage 归零、整组算力浪费，是采样工程线的老问题。BAR 改成边采边判：每次增量采 $s$ 条，一旦累计正例比例 $\rho$ 落进中间区间 $[0.375, 0.625]$ 就立刻早停凑足一组；持续全对/全错则采到上限再 fallback。本文重心仍在 CA-SFT，BAR 是配套。</span></p>
+<p class="body"><strong>结果</strong><span>这套配方让一个 <strong>4B VLM 在 SWE-bench Verified 上反超 235B 的 distill teacher</strong>，说明"从失败轨迹捞高功劳子段"在小模型上尤其划算。<a class="deep" href="05_orchard.html">→ 深读</a></span></p>
+</div>
+
+<div class="paper paper-grid">
+<h4><a href="16_pica.html">[4] PiCA — Pivot Credit Assignment</a> <span class="tag">HKUST(GZ)</span> <span class="tag">step-PRM</span> <span class="tag">GAE 兼容</span> <span class="tag">无 value head</span></h4>
+<p class="body" style="font-style:italic;color:#666;font-size:.9em;margin:2px 0 6px;display:block">一句话：用单调 PRM 把每次检索的信息增益写成中间 reward，让 GAE 自己把功劳回流到 pivot 步。</p>
+<p class="body"><strong>动机</strong><span>Search-R1 这类多跳检索代理只在末端拿一个 outcome reward（EM/F1），中间哪一次检索才是 pivot（让模型从"不会"跳到"会"的关键步）、哪一步只是凑数，advantage 一路均摊之后完全分不清。PiCA 的解法是外挂一个过程打分器，把信用分配的活儿还给 PPO。</span></p>
+<p class="body"><strong>单调 PRM</strong><span>训一个 step-PRM 吃截至第 $t$ 步的部分轨迹，输出"还没答对"的概率 $h(t)$，越接近答案越小。关键是加一道<strong>单调性约束</strong>（hinge 罚 $h(t)$ 在好轨迹上回升、在坏轨迹上反悔），强制"信息只增不减"——这样 $h(t)$ 的下降量才能当成"这一步真的有进展"的可信信号。</span></p>
+<p class="body"><strong>注入 reward</strong><span>rollout 时每碰到一次 <code>&lt;/search&gt;</code>，就把相对一个固定基线的增益写进该 token 的 reward：</span></p>
+$$r_t^{\text{step}} = 1 - h(t) - r_{\text{base}}$$
+<p class="body p-cont">后面再乘 $\alpha\gamma^{(i-2)}$ 的指数衰减抑制无脑刷工具调用。注意这是直接落到 token 级 reward 张量上，而不是新增一路 head。</p>
+<p class="body"><strong>GAE 回流</strong><span>因为中间 reward 已经在轨迹内，GAE 自然把它沿 $\gamma\lambda$ 衰减回流到造成那次 pivot 的所有 token 上，原来那一路 outcome critic 完全够用——<strong>不需要新增 value head</strong>，这是 PiCA 相对 step-level RM 路线最便宜的地方。<a class="deep" href="16_pica.html">→ 深读</a></span></p>
+</div>
+
+<div class="note"><strong>这一组的本质冲突：</strong>Orchard / PiCA 各用一种"自上而下"的信号 — retrospective value、step-PRM — 把端点 reward 分摊到中间。两者其实可叠，例如把 PiCA 的过程打分器接到 Orchard 的失败轨迹回溯链路里。</div>
+
+<table>
+<tr><th>方法</th><th>credit 来源</th><th>关键设计</th><th>结果亮点</th></tr>
+<tr><td>APPO</td><td>未来感 $\Omega$（intrinsic）</td><td>BS 选位置 + advantage 放大</td><td>GAIA 14B 46.6 SOTA</td></tr>
+<tr><td>T2PO</td><td>token 迟疑度（intrinsic）</td><td>TTI 截 think + TDS 重采 turn</td><td>WebShop 81.64 / 方差 ±0.39</td></tr>
+<tr><td>Orchard (CA-SFT)</td><td>retrospective value $V(s_t)$</td><td>失败 → 监督信号</td><td>SWE-V 64.3 → 67.5%</td></tr>
+<tr><td>PiCA</td><td>step-PRM</td><td>注入 reward_tensor 让 GAE 接手</td><td>不动 trainer，~80 行</td></tr>
+</table>
+
+<h2 class="sec">2. Skill 信号：把外部经验内化或维护起来</h2>
+
+<div class="paper paper-grid">
+<h4><a href="14_sdar.html">[5] SDAR — Self-Distilled Agentic RL</a> <span class="tag">ZJU-REAL</span> <span class="tag">aux loss</span> <span class="tag">蒸馏门控</span> <span class="tag">verl 兼容</span></h4>
+<p class="body" style="font-style:italic;color:#666;font-size:.9em;margin:2px 0 6px;display:block">一句话：同模型双前向自蒸馏，只在"看了攻略才会"的 token 上拉 student。</p>
+<p class="body"><strong>动机</strong><span>agentic 任务 reward 稀疏，想让模型学一些高层 skill（怎么 clean、怎么 pick_and_place），但又不愿意推理时还在 prompt 里挂一份 skill 说明书。SDAR 想把"看攻略才会做"的能力直接压进权重，推理时把攻略撤掉。</span></p>
+<p class="body"><strong>双前向</strong><span>对当前 student $\pi_\theta$，第一遍只喂原 prompt $x$，第二遍把人工写的 skill markdown $r$ 拼在 $x$ 前面再 forward 一次。两次共享同一份权重，第二次充当"看了攻略的 teacher"——这就是 self-distillation 的来源：老师就是带 hint 的自己。</span></p>
+<p class="body"><strong>$\delta_t$ 门控</strong><span>对每个生成 token $y_t$，算 teacher 比 student 多出来的 log-prob $\delta_t$，再过 sigmoid 压成 0~1 的软门控 $g_t$，$\beta$ 控制切换陡峭程度：</span></p>
+$$\delta_t = \log \pi_\theta(y_t \mid r, x) - \log \pi_\theta(y_t \mid x),\quad g_t = \sigma(\beta \cdot \delta_t)$$
+<p class="body p-cont">$g_t \to 1$ 意味着"看了攻略才会"，该蒸馏；$g_t \to 0$ 说明 student 已经反超，别瞎纠正。</p>
+<p class="body"><strong>加权 NLL</strong><span>aux loss 形式是 student 自身负对数似然，再被 $g_t$ 加权——可以理解为把 teacher 近似成 one-hot 后退化出来的 token-level CE/KL，只是用 $g_t$ 决定每个 token 学多少。它跟主 policy gradient 并行相加，GRPO 那一套 advantage、rollout、reward 没动：</span></p>
+$$\mathcal{L}_{\text{SDAR}} = -\sum_t g_t \cdot \log \pi_\theta(y_t \mid x)$$
+<p class="body p-cont">推理时撤掉 $r$，student 必须把"看攻略才学得到"的那部分技巧内化到权重里。<a class="deep" href="14_sdar.html">→ 深读</a></p>
+</div>
+
+<div class="paper paper-grid">
+<h4><a href="13_slim.html">[6] SLIM — Skill Lifecycle Management</a> <span class="tag">CUHK</span> <span class="tag">skill 生命周期</span> <span class="tag">边际贡献估计</span></h4>
+<p class="body" style="font-style:italic;color:#666;font-size:.9em;margin:2px 0 6px;display:block">一句话：把 skill 库本身当成可学变量，用 leave-one-out 决定每张小抄的去留。</p>
+<p class="body"><strong>动机</strong><span>skill（一段自然语言小抄，写成 <code>SKILL.md</code> 挂在外部库里供 agent 现查现用）该怎么管，前人各执一端——Voyager 把跑出来的技能一股脑塞进库、只增不减；SkillRL 则把 skill 当成 RL 训练时的脚手架，训完就丢。SLIM 把活跃 skill 集 $\mathcal{S}=\{s_1,...,s_K\}$ 和策略并列为训练变量：策略在学，库也在学。</span></p>
+<p class="body"><strong>边际贡献</strong><span>判断某张小抄值不值得留很直接——同一批 validation 任务跑两遍，一遍带它、一遍抠掉它，成功率差就是它的贡献：</span></p>
+$$\Delta_k = \mathrm{Eval}(\mathcal{S}) - \mathrm{Eval}(\mathcal{S} \setminus \{s_k\})$$
+<p class="body"><strong>保守退役</strong><span>单次 audit 噪声大，$\Delta_k$ 走 EMA 平滑后做三档调度：高于上界留下，落入中间带继续观望，只有跌破下界（极保守，几乎打平才退）且曝光数与连续低分轮次都达标才正式退役。门槛刻意压低，是为了避免把"暂时没用上但关键时刻顶事"的 skill 误杀。</span></p>
+<p class="body"><strong>扩库</strong><span>当某类任务带着现有 skill 仍频繁失败，说明库里缺角，触发 expand——把失败轨迹喂给外部 LLM，让它写一张新 <code>SKILL.md</code> 补进库。于是 skill 集大小是一条非单调曲线：先扩后缩，库随着策略一起被裁剪和补完。<a class="deep" href="13_slim.html">→ 深读</a></span></p>
+</div>
+
+<div class="note"><strong>这条线的共性：</strong>两篇都把"skill 说明书"作为一阶变量处理——SDAR 通过双前向蒸馏把攻略压进权重、推理时撤掉；SLIM 直接把 skill 库本身作为可学集合、按边际贡献增删。与 Voyager-style skill library 的根本区别：skill 信号参与训练 epoch 更新，而非只读 prompt 拼接。</div>
+
+<h2 class="sec">3. Reward 设计：让终点信号变密、变可分</h2>
+<p>共性：<strong>advantage 公式、PPO loss、采样策略都不动</strong>，只换 reward 的"来源"或"形状"。解法是把 reward 变连续、变可分解、或换一个更密的判别源。</p>
+
+<div class="paper paper-grid">
+<h4><a href="09_srl.html">[7] SRL — Step-wise Reward Learning</a> <span class="tag">Google</span> <span class="tag">稠密 reward</span> <span class="tag">SWE-Bench</span></h4>
+<p class="body" style="font-style:italic;color:#666;font-size:.9em;margin:2px 0 6px;display:block">一句话：稀疏奖励全挂时，用字符相似度救活 GRPO 梯度。</p>
+<p class="body"><strong>动机</strong><span>难题上 7B 模型一组 rollout 经常全答错，组内 reward 全是 0，GRPO 标准化后 advantage 也整组归零——模型完全没梯度可学。这是 agentic RL 训练最常见的"全 fail 组无信号"困境，题越难越无解。</span></p>
+<p class="body"><strong>动作切分</strong><span>专家轨迹生成：数学用 R1 在 s1K-1.1 上生成的长 CoT，SWE 用 Claude 3.7 Sonnet 跑出来且 patch 通过校验的 5000 条 agent 轨迹（展开成 134k 个 step item）。切分完全沿用 teacher 已有的结构化分段：一步就是一次 <code>&lt;function=bash&gt;</code> 工具调用或一个"1. Title"编号子标题，不引入新算法。模型先在 <code>&lt;think&gt;</code> 段自由思考、再在 <code>&lt;solution&gt;</code> 段吐出 action。</span></p>
+<p class="body"><strong>稠密 reward</strong><span>用 <code>difflib</code> 算模型 action 与专家 action 的字符重合率 $r\in[0,1]$ 作为 reward（Ratcliff-Obershelp 算法：递归匹配两个字符串的最长公共子串、占总长度的比例，能对"部分对"给出连续分数）。</span></p>
+<p class="body"><strong>救活梯度</strong><span>把这个连续 $r$ 喂进 GRPO 的组内归一化。即便整组都不像专家，字符重合率也会散开、$\sigma>0$，advantage 天然不再塌零。</span></p>
+<p class="body"><strong>结果</strong><span>7B 模型在 SWE-Bench Verified 端到端从 <strong>3.2% → 8.6%</strong>（oracle file edit 设置下 5.8 → 14.8%，相对增益 74%）。论文最强配方是两阶段：先用 SRL 的 dense reward 把 policy 拉进专家行为流形，再切到 RLVR 用稀疏 0/1 做 outcome 校准。<a class="deep" href="09_srl.html">→ 深读</a></span></p>
+</div>
+
+<div class="paper paper-grid">
+<h4><a href="15_toolomni.html">[8] ToolOmni — 多目标 GRPO 乘性组合</a> <span class="tag">ACL 2026</span> <span class="tag">多目标 GRPO</span> <span class="tag">乘性 reward</span></h4>
+<p class="body" style="font-style:italic;color:#666;font-size:.9em;margin:2px 0 6px;display:block">一句话：工具使用拆成两段独立 GRPO，乘性 reward 让模型没法靠格式分凑数。</p>
+<p class="body"><strong>两段 RL</strong><span>开放工具使用其实是两件事——先翻到对的资料，再基于资料拼出答案。ToolOmni 把它拆成两段独立训练：检索段只考"召回到没"，回答段只考"答得对不对"，互不干扰。</span></p>
+<p class="body"><strong>乘性 reward</strong><span>检索段把"召回率"和"工具顺序命中率"两个分量相<strong>乘</strong>，再加一小项 format 分。乘的意义是任意一项归零则主分归零——光 search 召回拉满但 final_tools 乱排照样零分；想只靠 format 分撑场面也撑不起来：</span></p>
+$$R_{\text{ret}} = \text{InfoRecall} \times \text{AnswerTran} + 0.2 \cdot \text{format}$$
+<p class="body"><strong>段间隔离</strong><span>两段 reward 量纲完全不同（一个是 0~1 比率，一个是 RM 整数分），所以各自做组内归一化避免互相挤压；再用一道 $R_{\text{ret}}\ge 0.95$ 的门槛把"资料没找全"的烂样本挡在回答段之外，防止检索失败把噪声传到答题环节。<a class="deep" href="15_toolomni.html">→ 深读</a></span></p>
+</div>
+
+<div class="paper paper-grid">
+<h4><a href="06_openwebrl.html">[9] OpenWebRL — MM-GRPO + 自蒸 judge</a> <span class="tag">Microsoft Research</span> <span class="tag">MM-GRPO</span> <span class="tag">自蒸 judge</span> <span class="tag">多模态</span></h4>
+<p class="body" style="font-style:italic;color:#666;font-size:.9em;margin:2px 0 6px;display:block">一句话：把闭源 judge 蒸成会讲理由的小模型抗 hack，再用整轨广播 + 不对称 clip 的 MM-GRPO 续命视觉 agent 的探索。</p>
+<p class="body"><strong>动机</strong><span>视觉 web agent 在活体浏览器里跑长轨迹（看截图、点 click/scroll/type 等原子动作），结尾只拿一个 0/1 reward。这条 reward 默认走闭源 API，又贵又把 pipeline 卡死，必须先把 judge 拿回自己手里。</span></p>
+<p class="body"><strong>蒸 judge</strong><span>作者让闭源大模型给一批 rollout 打"(理由, 0/1)"双标签，再蒸出一个小 judge 替代 API。关键不是省钱，而是让 student 同时学"为什么判 1"——只学 bit 的 judge 容易把判断折叠成几个表面信号，policy 把这些信号刷出来就能骗高分；逼 judge 输出理由能把判断顶到更鲁棒的语义层，让 reward hacking 难得多。</span></p>
+<p class="body"><strong>MM-GRPO</strong><span>不做 step 级拆解（那是 §1 那组的活），整条轨迹共享同一个 advantage，再广播给该轨迹里每一个 assistant token。文章押的赌注是 judge 的语义信号足够 dense，整轨广播就能区分轨迹好坏，不需要再造 process reward。</span></p>
+<p class="body"><strong>不对称 clip</strong><span>稀疏正奖励一旦命中，会把那条 token 概率快速推向 1，policy 分布过早集中、探索消失（熵塌缩）。MM-GRPO 把 importance ratio 的上探空间故意做得比下压空间大，给"提概率"方向多留 headroom——反直觉地放大上行 clip 反而是在保留探索：</span></p>
+$$\rho \in [\,1 - \epsilon_{\text{low}},\ 1 + \epsilon_{\text{high}}\,],\quad \epsilon_{\text{high}} > \epsilon_{\text{low}}$$
+<p class="body"><strong>另外两 trick</strong><span>(1) <em>dynamic sampling</em>——组内 reward 方差为 0 的整组当场丢，不在零梯度样本上浪费算力；(2) <em>K=1 截图</em>——上下文里只留最近一张网页截图，旧图全砍，靠文字 reasoning trace 续历史，省显存让长轨迹跑得动。最终 4B 视觉 agent 在 Online-Mind2Web 上反超自家 235B Thinking 基线。<a class="deep" href="06_openwebrl.html">→ 深读</a></span></p>
+</div>
+
+<table>
+<tr><th>方法</th><th>改 reward 的方式</th><th>关键设计</th><th>代表结果</th></tr>
+<tr><td>SRL</td><td>形态：0/1 → 连续相似度</td><td>Ratcliff-Obershelp + format gate</td><td>SWE-V 3.2 → 8.6%</td></tr>
+<tr><td>ToolOmni</td><td>组合：加性 → 乘性</td><td>Recall × Tran，分段 GRPO</td><td>双段独立 GRPO</td></tr>
+<tr><td>OpenWebRL</td><td>判别源:规则 → 自蒸 Judge-8B</td><td>$545 蒸 43.2K rollout</td><td>4B → Mind2Web 67%</td></tr>
+</table>
+
+<div class="note"><strong>这条线的本质：</strong>稀疏二元 reward 让 group 经常零方差，三篇分别从"形状"（SRL）、"组合"（ToolOmni）、"来源"（OpenWebRL）三个角度把 reward 信号变密、变可分解。</div>
+
+<h2 class="sec">4. Auxiliary Loss：用旁路监督补主 reward</h2>
+<p>共性：<strong>advantage 与 PPO 主 loss 都不动</strong>，只在总目标里加一条 SFT-style 或 distill-style 的 aux loss，引导模型学到主 reward 之外的特定行为。</p>
+
+<div class="paper paper-grid">
+<h4><a href="11_akbe.html">[10] AKBE — Active Knowledge Boundary Exploration</a> <span class="tag">腾讯</span> <span class="tag">双路 rollout</span> <span class="tag">aux loss</span> <span class="tag">工具成本</span></h4>
+<p class="body" style="font-style:italic;color:#666;font-size:.9em;margin:2px 0 6px;display:block">一句话：把"该不该查工具"从 reward 拆出来，靠双路 rollout 投出 2-bit 标签，挂一条便宜的辅助 CE。</p>
+<p class="body"><strong>动机</strong><span>Search-R1 这类 agentic RL 越训越爱调搜索，因为"该不该查"本质是 per-instance 的决策，塞进全局 reward 必然 mismatch——模型学不到"这题我自己会"和"这题我真不会"的区别。</span></p>
+<p class="body"><strong>双路 rollout</strong><span>同一道题采两组轨迹：允许调工具的 with-tool 组、屏蔽工具的 no-tool 组。每组只问一句"有没有至少一条答对"，得到两个 0/1 指示符 $WT, NT$，拼成 2-bit 标签——这就把"模型自己会不会、工具帮不帮得上"两个维度物理分开了。</span></p>
+<p class="body"><strong>四象限</strong><span>$(1,1)$ 自己就能答 → 模仿 no-tool 正解，教它别多查；$(0,1)$ 工具反把答案带歪 → 同样回拉到 no-tool；$(0,0)$ 都不会 → 不动梯度，留给 GRPO 自己挣扎；$(1,0)$ 才是真知识盲区，需要专门挑模范。</span></p>
+<p class="body"><strong>挑模范</strong><span>$(1,0)$ 象限里同时可能有"调 3 次工具才答对"和"调 1 次就答对"的轨迹，AKBE 选后者作为模范——用最便宜的成功轨迹隐式传递 step 级节制信号，免去单训 PRM。</span></p>
+<p class="body"><strong>辅助 CE</strong><span>把挑出的模范轨迹 $y_q^*$ 当 gold，做一项 token-CE 挂到 GRPO 旁边，reward 和 advantage 全程不动，所以跟 GRPO / DAPO / GSPO 即插即用：</span></p>
+$$\mathcal{L}_{\text{AKBE}} = \lambda \cdot \mathcal{L}_{\text{SFT}}(\pi_\theta \mid y_q^*), \quad \lambda = 0.05$$
+<p class="body p-cont">最终工具调用 <strong>−18%</strong>，且因为 no-tool 那组省了检索 I/O，每步还顺带快一截。<a class="deep" href="11_akbe.html">→ 深读</a></p>
+</div>
+
+<div class="note"><strong>这一组的共性：</strong>aux loss 是"局部手术刀"。AKBE 教模型"何时该调工具"。aux loss 形态都是 SFT 风格 ($-\log \pi_\theta$)，门控来自双路 rollout 对比。</div>
+
+</div>
+</body>
+</html>
