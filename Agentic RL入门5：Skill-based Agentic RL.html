@@ -1,0 +1,1116 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agentic RL入门5：Skill-based Agentic RL</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});"></script>
+<style>
+/* === XHS 1080px canvas === */
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:#f3f3f3}
+body{font-family:'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC',sans-serif;color:#222;font-size:27.3px;line-height:1.65}
+.xhs-canvas{width:1080px;margin:0 auto;background:#fff;padding:36px 40px 72px}
+code{font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:.9em;background:#f3f4f6;padding:1px 6px;border-radius:4px;color:#d04040}
+
+/* KaTeX */
+.katex-display{margin:14px 0!important;padding:14px 18px;background:#faf9ff;border-left:4px solid #8b5cf6;border-radius:0 8px 8px 0;overflow-x:auto;font-size:28.6px}
+.katex-display>.katex{font-size:1.0em}
+.katex{font-size:1.0em;white-space:nowrap;display:inline-block}
+.katex-mathml{position:absolute!important;clip:rect(1px,1px,1px,1px)!important;padding:0!important;border:0!important;height:1px!important;width:1px!important;overflow:hidden!important}
+.katex-html{white-space:nowrap}
+
+/* Headings */
+h1{font-size:54.6px;font-weight:800;letter-spacing:-0.5px;line-height:1.32;color:#111;margin:0 0 18px}
+.subtitle{color:#666;font-size:28.6px;margin:6px 0 22px}
+h2.sec{display:inline-block;background:#1a3a8a;color:#fff;font-size:36.4px;font-weight:800;padding:8px 20px;border-radius:10px;margin:40px 0 16px}
+h3.subsec{display:inline-block;background:#ffe0b5;color:#7a4a00;font-size:31.2px;font-weight:800;padding:6px 18px;border-radius:8px;margin:24px 0 12px}
+p{margin:6px 0;text-align:left;hyphens:none;word-break:normal;overflow-wrap:break-word}
+strong{font-weight:800;color:#1a3a8a}
+
+/* Paper card (XHS) */
+.paper{background:#fff;border:1px solid #e6e6e6;border-radius:16px;padding:24px 26px;margin:24px 0;box-shadow:0 2px 14px rgba(0,0,0,.05)}
+.paper h4{font-size:39px;font-weight:800;color:#000;line-height:1.35;margin-bottom:10px;letter-spacing:-0.3px}
+.paper h4 a{color:#000;text-decoration:none}
+.paper p{font-size:27.3px;color:#333;line-height:1.65;margin:6px 0}
+.paper p.body{color:#222}
+.tag{display:inline-block;font-size:22.1px;background:#f1fbef;border:1px solid #bfe8b8;color:#1e6b1e;padding:2px 10px;border-radius:6px;margin:2px 4px 2px 0;font-weight:700;font-family:'PingFang SC',sans-serif;vertical-align:middle}
+.tag-star{background:#ffe9b8;border-color:#e0a040;color:#7a4a00}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;margin:20px 0;font-size:26px;background:#fff;border-radius:10px;overflow:hidden}
+th{background:#1a3a8a;color:#fff;padding:12px 14px;text-align:left;font-weight:800;font-size:23.4px;letter-spacing:.02em}
+td{border:1px solid #e6e6e6;padding:10px 14px;line-height:1.55;color:#333}
+tr:last-child td{border-bottom:1px solid #e6e6e6}
+
+/* Note callout (类比块) */
+.note{background:#fff5e8;border:1px solid #efd5ac;border-radius:12px;padding:14px 18px;margin:14px 0;font-size:27.3px;line-height:1.6;color:#5a3a18}
+.note strong{font-weight:800;color:#7a4a00}
+
+/* paper-grid: 标签 + 正文双列 */
+.paper-grid p.body{display:grid;grid-template-columns:96px 1fr;gap:18px;align-items:start;margin:12px 0;font-size:27.3px}
+.paper-grid p.body > strong:first-child{color:#1a3a8a;font-weight:800;font-size:24.7px;text-align:left;line-height:1.7;padding-top:2px}
+.paper-grid p.body > strong:first-child + span{display:block;color:#222}
+.paper-grid p.body.p-cont{display:block;margin-left:114px;color:#555;font-size:26px;font-style:italic;background:#f7f7f7;border-left:3px solid #999;padding:8px 14px;border-radius:0 6px 6px 0}
+.paper-grid p.body.punchline{display:block;background:#fffaf0;border-left:4px solid #e0a040;color:#5a4a18;font-size:28.6px;font-weight:700;font-style:normal;padding:12px 16px;border-radius:0 10px 10px 0;margin:8px 0 14px}
+.paper-grid .katex-display{margin:10px 0 10px 114px!important;width:calc(100% - 114px)!important;max-width:calc(100% - 114px)!important}
+.xhs-canvas{overflow:hidden}
+.punchline{background:#fffaf0;border-left:4px solid #e0a040;color:#5a4a18;font-size:28.6px;font-weight:700;padding:12px 16px;border-radius:0 10px 10px 0;display:block;margin:8px 0 14px}
+
+/* === visualisations (内嵌 viz 块, 字号同步放大) === */
+.pipeline-map{margin:20px 0 22px;border:1px solid #e6e6e6;background:#fff;border-radius:12px;overflow:hidden}
+.agentic-credit{display:grid;gap:0;border-bottom:1px solid #e6e6e6}
+.credit-section{padding:14px 16px;border-bottom:1px solid #e6e6e6}
+.credit-section:last-child{border-bottom:none}
+.credit-section-title{font-weight:800;color:#1a3a8a;font-size:24.7px;margin-bottom:10px}
+.traj-list{display:grid;gap:9px}
+.traj-row{display:grid;grid-template-columns:52px 1fr auto;gap:10px;align-items:center;font-size:22.1px;line-height:1.5}
+.traj-id{font-family:'SF Mono',monospace;color:#555;font-weight:700}
+.traj-path{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.traj-token{background:#fff;border:1px solid #d8d8d8;padding:4px 9px;border-radius:5px}
+.traj-token.decision{border-color:#1a3a8a;color:#1a3a8a;font-weight:700}
+.traj-token.obs{border-style:dashed;color:#666;background:#fafafa}
+.traj-token.bad{border-color:#d04040;color:#9f2e2e;background:#ffe5e5}
+.traj-arrow{color:#999}
+.traj-reward{font-family:'SF Mono',monospace;text-align:center;border:1px solid #d8d8d8;padding:4px 10px;background:#fafafa;color:#555;white-space:nowrap;border-radius:5px}
+.traj-reward.good{border-color:#1e6b1e;color:#1e6b1e;font-weight:700;background:#f1fbef}
+.traj-reward.fail{border-color:#d04040;color:#9f2e2e;background:#ffe5e5}
+.credit-legend{margin-top:9px;color:#666;font-size:20.8px;line-height:1.5}
+
+.broadcast-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:12px;align-items:stretch}
+.broadcast-card{border:1px solid #d8d8d8;background:#fff;padding:12px 14px;font-size:23.4px;line-height:1.55;text-align:left;border-radius:8px}
+.broadcast-card strong{display:block;color:#1a3a8a;font-size:26px;margin-bottom:6px}
+.broadcast-card.bad{background:#ffe5e5;border-color:#e2b8b8;color:#7a2727}
+.broadcast-card.bad strong{color:#9f2e2e}
+.broadcast-line{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:7px}
+.broadcast-pill{border:1px solid #d8d8d8;background:#fff;padding:4px 9px;font-family:'SF Mono',monospace;font-size:22.1px;color:#444;border-radius:5px}
+.broadcast-pill.hot{border-color:#1a3a8a;color:#1a3a8a;font-weight:700;background:#eef0fb}
+
+.credit-map{display:grid;grid-template-columns:120px 28px 1fr;gap:10px;align-items:center;margin-bottom:11px}
+.credit-map-from,.credit-map-to{border:1px solid #d8d8d8;background:#fafafa;padding:9px 11px;font-size:23.4px;line-height:1.5;text-align:left;border-radius:6px}
+.credit-map-from{font-family:'SF Mono',monospace;text-align:center;color:#1a3a8a;font-weight:700;background:#eef0fb}
+.credit-map-arrow{text-align:center;color:#999;font-weight:700;font-size:28.6px}
+
+.parallel-branch-map{display:grid;grid-template-columns:140px minmax(0,1fr);gap:12px;align-items:stretch;margin:14px 0 16px 114px}
+.parallel-agent{border:1px solid #d8d8d8;background:#fafafa;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:120px;padding:14px;text-align:center;font-weight:700;line-height:1.4;border-radius:8px}
+.parallel-agent span{display:block;margin-top:6px;color:#333;font-size:22.1px}
+.parallel-branches{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.parallel-branch{border:1px solid #d8d8d8;background:#fff;display:flex;flex-direction:column;justify-content:center;gap:5px;min-height:120px;padding:12px 13px;font-size:22.1px;line-height:1.5;text-align:left;border-radius:8px}
+.parallel-branch strong{font-size:1.1em;color:#1a3a8a}
+.parallel-branch code{background:transparent;padding:0;color:#333;font-size:.95em}
+.parallel-branch em{font-style:normal;color:#555}
+.parallel-branch.bad{border-color:#e2b8b8;background:#ffe5e5;color:#7a2727}
+.parallel-branch.bad strong,.parallel-branch.bad em{color:#9f2e2e}
+.parallel-branch.bad em{font-weight:700}
+
+.step-credit-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
+.step-credit{border:1px solid #d8d8d8;border-top:4px solid #1a3a8a;background:#fff;padding:10px;min-height:90px;border-radius:8px}
+.step-credit.neg{border-top-color:#d04040}
+.step-credit.mask{border-top-style:dashed;color:#666;background:#fafafa}
+.step-credit .sym{display:block;font-family:'SF Mono',monospace;color:#777;font-size:20.8px;margin-bottom:4px}
+.step-credit strong{display:block;color:#1a3a8a;font-family:'SF Mono',monospace;font-size:23.4px;margin-bottom:4px}
+.step-credit small{display:block;color:#555;font-size:20.8px;line-height:1.4}
+.credit-update-note{margin-top:10px;color:#555;font-size:22.1px;line-height:1.55;text-align:left}
+
+.interface-map{display:grid;gap:10px;margin:14px 0 24px;background:transparent}
+.interface-row{display:grid;grid-template-columns:160px 1fr 1fr minmax(140px,auto);gap:10px;align-items:stretch;min-height:90px;padding:10px;border:1px solid #e6e6e6;background:#fafafa;border-radius:8px}
+.interface-head{display:flex;flex-direction:column;justify-content:center;padding:11px 12px;border-left:5px solid #1a3a8a;background:#fff;border-radius:0 6px 6px 0}
+.interface-num{display:block;font-family:'SF Mono',monospace;color:#777;font-size:20.8px;margin-bottom:4px}
+.interface-title{display:block;color:#1a3a8a;font-weight:800;font-size:24.7px;line-height:1.4}
+.interface-cell{padding:11px 12px;border:1px solid #e6e6e6;background:#fff;font-size:22.1px;line-height:1.55;text-align:left;color:#444;border-radius:6px}
+.interface-label{display:block;color:#999;font-size:18.2px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+.interface-paper{display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #e6e6e6;padding:11px 12px;background:#fff;color:#333;font-family:'SF Mono',monospace;font-size:20.8px;line-height:1.5;text-align:center;white-space:nowrap;border-radius:6px}
+.interface-paper .interface-label{text-align:center;margin-bottom:6px;font-family:'PingFang SC',sans-serif}
+.interface-row[data-layer="rollout"] .interface-head{border-left-color:#666}
+.interface-row[data-layer="credit"] .interface-head{border-left-color:#3d5a80}
+.interface-row[data-layer="reward"] .interface-head{border-left-color:#6b705c}
+.interface-row[data-layer="skill"] .interface-head{border-left-color:#7d5a50}
+.interface-row[data-layer="loss"] .interface-head{border-left-color:#8a4f7d}
+
+@media print{body{font-size:12pt}}
+</style>
+</head>
+<body>
+<div class="xhs-canvas">
+
+<style>
+.hero-card {
+  background: #FAF7F0;
+  border: 2px solid #1a3a5c;
+  border-radius: 14px;
+  padding: 28px 32px 22px;
+  font-family: 'Caveat', 'Comic Sans MS', cursive;
+  box-shadow: 4px 4px 0 #1a3a5c;
+  position: relative;
+}
+.hero-pill {
+  display: inline-block;
+  background: #1a3a5c;
+  color: #FAF7F0;
+  padding: 4px 14px;
+  border-radius: 999px;
+  font-family: 'Inter', sans-serif;
+  font-size: 15.6px;
+  letter-spacing: 0.15em;
+  font-weight: 600;
+  margin-bottom: 10px;
+}
+.hero-title {
+  font-size: 46.8px;
+  color: #1a3a5c;
+  font-weight: 700;
+  line-height: 1.2;
+  position: relative;
+  display: inline-block;
+}
+.hero-title::after {
+  content: "";
+  position: absolute;
+  left: 0; right: 0; bottom: -6px;
+  height: 6px;
+  background: url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 6'><path d='M0 3 Q 10 0 20 3 T 40 3 T 60 3 T 80 3 T 100 3 T 120 3' stroke='%23c0392b' stroke-width='2' fill='none'/></svg>") repeat-x;
+}
+.hero-sub {
+  margin-top: 18px;
+  padding-left: 12px;
+  border-left: 4px solid #c0392b;
+  font-family: 'Inter', sans-serif;
+  font-size: 18.2px;
+  color: #2c2c2c;
+  line-height: 1.55;
+}
+.hero-sub strong { color: #1a3a5c; }
+.hero-svg-wrap {
+  margin: 18px 0 14px;
+  background: #FFFDF7;
+  border: 1.5px dashed #1a3a5c;
+  border-radius: 10px;
+  padding: 10px;
+}
+.hero-svg-wrap svg { width: 100%; height: auto; display: block; }
+.hero-result {
+  font-family: 'Inter', sans-serif;
+  font-size: 17.55px;
+  color: #2c2c2c;
+  background: #FFF4E6;
+  border-left: 4px solid #E76F51;
+  padding: 10px 14px;
+  border-radius: 4px;
+}
+.hero-result .num {
+  color: #c0392b;
+  font-weight: 700;
+  font-size: 20.8px;
+}
+.hero-foot {
+  margin-top: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  font-family: 'Inter', sans-serif;
+  font-size: 14.3px;
+  letter-spacing: 0.2em;
+  color: #8A8A8A;
+  text-transform: uppercase;
+}
+.hero-foot .line { flex: 1; height: 1px; background: #cfc8b8; }
+</style>
+
+<div class="hero-card">
+  <div class="hero-pill">CHAPTER &middot; 02</div>
+  <div><span class="hero-title">同一个任务,做两次 — skill 库是 agent 的记忆肌肉</span></div>
+  <div class="hero-sub">
+    没有 <strong>skill 库</strong>,agent 每次都从零摸索,经验直接丢进垃圾桶;有了 skill 库,reward / strategy / expert / note 四类经验<strong>沉淀回库</strong>,下一次任务直接取用 — 这是 agentic RL 从"一次性反应"走向"可累积学习"的关键拐点。
+  </div>
+
+  <div class="hero-svg-wrap">
+    <svg viewBox="0 0 620 400" xmlns="http://www.w3.org/2000/svg" font-family="Caveat, Comic Sans MS, cursive">
+      <!-- vertical dashed divider -->
+      <line x1="310" y1="20" x2="310" y2="380" stroke="#1a3a5c" stroke-width="1.5" stroke-dasharray="6 5"/>
+
+      <!-- ============ LEFT PANEL: 没有 skill 库 ============ -->
+      <text x="20" y="32" font-size="18" fill="#8A8A8A" font-weight="700">没有 skill 库</text>
+      <text x="20" y="50" font-size="12" fill="#8A8A8A" font-family="Inter, sans-serif">— 灰色重复,经验进垃圾桶</text>
+
+      <!-- agent stick figure (tired) -->
+      <g stroke="#6b6b6b" stroke-width="2" fill="none">
+        <circle cx="80" cy="120" r="14"/>
+        <!-- sad eyes -->
+        <circle cx="76" cy="118" r="1.5" fill="#6b6b6b"/>
+        <circle cx="84" cy="118" r="1.5" fill="#6b6b6b"/>
+        <path d="M74 126 Q80 122 86 126" stroke="#6b6b6b"/>
+        <!-- body slumped -->
+        <line x1="80" y1="134" x2="80" y2="175"/>
+        <line x1="80" y1="148" x2="65" y2="170"/>
+        <line x1="80" y1="148" x2="100" y2="165"/>
+        <line x1="80" y1="175" x2="68" y2="205"/>
+        <line x1="80" y1="175" x2="92" y2="205"/>
+      </g>
+
+      <!-- desk -->
+      <rect x="40" y="205" width="120" height="6" fill="#8A8A8A"/>
+      <line x1="50" y1="211" x2="50" y2="240" stroke="#8A8A8A" stroke-width="2"/>
+      <line x1="150" y1="211" x2="150" y2="240" stroke="#8A8A8A" stroke-width="2"/>
+
+      <!-- blank scroll on desk -->
+      <rect x="110" y="190" width="42" height="15" fill="#fff" stroke="#8A8A8A" stroke-width="1.5"/>
+      <text x="115" y="201" font-size="9" fill="#8A8A8A" font-family="Inter, sans-serif">blank task</text>
+
+      <!-- recycle bin under desk overflowing -->
+      <path d="M55 245 L75 245 L72 280 L58 280 Z" fill="none" stroke="#6b6b6b" stroke-width="2"/>
+      <text x="58" y="270" font-size="14">♻</text>
+      <!-- crumpled balls -->
+      <circle cx="62" cy="240" r="4" fill="#d4d0c4"/>
+      <circle cx="70" cy="237" r="3.5" fill="#d4d0c4"/>
+      <circle cx="78" cy="242" r="4" fill="#d4d0c4"/>
+      <circle cx="55" cy="248" r="3" fill="#d4d0c4"/>
+      <text x="85" y="255" font-size="11" fill="#8A8A8A" font-family="Inter, sans-serif">经验丢掉</text>
+
+      <!-- repeated thought bubbles above (same icons looping) -->
+      <g font-size="13">
+        <ellipse cx="180" cy="80" rx="22" ry="14" fill="#fff" stroke="#8A8A8A" stroke-width="1.3"/>
+        <text x="170" y="85">🔍💭</text>
+        <ellipse cx="225" cy="105" rx="22" ry="14" fill="#fff" stroke="#8A8A8A" stroke-width="1.3"/>
+        <text x="215" y="110">✍️🔁</text>
+        <ellipse cx="195" cy="135" rx="22" ry="14" fill="#fff" stroke="#8A8A8A" stroke-width="1.3"/>
+        <text x="185" y="140">🔍💭</text>
+        <ellipse cx="240" cy="160" rx="22" ry="14" fill="#fff" stroke="#8A8A8A" stroke-width="1.3"/>
+        <text x="230" y="165">✍️❌</text>
+        <ellipse cx="205" cy="188" rx="22" ry="14" fill="#fff" stroke="#8A8A8A" stroke-width="1.3"/>
+        <text x="195" y="193">🔍❌</text>
+      </g>
+      <!-- bubble trail dots -->
+      <circle cx="110" cy="105" r="2" fill="#8A8A8A"/>
+      <circle cx="125" cy="95" r="1.5" fill="#8A8A8A"/>
+
+      <!-- caption -->
+      <text x="20" y="320" font-size="16" fill="#6b6b6b">任务来了 → 从零摸索</text>
+      <text x="20" y="342" font-size="16" fill="#c0392b">→ 经验进垃圾桶 ❌</text>
+      <text x="20" y="368" font-size="13" fill="#8A8A8A" font-family="Inter, sans-serif">同一坑掉 5 次</text>
+
+      <!-- ============ RIGHT PANEL: 有 skill 库 ============ -->
+      <text x="330" y="32" font-size="18" fill="#E76F51" font-weight="700">有 skill 库</text>
+      <text x="330" y="50" font-size="11" fill="#E76F51" font-family="Inter, sans-serif">— 取一格,做一遍,沉淀回库</text>
+
+      <!-- agent stick figure (alert) -->
+      <g stroke="#1a3a5c" stroke-width="2" fill="none">
+        <circle cx="370" cy="115" r="14"/>
+        <circle cx="366" cy="113" r="1.5" fill="#1a3a5c"/>
+        <circle cx="374" cy="113" r="1.5" fill="#1a3a5c"/>
+        <path d="M365 122 Q370 127 375 122" stroke="#1a3a5c"/>
+        <line x1="370" y1="129" x2="370" y2="170"/>
+        <!-- arm reaching toward shelf -->
+        <line x1="370" y1="143" x2="420" y2="135"/>
+        <line x1="370" y1="143" x2="358" y2="165"/>
+        <line x1="370" y1="170" x2="360" y2="200"/>
+        <line x1="370" y1="170" x2="382" y2="200"/>
+      </g>
+
+      <!-- skill 库: 一张具体的 skill 卡 -->
+      <rect x="430" y="68" width="170" height="172" fill="#FFFDF7" stroke="#1a3a5c" stroke-width="2" rx="4"/>
+
+      <!-- skill card header -->
+      <rect x="438" y="68" width="154" height="22" fill="#1a3a5c"/>
+      <text x="446" y="84" font-size="11" fill="#FAF7F0" font-weight="700" font-family="Inter, sans-serif">SKILL #042</text>
+      <text x="585" y="84" font-size="10" fill="#FAF7F0" font-family="Inter, sans-serif" text-anchor="end">命中 14×</text>
+
+      <!-- skill 名字 -->
+      <text x="446" y="106" font-size="14" fill="#1a3a5c" font-weight="700">"PDF 图表数学题"</text>
+
+      <!-- 触发条件 -->
+      <text x="446" y="124" font-size="10.5" fill="#888" font-family="Inter, sans-serif" font-weight="700">TRIGGER</text>
+      <text x="446" y="138" font-size="11" fill="#2c2c2c" font-family="Inter, sans-serif">PDF + 图表 + 算式</text>
+
+      <!-- 步骤 -->
+      <text x="446" y="158" font-size="10.5" fill="#888" font-family="Inter, sans-serif" font-weight="700">STEPS</text>
+      <text x="446" y="172" font-size="11" fill="#2c2c2c" font-family="Inter, sans-serif">1. crop 图区</text>
+      <text x="446" y="186" font-size="11" fill="#2c2c2c" font-family="Inter, sans-serif">2. OCR 提数字</text>
+      <text x="446" y="200" font-size="11" fill="#2c2c2c" font-family="Inter, sans-serif">3. 列方程</text>
+      <text x="446" y="214" font-size="11" fill="#2c2c2c" font-family="Inter, sans-serif">4. 验算</text>
+
+      <!-- pitfall -->
+      <text x="446" y="232" font-size="10" fill="#c0392b" font-family="Inter, sans-serif">⚠ 别先口算, 先 crop</text>
+
+      <!-- 取用箭头 skill库 → task -->
+      <path d="M430 175 Q400 215 388 232" stroke="#3a7d3a" stroke-width="2" fill="none" stroke-dasharray="4 3" marker-end="url(#arrowhead-g)"/>
+      <defs>
+        <marker id="arrowhead-g" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L9,3 z" fill="#3a7d3a"/>
+        </marker>
+      </defs>
+      <text x="395" y="200" font-size="11" fill="#3a7d3a" font-family="Inter, sans-serif">取用</text>
+
+      <!-- task scroll with green check -->
+      <rect x="380" y="225" width="50" height="20" fill="#fff" stroke="#1a3a5c" stroke-width="1.5"/>
+      <text x="385" y="240" font-size="11" fill="#1a3a5c" font-family="Inter, sans-serif">task</text>
+      <text x="412" y="241" font-size="16" fill="#3a7d3a" font-weight="700">✓</text>
+
+      <!-- 沉淀回库 loop -->
+      <path d="M430 235 Q470 280 540 250 Q580 240 595 232" stroke="#E76F51" stroke-width="2" fill="none" marker-end="url(#arrowhead-o)"/>
+      <defs>
+        <marker id="arrowhead-o" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto">
+          <path d="M0,0 L0,6 L9,3 z" fill="#E76F51"/>
+        </marker>
+      </defs>
+      <text x="470" y="278" font-size="12" fill="#E76F51" font-family="Inter, sans-serif">命中 +1 / 更新步骤 ↻</text>
+
+      <!-- caption -->
+      <text x="330" y="320" font-size="16" fill="#1a3a5c">任务来了 → 取对应 skill</text>
+      <text x="330" y="342" font-size="16" fill="#3a7d3a">→ 经验沉淀回库 ✓</text>
+      <text x="330" y="368" font-size="13" fill="#E76F51" font-family="Inter, sans-serif">下次再遇,直接抽屉</text>
+
+      <!-- page marker bottom right -->
+    </svg>
+  </div>
+
+  <div class="hero-result">
+    <em>读这张图: skill = 一张「触发条件 + 步骤 + 命中次数」的卡片。第 1 次见到这类任务把套路抽出来存进库; 第 2 次再遇直接调出, 不重新摸索。</em>
+  </div>
+
+  <div class="hero-foot">
+    <span class="line"></span>Agentic RL 综述 &middot; 第 02 / 04 章<span class="line"></span>
+  </div>
+</div>
+
+<style>
+.why-card{background:#FAF7F0;border:2px solid #1a3a5c;border-radius:14px;padding:24px 28px 20px;font-family:'Caveat','Comic Sans MS',cursive;box-shadow:4px 4px 0 #1a3a5c;margin:26px 0 8px}
+.why-pill{display:inline-block;background:#1a3a5c;color:#FAF7F0;padding:3px 12px;border-radius:999px;font-family:'Inter',sans-serif;font-size:14.3px;letter-spacing:.15em;font-weight:600;margin-bottom:10px}
+.why-title{font-size:39px;color:#1a3a5c;font-weight:700;line-height:1.2;position:relative;display:inline-block}
+.why-title::after{content:"";position:absolute;left:0;right:0;bottom:-6px;height:6px;background:url("data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 120 6'><path d='M0 3 Q 10 0 20 3 T 40 3 T 60 3 T 80 3 T 100 3 T 120 3' stroke='%23c0392b' stroke-width='2' fill='none'/></svg>") repeat-x}
+.why-sub{margin-top:16px;padding-left:12px;border-left:4px solid #c0392b;font-family:'Inter',sans-serif;font-size:17.55px;color:#2c2c2c;line-height:1.6}
+.why-sub strong{color:#1a3a5c}
+.why-svg-wrap{margin:16px 0 10px;background:#FFFDF7;border:1.5px dashed #1a3a5c;border-radius:10px;padding:8px}
+.why-svg-wrap svg{width:100%;height:auto;display:block}
+.why-insight{font-family:'Inter',sans-serif;font-size:16.9px;color:#2c2c2c;background:#FFF4E6;border-left:4px solid #E76F51;padding:10px 14px;border-radius:4px;margin-top:8px}
+.why-insight strong{color:#c0392b}
+</style>
+
+<div class="why-card">
+  <div><span class="why-title">Why skill — 三类经验, 不适合只活在权重里</span></div>
+  <div class="why-sub">
+    纯 RL 训出来的能力全藏在<strong>模型权重</strong>里,跨任务、跨 session <strong>不可见也不可控</strong>。有三类经验天然该被搬到权重<em>外面</em>,做成可调用的 skill — RL 才学得动,经验才能积累。
+  </div>
+
+  <div class="why-svg-wrap">
+    <svg viewBox="0 0 1020 720" xmlns="http://www.w3.org/2000/svg" font-family="Caveat, Comic Sans MS, cursive">
+      <defs>
+        <marker id="why-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#1a3a5c"/>
+        </marker>
+        <marker id="why-arr-o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#E76F51"/>
+        </marker>
+      </defs>
+
+      <!-- ============ TOP ROW: 权重 θ 黑箱 vs skill 库 (compact) ============ -->
+      <!-- 黑箱 -->
+      <g transform="translate(40,30)">
+        <rect width="220" height="64" rx="10" fill="#3a3a3a" stroke="#1a1a1a" stroke-width="2"/>
+        <text x="110" y="30" text-anchor="middle" font-size="17" fill="#FAF7F0" font-weight="700">θ 黑箱</text>
+        <g fill="#7a7a7a" font-size="11">
+          <text x="30" y="48">⚙</text><text x="58" y="46">∫</text><text x="86" y="50">π</text>
+          <text x="114" y="46">⊗</text><text x="142" y="50">∇</text><text x="170" y="46">≈</text><text x="194" y="50">∂</text>
+        </g>
+        <text x="110" y="61" text-anchor="middle" font-size="11" fill="#c0392b" font-family="Inter,sans-serif" font-style="italic">🔒 看不见, 不可调度</text>
+      </g>
+
+      <!-- 大箭头 -->
+      <g transform="translate(275,45)">
+        <path d="M0 16 L 110 16" stroke="#E76F51" stroke-width="3" marker-end="url(#why-arr-o)"/>
+        <text x="55" y="10" text-anchor="middle" font-size="15" fill="#E76F51" font-weight="700">抽出来</text>
+      </g>
+
+      <!-- skill 库 抽屉柜 (压扁) -->
+      <g transform="translate(400,30)">
+        <rect width="580" height="64" rx="10" fill="#FFFDF7" stroke="#1a3a5c" stroke-width="2.5"/>
+        <rect width="580" height="20" rx="10" fill="#1a3a5c"/>
+        <rect y="10" width="580" height="10" fill="#1a3a5c"/>
+        <text x="290" y="15" text-anchor="middle" font-size="11" fill="#FAF7F0" font-weight="700" font-family="Inter,sans-serif" letter-spacing="0.1em">SKILL LIBRARY</text>
+        <g font-family="Inter,sans-serif">
+          <rect x="10" y="24" width="560" height="18" fill="#FAF7F0" stroke="#888"/>
+          <circle cx="560" cy="33" r="2.5" fill="#1a3a5c"/>
+          <text x="18" y="37" font-size="10" fill="#1a3a5c" font-weight="700">#001 crop → OCR → solve</text>
+          <text x="542" y="37" font-size="8" fill="#888" text-anchor="end">14×</text>
+
+          <rect x="10" y="44" width="560" height="18" fill="#FAF7F0" stroke="#888"/>
+          <circle cx="560" cy="53" r="2.5" fill="#1a3a5c"/>
+          <text x="18" y="57" font-size="10" fill="#1a3a5c" font-weight="700">#042 先看目录再动手</text>
+          <text x="542" y="57" font-size="8" fill="#888" text-anchor="end">strategy</text>
+        </g>
+      </g>
+
+      <!-- 分隔横线 + 副标题 -->
+      <line x1="30" y1="118" x2="990" y2="118" stroke="#1a3a5c" stroke-width="1" stroke-dasharray="6 4"/>
+      <text x="510" y="144" text-anchor="middle" font-size="18" fill="#1a3a5c" font-weight="700">三类该被抽出来的经验</text>
+
+      <!-- ① 动作粒度 -->
+      <g transform="translate(30,170)">
+        <rect width="310" height="500" rx="12" fill="#FFFDF7" stroke="#1a3a5c" stroke-width="2"/>
+        <!-- header -->
+        <circle cx="40" cy="42" r="22" fill="#1a3a5c"/>
+        <text x="40" y="51" text-anchor="middle" font-size="24" fill="#FAF7F0" font-weight="700" font-family="Inter,sans-serif">①</text>
+        <text x="74" y="54" font-size="24" fill="#1a3a5c" font-weight="700">选项太多</text>
+
+        <!-- 上半 -->
+        <g transform="translate(22,98)" font-family="Inter,sans-serif">
+          <text x="0" y="0" font-size="17" fill="#c0392b" font-weight="700">⚠ 塞权重 →</text>
+          <text x="92" y="0" font-size="15" fill="#c0392b" font-weight="700">每步从词表自由生</text>
+          <!-- 词表云 -->
+          <g font-size="14" fill="#999">
+            <text x="4" y="28">crop</text>
+            <text x="58" y="26">"我先"</text>
+            <text x="120" y="30">截图</text>
+            <text x="165" y="26">tool(</text>
+            <text x="216" y="30">def</text>
+            <text x="248" y="26">OCR(</text>
+            <text x="8" y="54">让我</text>
+            <text x="56" y="56">parse</text>
+            <text x="118" y="54">{json}</text>
+            <text x="188" y="56">先...</text>
+            <text x="240" y="54">x_1=</text>
+          </g>
+          <!-- 大数字: 改成口语化 -->
+          <text x="132" y="92" text-anchor="middle" font-size="26" fill="#c0392b" font-weight="700">太多组合</text>
+          <text x="132" y="116" text-anchor="middle" font-size="14" fill="#666" font-style="italic">每步在 10⁵ 个词里挑 × 100 步</text>
+          <text x="132" y="138" text-anchor="middle" font-size="13" fill="#c0392b" font-weight="700">→ RL 学不动</text>
+        </g>
+
+        <line x1="22" y1="295" x2="288" y2="295" stroke="#1a3a5c" stroke-width="0.8" stroke-dasharray="3 3"/>
+
+        <!-- 下半 -->
+        <g transform="translate(22,315)" font-family="Inter,sans-serif">
+          <text x="0" y="0" font-size="17" fill="#3a7d3a" font-weight="700">✓ 抽成 skill →</text>
+          <text x="116" y="0" font-size="15" fill="#3a7d3a" font-weight="700">菜单 K 选 1</text>
+          <!-- 4 个 skill 按钮 -->
+          <rect x="0" y="18" width="62" height="50" rx="6" fill="#fff" stroke="#999"/>
+          <text x="31" y="42" text-anchor="middle" font-size="24">📷</text>
+          <text x="31" y="60" text-anchor="middle" font-size="11" fill="#666">crop</text>
+
+          <rect x="68" y="18" width="62" height="50" rx="6" fill="#fff" stroke="#999"/>
+          <text x="99" y="42" text-anchor="middle" font-size="24">🔤</text>
+          <text x="99" y="60" text-anchor="middle" font-size="11" fill="#666">OCR</text>
+
+          <rect x="136" y="18" width="62" height="50" rx="6" fill="#fff" stroke="#999"/>
+          <text x="167" y="44" text-anchor="middle" font-size="24">∑</text>
+          <text x="167" y="60" text-anchor="middle" font-size="11" fill="#666">solve</text>
+
+          <rect x="204" y="18" width="62" height="50" rx="6" fill="#FFF4E6" stroke="#c0392b" stroke-width="2.5"/>
+          <text x="235" y="42" text-anchor="middle" font-size="24">🔗</text>
+          <text x="235" y="60" text-anchor="middle" font-size="11" fill="#c0392b" font-weight="700">chain</text>
+          <text x="235" y="13" text-anchor="middle" font-size="11" fill="#c0392b" font-weight="700">▼ pick</text>
+        </g>
+
+        <!-- 底部 tag -->
+        <rect x="30" y="450" width="250" height="36" rx="6" fill="#FFF4E6"/>
+        <text x="155" y="473" text-anchor="middle" font-size="18" fill="#c0392b" font-weight="700" font-family="Inter,sans-serif">决策空间变小</text>
+      </g>
+
+      <!-- ② 选路 vs 执行 -->
+      <g transform="translate(355,170)">
+        <rect width="310" height="500" rx="12" fill="#FFFDF7" stroke="#1a3a5c" stroke-width="2"/>
+        <circle cx="40" cy="42" r="22" fill="#1a3a5c"/>
+        <text x="40" y="51" text-anchor="middle" font-size="24" fill="#FAF7F0" font-weight="700" font-family="Inter,sans-serif">②</text>
+        <text x="74" y="54" font-size="24" fill="#1a3a5c" font-weight="700">好思路别连坐</text>
+
+        <!-- 上半: K=2, N=2 例子 -->
+        <g transform="translate(22,96)" font-family="Inter,sans-serif">
+          <text x="0" y="0" font-size="17" fill="#c0392b" font-weight="700">⚠ 塞权重 →</text>
+          <text x="92" y="0" font-size="15" fill="#c0392b" font-weight="700">思路 + 执行 一起算</text>
+
+          <!-- 4 条 rollout -->
+          <g transform="translate(0,22)">
+            <text x="0" y="14" font-size="12" fill="#888" font-weight="700">思路 A: grep</text>
+            <rect x="100" y="0" width="42" height="40" rx="5" fill="#fff" stroke="#c0392b" stroke-width="1.5"/>
+            <text x="121" y="16" text-anchor="middle" font-size="10" fill="#888">τ₁₁</text>
+            <text x="121" y="34" text-anchor="middle" font-size="16" fill="#c0392b" font-weight="700">✗</text>
+
+            <rect x="148" y="0" width="42" height="40" rx="5" fill="#fff" stroke="#c0392b" stroke-width="1.5"/>
+            <text x="169" y="16" text-anchor="middle" font-size="10" fill="#888">τ₁₂</text>
+            <text x="169" y="34" text-anchor="middle" font-size="16" fill="#c0392b" font-weight="700">✗</text>
+
+            <text x="204" y="24" font-size="13" fill="#c0392b" font-weight="700">→ 0%</text>
+
+            <text x="0" y="70" font-size="12" fill="#888" font-weight="700">思路 B: ls</text>
+            <rect x="100" y="56" width="42" height="40" rx="5" fill="#fff" stroke="#3a7d3a" stroke-width="1.5"/>
+            <text x="121" y="72" text-anchor="middle" font-size="10" fill="#888">τ₂₁</text>
+            <text x="121" y="90" text-anchor="middle" font-size="16" fill="#3a7d3a" font-weight="700">✓</text>
+
+            <rect x="148" y="56" width="42" height="40" rx="5" fill="#fff" stroke="#c0392b" stroke-width="1.5"/>
+            <text x="169" y="72" text-anchor="middle" font-size="10" fill="#888">τ₂₂</text>
+            <text x="169" y="90" text-anchor="middle" font-size="16" fill="#c0392b" font-weight="700">✗</text>
+
+            <text x="204" y="80" font-size="13" fill="#3a7d3a" font-weight="700">→ 50%</text>
+          </g>
+
+          <!-- 论证 -->
+          <g transform="translate(0,140)">
+            <text x="0" y="0" font-size="14" fill="#1a3a5c" font-weight="700">B 第 2 次失败 → 该怪谁?</text>
+            <text x="0" y="22" font-size="13" fill="#666">B 第 1 次已经赢过 ✓</text>
+            <text x="0" y="42" font-size="13.5" fill="#c0392b" font-weight="700">→ 思路是对的, 只是这次执行翻车</text>
+            <text x="0" y="66" font-size="12" fill="#888">但系统只看最后成败:</text>
+            <text x="0" y="84" font-size="13.5" fill="#c0392b" font-weight="700">B 的好思路也被一起罚 — 冤</text>
+          </g>
+        </g>
+
+        <line x1="22" y1="358" x2="288" y2="358" stroke="#1a3a5c" stroke-width="0.8" stroke-dasharray="3 3"/>
+
+        <!-- 下半: 抽成 skill — 信用分两路算 -->
+        <g transform="translate(22,378)" font-family="Inter,sans-serif">
+          <text x="0" y="0" font-size="17" fill="#3a7d3a" font-weight="700">✓ 抽成 skill →</text>
+          <text x="116" y="0" font-size="15" fill="#3a7d3a" font-weight="700">信用分两路算</text>
+          <rect x="0" y="18" width="128" height="50" rx="6" fill="#fff" stroke="#3a7d3a" stroke-width="2"/>
+          <text x="64" y="38" text-anchor="middle" font-size="13" fill="#666">思路</text>
+          <text x="64" y="58" text-anchor="middle" font-size="17" fill="#3a7d3a" font-weight="700">+1 保留</text>
+
+          <rect x="138" y="18" width="128" height="50" rx="6" fill="#fff" stroke="#c0392b" stroke-width="2"/>
+          <text x="202" y="38" text-anchor="middle" font-size="13" fill="#666">执行</text>
+          <text x="202" y="58" text-anchor="middle" font-size="17" fill="#c0392b" font-weight="700">−1 修执行</text>
+        </g>
+
+        <!-- 底部 tag -->
+        <rect x="30" y="450" width="250" height="36" rx="6" fill="#FFF4E6"/>
+        <text x="155" y="473" text-anchor="middle" font-size="18" fill="#c0392b" font-weight="700" font-family="Inter,sans-serif">信用分配更精准</text>
+      </g>
+
+      <!-- ③ 解题套路 -->
+      <g transform="translate(680,170)">
+        <rect width="310" height="500" rx="12" fill="#FFFDF7" stroke="#1a3a5c" stroke-width="2"/>
+        <circle cx="40" cy="42" r="22" fill="#1a3a5c"/>
+        <text x="40" y="51" text-anchor="middle" font-size="24" fill="#FAF7F0" font-weight="700" font-family="Inter,sans-serif">③</text>
+        <text x="74" y="54" font-size="24" fill="#1a3a5c" font-weight="700">套路存成卡片</text>
+
+        <!-- 上半: 一题贡献小, 需要刷很多次才记住 -->
+        <g transform="translate(22,96)" font-family="Inter,sans-serif">
+          <text x="0" y="0" font-size="17" fill="#c0392b" font-weight="700">⚠ 塞权重 →</text>
+          <text x="92" y="0" font-size="15" fill="#c0392b" font-weight="700">一题的影响, 一滴入海</text>
+
+          <!-- 三步直觉链 -->
+          <g transform="translate(0,22)">
+            <!-- 一题 = 一滴 -->
+            <rect x="0" y="0" width="78" height="56" rx="6" fill="#fff" stroke="#1a3a5c" stroke-width="1.5"/>
+            <text x="39" y="22" text-anchor="middle" font-size="22">💧</text>
+            <text x="39" y="40" text-anchor="middle" font-size="11" fill="#1a3a5c" font-weight="700">一道题</text>
+            <text x="39" y="52" text-anchor="middle" font-size="9" fill="#666">= 一滴教训</text>
+
+            <text x="84" y="32" font-size="20" fill="#c0392b" font-weight="700">→</text>
+
+            <!-- 混进大锅 -->
+            <rect x="104" y="0" width="78" height="56" rx="6" fill="#fff" stroke="#1a3a5c" stroke-width="1.5"/>
+            <text x="143" y="24" text-anchor="middle" font-size="22">🪣</text>
+            <text x="143" y="40" text-anchor="middle" font-size="11" fill="#1a3a5c" font-weight="700">混进一桶</text>
+            <text x="143" y="52" text-anchor="middle" font-size="9" fill="#666">和上百题平均</text>
+
+            <text x="188" y="32" font-size="20" fill="#c0392b" font-weight="700">→</text>
+
+            <!-- 每次只调一点 -->
+            <rect x="208" y="0" width="78" height="56" rx="6" fill="#fff" stroke="#1a3a5c" stroke-width="1.5"/>
+            <text x="247" y="24" text-anchor="middle" font-size="22">🥄</text>
+            <text x="247" y="40" text-anchor="middle" font-size="11" fill="#1a3a5c" font-weight="700">每次调一勺</text>
+            <text x="247" y="52" text-anchor="middle" font-size="9" fill="#666">学习率很小</text>
+          </g>
+
+          <!-- 结论 -->
+          <text x="0" y="106" font-size="13" fill="#888">要让模型真记住一招:</text>
+          <text x="0" y="128" font-size="16" fill="#c0392b" font-weight="700">同类题得见几十~上百次</text>
+
+          <text x="132" y="158" text-anchor="middle" font-size="13" fill="#c0392b" font-style="italic">所以 RL 学得又慢又费数据</text>
+        </g>
+
+        <line x1="22" y1="295" x2="288" y2="295" stroke="#1a3a5c" stroke-width="0.8" stroke-dasharray="3 3"/>
+
+        <!-- 下半: 查卡片直接命中 -->
+        <g transform="translate(22,315)" font-family="Inter,sans-serif">
+          <text x="0" y="0" font-size="17" fill="#3a7d3a" font-weight="700">✓ 抽成 skill →</text>
+          <text x="116" y="0" font-size="15" fill="#3a7d3a" font-weight="700">遇同类题 → 查卡片</text>
+
+          <rect x="0" y="18" width="112" height="50" rx="6" fill="#fff" stroke="#888"/>
+          <text x="56" y="36" text-anchor="middle" font-size="11" fill="#888">新题</text>
+          <text x="56" y="56" text-anchor="middle" font-size="14" fill="#1a3a5c" font-weight="700">2x+3=7</text>
+
+          <line x1="115" y1="42" x2="156" y2="42" stroke="#E76F51" stroke-width="2.5" marker-end="url(#why-arr-o)"/>
+          <text x="135" y="32" text-anchor="middle" font-size="12" fill="#E76F51" font-weight="700">含 x</text>
+
+          <rect x="158" y="18" width="108" height="50" rx="6" fill="#FFF4E6" stroke="#c0392b" stroke-width="2.5"/>
+          <text x="212" y="34" text-anchor="middle" font-size="11" fill="#c0392b" font-weight="700">#117 ✓ 命中</text>
+          <text x="212" y="56" text-anchor="middle" font-size="14" fill="#1a3a5c" font-weight="700">列等式 → 消元</text>
+        </g>
+
+        <rect x="30" y="450" width="250" height="36" rx="6" fill="#FFF4E6"/>
+        <text x="155" y="473" text-anchor="middle" font-size="18" fill="#c0392b" font-weight="700" font-family="Inter,sans-serif">存成卡片, 下次命中</text>
+      </g>
+
+    </svg>
+  </div>
+</div>
+
+<div class="paper paper-grid">
+  <h4>[1] Skill-RM <span class="tag">Qwen Applications</span> <span class="tag">2026.06</span></h4>
+
+  <p class="body punchline">一句话: 让打分的裁判先开会查证据再落笔, RM 自己变成会调工具的 agent。</p>
+
+  <p class="body"><strong>动机</strong><span>RLVR 的奖励来源太杂: 规则脚本、参考答案、checklist、rubric 评分各自一套, 混训时彼此打架。</span></p>
+
+  <p class="body"><strong>切入点</strong><span>把"算 reward"这件事抽象成一组 agentic skill, judge 模型像 agent 一样自选证据、调工具、最后聚合成一个标量分。</span></p>
+
+  <div style="margin:8px 0 12px 78px;border:1px solid #ddd;background:#fafafa;padding:10px 8px;">
+  <svg viewBox="0 0 680 280" width="100%" style="max-width:680px;display:block;font-family:'Fira Code','SF Mono',monospace;font-size:11px;">
+    <defs>
+      <marker id="arrCRM" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#666"/>
+      </marker>
+    </defs>
+
+    <!-- column headers -->
+    <g fill="#999" font-family="system-ui" font-size="10" font-weight="700">
+      <text x="70"  y="14" text-anchor="middle">证据 (异质)</text>
+      <text x="280" y="14" text-anchor="middle">skill dispatcher</text>
+      <text x="490" y="14" text-anchor="middle">reward skill</text>
+      <text x="635" y="14" text-anchor="middle">聚合</text>
+    </g>
+
+    <!-- LEFT: 4 evidence sources -->
+    <g font-family="system-ui">
+      <rect x="10"  y="30"  width="120" height="44" fill="#fff" stroke="#333"/>
+      <text x="70" y="48" text-anchor="middle" font-weight="700" font-size="11">rule</text>
+      <text x="70" y="64" text-anchor="middle" fill="#666" font-size="10">verifier 脚本</text>
+
+      <rect x="10"  y="84"  width="120" height="44" fill="#fff" stroke="#333"/>
+      <text x="70" y="102" text-anchor="middle" font-weight="700" font-size="11">GT</text>
+      <text x="70" y="118" text-anchor="middle" fill="#666" font-size="10">参考答案比对</text>
+
+      <rect x="10"  y="138" width="120" height="44" fill="#fff" stroke="#333"/>
+      <text x="70" y="156" text-anchor="middle" font-weight="700" font-size="11">checklist</text>
+      <text x="70" y="172" text-anchor="middle" fill="#666" font-size="10">条目勾选</text>
+
+      <rect x="10"  y="192" width="120" height="44" fill="#fff" stroke="#333"/>
+      <text x="70" y="210" text-anchor="middle" font-weight="700" font-size="11">rubric</text>
+      <text x="70" y="226" text-anchor="middle" fill="#666" font-size="10">细粒度评分表</text>
+    </g>
+
+    <!-- arrows: evidence → dispatcher -->
+    <g stroke="#666" stroke-width="1" fill="none">
+      <line x1="130" y1="52"  x2="218" y2="120" marker-end="url(#arrCRM)"/>
+      <line x1="130" y1="106" x2="218" y2="128" marker-end="url(#arrCRM)"/>
+      <line x1="130" y1="160" x2="218" y2="140" marker-end="url(#arrCRM)"/>
+      <line x1="130" y1="214" x2="218" y2="150" marker-end="url(#arrCRM)"/>
+    </g>
+
+    <!-- CENTER: dispatcher -->
+    <g font-family="system-ui">
+      <rect x="220" y="90" width="120" height="90" fill="#fff" stroke="#000" stroke-width="2" rx="4"/>
+      <text x="280" y="112" text-anchor="middle" font-weight="700" font-size="11">judge</text>
+      <text x="280" y="130" text-anchor="middle" fill="#666" font-size="10">自选证据</text>
+      <text x="280" y="146" text-anchor="middle" fill="#666" font-size="10">+ 工具链</text>
+      <text x="280" y="166" text-anchor="middle" fill="#666" font-size="9.5">(ReAct 风格)</text>
+    </g>
+
+    <!-- arrows: dispatcher → skills -->
+    <g stroke="#666" stroke-width="1" fill="none">
+      <line x1="340" y1="115" x2="428" y2="60"  marker-end="url(#arrCRM)"/>
+      <line x1="340" y1="135" x2="428" y2="135" marker-end="url(#arrCRM)"/>
+      <line x1="340" y1="155" x2="428" y2="210" marker-end="url(#arrCRM)"/>
+    </g>
+
+    <!-- RIGHT: 3 reward skills -->
+    <g font-family="system-ui">
+      <rect x="430" y="40"  width="130" height="44" fill="#fff" stroke="#333"/>
+      <text x="495" y="58" text-anchor="middle" font-weight="700" font-size="11">judge_fair</text>
+      <text x="495" y="74" text-anchor="middle" fill="#666" font-size="10">屏蔽数据集名</text>
+
+      <rect x="430" y="115" width="130" height="44" fill="#fff" stroke="#333"/>
+      <text x="495" y="133" text-anchor="middle" font-weight="700" font-size="11">judge_operational</text>
+      <text x="495" y="149" text-anchor="middle" fill="#666" font-size="10">开放校验器</text>
+
+      <rect x="430" y="190" width="130" height="44" fill="#fff" stroke="#333"/>
+      <text x="495" y="208" text-anchor="middle" font-weight="700" font-size="11">instruction_following</text>
+      <text x="495" y="224" text-anchor="middle" fill="#666" font-size="10">格式 / 长度核查</text>
+    </g>
+
+    <!-- arrows: skills → aggregate -->
+    <g stroke="#666" stroke-width="1" fill="none">
+      <line x1="560" y1="62"  x2="608" y2="130" marker-end="url(#arrCRM)"/>
+      <line x1="560" y1="137" x2="608" y2="137" marker-end="url(#arrCRM)"/>
+      <line x1="560" y1="212" x2="608" y2="148" marker-end="url(#arrCRM)"/>
+    </g>
+
+    <!-- FAR RIGHT: aggregator -->
+    <g font-family="system-ui">
+      <rect x="610" y="110" width="60" height="60" fill="#fff" stroke="#000" stroke-width="2" rx="4"/>
+      <text x="640" y="135" text-anchor="middle" font-weight="700" font-size="13">Σ wₖ</text>
+      <text x="640" y="156" text-anchor="middle" font-weight="700" font-size="13" fill="#000">→ r</text>
+    </g>
+  </svg>
+  </div>
+
+  <p class="body p-cont">怎么读: 左边四类异质证据进来, 中间 judge 自己挑该走哪条路, 右边三类 reward skill 各打一个分, 加权后变成单一标量 r 喂给下游 RL。</p>
+
+  <p class="body"><strong>统一接口</strong><span>每个 skill 都是 (prompt, response, evidence) → (score, rationale, tool_trace)。judge 用函数调用风格调外部 verifier / Python / 检索, 等于给 RM 套了一层 ReAct 推理框。</span></p>
+
+  <p class="body"><strong>三类 skill 分工</strong><span>fair: 屏蔽 benchmark 元数据, 防 judge 沿训练记忆"抄答案"; operational: 放开校验器, 专攻代码/数学这类硬指标; instruction_following: 单查格式约束、长度、禁用词。</span></p>
+
+  <p class="body"><strong>下游接入</strong><span>聚合后的 r 直接接 verl + GRPO, 在 VerInstruct 上做 RFT (Reinforcement Fine-Tuning)。</span></p>
+
+  $$ A_i \;=\; \frac{r_i - \mathrm{mean}(\{r_j\}_{j=1}^G)}{\mathrm{std}(\{r_j\}_{j=1}^G)},\qquad r_i \;=\; \sum_k w_k\,\mathrm{skill}_k(x, y_i) $$
+
+  <p class="body p-cont">怎么读: 一组 skill 各自打分后加权得到 r<sub>i</sub>, 再在同 prompt 的 G 条 rollout 内做 z-score 归一拿到优势 A<sub>i</sub>。组内均值取代 critic, 省一个大模型。</p>
+
+  <div class="note">
+    打个比方: 老 RM 像一个人扛全场的外卖差评师, 啥单都按同一张表硬打。Skill-RM 更像点评团队——代码题甩给单测助手跑一遍, 开放问答让 fair 助手蒙住店名再读, "必须 200 字"这种格式要求交给 instruction_following 助手, 主裁只负责派单和加权。
+  </div>
+
+  <p class="body"><strong>结果</strong><span>在 VerInstruct 上跑 GRPO, 相比单一 rule/GT 奖励, 在数学/代码/指令遵循混合 benchmark 上稳定提升; fair 子 skill 明显压住 reward hacking——不再靠"撞数据集名"骗分, 训练曲线比 verl 默认 PPO 更稳, reward 突崩明显减少。</span></p>
+</div>
+
+<div class="paper paper-grid">
+  <h4>[2] StraTA <span class="tag">Oxford + Shanghai AI Lab</span> <span class="tag">2026.05</span></h4>
+
+  <p class="body punchline">一句话: 开局先憋出一段"打算"当隐变量, 后面每个动作都条件在它上面, strategy 和 action 各自做组内 z-score, 两层 GRPO 一起拧。</p>
+
+  <div class="note">名词对齐: 这篇里的 <strong>strategy 就是 skill</strong>——一段开局采样出的自然语言"打法"。本章其他 paper 叫它 skill / strategy / workflow, 本质同一件事。</div>
+
+  <p class="body"><strong>动机</strong><span>纯反应式 agent 每步只盯当前 observation, 没有轨迹级规划。后果是探索发散、同一种错反复犯, credit 也分不清是"思路烂"还是"手抖"。</span></p>
+
+  <p class="body"><strong>解法直觉</strong><span>把"思路"显式拎出来当一个可采样的变量 z, 让策略变成"先想再打", 而不是边走边想。</span></p>
+
+  <div class="interface-row">
+    <div class="interface-head">strategy 层 z_k</div>
+    <div class="interface-cell"><div class="interface-paper">z₁ 先 ls 看目录结构</div></div>
+    <div class="interface-cell"><div class="interface-paper">z₂ 直接 grep TODO 关键字</div></div>
+    <div class="interface-cell"><div class="interface-paper">z₃ 先读 README 再动手<br><small>… z_K 共 K 条候选打法</small></div></div>
+  </div>
+  <div class="interface-row">
+    <div class="interface-head">action 层 τ_kn</div>
+    <div class="interface-cell">
+      <div class="interface-paper">τ₁₁ ✓ 执行稳</div>
+      <div class="interface-paper">τ₁₂ ✗ 命令错</div>
+      <div class="interface-paper">τ₁N ✓ 解掉 issue</div>
+    </div>
+    <div class="interface-cell">
+      <div class="interface-paper">τ₂₁ ✗ 漏文件</div>
+      <div class="interface-paper">τ₂₂ ✗ 思路错</div>
+      <div class="interface-paper">τ₂N ✗ 全失败</div>
+    </div>
+    <div class="interface-cell">
+      <div class="interface-paper">τ₃₁ ✓ 测试过<br>τ_K· … 每个 z 各采 N 条</div>
+      <div class="interface-paper">τ₃₂ ✓ 单测通<br>共 K×N 条 rollout</div>
+      <div class="interface-paper">τ₃N ✓ 三连过<br>两层各自打分</div>
+    </div>
+  </div>
+
+  <p class="body"><strong>① strategy 当高层 option</strong><span>开局先采一段紧凑的自然语言"打算" $z \sim \pi^{\text{strat}}(\cdot \mid s_0)$, 后续动作都条件在它上: $a_t \sim \pi^{\text{act}}(\cdot \mid s_t, z)$。这就是 RaaS（Reasoning-as-Strategy, 把推理当成可采样的隐变量, 而不是混在 CoT 里的副产物）。</span></p>
+
+  <p class="body"><strong>② 分层 GRPO</strong><span>GRPO 在这里切两层: 上层在 K 个 strategy 之间比, 下层在同一 strategy 下的 N 条 rollout 之间比。</span></p>
+
+  $$ A^{\text{strat}}(z_k) = \frac{\bar R_k - \mathrm{mean}_j(\bar R_j)}{\mathrm{std}_j(\bar R_j)}, \quad \bar R_k = \frac{1}{N}\sum_{n=1}^{N} R(\tau_{k,n}) $$
+  <p class="body p-cont">怎么读: $\bar R_k$ 是第 k 套打法平均能拿几分, 再把 K 套打法做 z-score。"想得对"的 strategy 在这一层被推上去, 跟执行无关。</p>
+
+  $$ A^{\text{act}}(\tau_{k,n}) = \frac{R(\tau_{k,n}) - \bar R_k}{\mathrm{std}_n(R(\tau_{k,\cdot}))} $$
+  <p class="body p-cont">怎么读: 在同一 z_k 内部, 用本组均值当 baseline 再 z-score。执行得稳的那条被拉上来——这一层只考核手感, 不替思路背锅。</p>
+
+  <div class="note">打个比方: 教练带 K 套战术开赛前会, 每套各打 N 场内部赛。第一层评"哪套战术整体赢面大", 烂思路淘汰; 第二层评"同一套战术里谁执行最稳", 抠细节。这样"思路对但手抖"不会被冤枉成"思路错"。</div>
+
+  <p class="body"><strong>③ 防塌缩 + 自我反思</strong><span>采样时显式拉开 K 个 strategy 的语义距离, 防止 K 条打法塌缩成同一句废话。</span></p>
+
+  <p class="body"><strong>反思回灌</strong><span>每轮训完, 让模型对失败的 strategy 写一段"重来怎么改"的批判, 作为下一轮 strategy 采样的 prior 塞回 prompt——不当 RM 用, 只做条件。</span></p>
+
+  <p class="body"><strong>奖励来源</strong><span>走 RLVR 这一路, 不用 PRM, 落地省事。</span></p>
+
+  <p class="body"><strong>结果</strong><span>SWE-bench / WebArena / ALFWorld 三个 agentic benchmark 上一致打过纯 GRPO 基线: 成功率 +6~12pp, 平均交互轮数 −25%（思路先想清楚就少走弯路）。Ablation 砍掉 strategy 层退化成普通 GRPO, 大半提升消失; 砍掉自我反思, 样本效率明显塌。</span></p>
+
+  <p class="body"><strong>一句话总结</strong><span>strategy 不是 CoT 换皮, 关键是它作为隐变量被独立采样、独立算优势, credit 才能分到"思路"这一层。</span></p>
+</div>
+<div class="paper paper-grid">
+  <h4>[3] Maestro <span class="tag">清华大学</span> <span class="tag">2026.05</span></h4>
+  <p class="body punchline">一句话: 4B 小模型当"调度导演",专家全冻结,它只负责喊"这场戏谁上、走哪个套路"。</p>
+  <p class="body"><strong>动机</strong><span>单一巨型 LLM 配死调用链,吃不下多专家在数学/图表/视觉上的互补。但把"挑模型 + 挑 skill"全摊开,动作空间又爆炸到没法 RL。</span></p>
+  <p class="body"><strong>破法</strong><span>分层。让一个小策略只学"挑组合",不学"造工具"。</span></p>
+
+  <div style="margin:8px 0 12px 78px;border:1px solid #ddd;background:#fafafa;padding:10px 8px;">
+  <svg viewBox="0 0 680 360" width="100%" style="max-width:680px;display:block;font-family:system-ui,sans-serif;font-size:11px;">
+    <defs>
+      <marker id="mae-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+      </marker>
+      <marker id="mae-arr-r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+        <path d="M0,0 L10,5 L0,10 z" fill="#b85c00"/>
+      </marker>
+    </defs>
+
+    <!-- LEFT: observation -->
+    <rect x="10" y="125" width="90" height="50" rx="6" fill="#fff" stroke="#666"/>
+    <text x="55" y="147" text-anchor="middle" font-weight="700" font-size="12">观测 o_t</text>
+    <text x="55" y="163" text-anchor="middle" fill="#666" font-size="10">题目 + 历史</text>
+
+    <!-- arrow obs → π_θ -->
+    <line x1="100" y1="150" x2="142" y2="150" stroke="#333" stroke-width="1.6" marker-end="url(#mae-arr)"/>
+
+    <!-- π_θ (only trainable, highlighted) -->
+    <rect x="144" y="105" width="166" height="92" rx="8" fill="#fff7e6" stroke="#b85c00" stroke-width="2"/>
+    <text x="227" y="128" text-anchor="middle" font-weight="700" font-size="13" fill="#b85c00">4B Orchestrator π_θ</text>
+    <text x="227" y="146" text-anchor="middle" fill="#333" font-size="11">唯一可训练</text>
+    <text x="227" y="162" text-anchor="middle" fill="#333" font-size="11">输出 a_t = (m_t, s_t)</text>
+    <text x="227" y="180" text-anchor="middle" fill="#b85c00" font-size="10" font-weight="700">「专家 × skill」选 1</text>
+    <text x="227" y="194" text-anchor="middle" fill="#666" font-size="9.5">例: 4 专家 × 5 skill = 20 选 1</text>
+
+    <!-- arrow π_θ → Experts (m_t) -->
+    <path d="M 310 130 C 332 110, 332 80, 350 62" fill="none" stroke="#333" stroke-width="1.4" stroke-dasharray="5,3" marker-end="url(#mae-arr)"/>
+    <text x="316" y="92" fill="#333" font-weight="700" font-size="10.5">pick m_t</text>
+
+    <!-- arrow π_θ → Skill (s_t) -->
+    <path d="M 310 175 C 332 200, 332 230, 350 248" fill="none" stroke="#333" stroke-width="1.4" stroke-dasharray="5,3" marker-end="url(#mae-arr)"/>
+    <text x="316" y="222" fill="#333" font-weight="700" font-size="10.5">pick s_t</text>
+
+    <!-- TOP MIDDLE: Frozen Experts pool -->
+    <rect x="350" y="14" width="178" height="88" rx="6" fill="#f5f5f5" stroke="#666" stroke-dasharray="4,3"/>
+    <text x="439" y="32" text-anchor="middle" font-weight="700" font-size="11">Frozen Experts ❄️</text>
+    <text x="439" y="46" text-anchor="middle" fill="#666" font-size="9.5">(零梯度回传)</text>
+    <g font-family="'Fira Code','SF Mono',monospace" font-size="10">
+      <rect x="362" y="56" width="50" height="20" fill="#fff" stroke="#999"/><text x="387" y="70" text-anchor="middle">m₁ 数学</text>
+      <rect x="418" y="56" width="50" height="20" fill="#fff" stroke="#999"/><text x="443" y="70" text-anchor="middle">m₂ 图表</text>
+      <rect x="474" y="56" width="50" height="20" fill="#fff" stroke="#999"/><text x="499" y="70" text-anchor="middle">m₃ 视觉</text>
+      <rect x="362" y="80" width="50" height="20" fill="#fff" stroke="#999" stroke-dasharray="2,2"/><text x="387" y="94" text-anchor="middle" fill="#666">mₖ 新</text>
+      <text x="464" y="93" fill="#666" font-family="system-ui" font-size="9.5">挂注册表即可</text>
+    </g>
+
+    <!-- BOTTOM MIDDLE: Skill Registry -->
+    <rect x="350" y="248" width="178" height="92" rx="6" fill="#f5f5f5" stroke="#666" stroke-dasharray="4,3"/>
+    <text x="439" y="266" text-anchor="middle" font-weight="700" font-size="11">Skill Registry</text>
+    <g font-family="'Fira Code','SF Mono',monospace" font-size="9.5">
+      <text x="362" y="284" font-weight="700" font-family="system-ui" fill="#333">atomic:</text>
+      <text x="404" y="284">OCR · solve_eq · crop</text>
+      <text x="362" y="302" font-weight="700" font-family="system-ui" fill="#333">composite:</text>
+      <text x="416" y="302">crop→OCR→solve_eq</text>
+      <text x="404" y="318" fill="#666" font-size="9">(打包好的多步流水线)</text>
+    </g>
+    <text x="439" y="334" text-anchor="middle" fill="#666" font-size="9.5" font-style="italic">两类都按 ID 在菜单里编号</text>
+
+    <!-- arrows: Experts → τ  and  Skill → τ (both feed the trajectory) -->
+    <path d="M 528 60 C 580 80, 595 130, 590 160" fill="none" stroke="#333" stroke-width="1.4" marker-end="url(#mae-arr)"/>
+    <path d="M 528 294 C 580 270, 595 220, 590 190" fill="none" stroke="#333" stroke-width="1.4" marker-end="url(#mae-arr)"/>
+
+    <!-- RIGHT: trajectory / reward node -->
+    <rect x="546" y="135" width="124" height="60" rx="6" fill="#fff" stroke="#b85c00" stroke-width="1.6"/>
+    <text x="608" y="156" text-anchor="middle" font-weight="700" font-size="11" fill="#b85c00">轨迹 τ</text>
+    <text x="608" y="174" text-anchor="middle" font-weight="700" font-size="12" fill="#b85c00">→ R(τ)</text>
+    <text x="608" y="188" text-anchor="middle" fill="#666" font-size="9.5">(任务对错 0/1)</text>
+
+    <!-- GRPO reward loop back: from τ/R, curves under, up the left side, into π_θ -->
+    <path d="M 546 195 C 460 340, 30 340, 30 250 L 30 145 L 144 145" fill="none" stroke="#b85c00" stroke-width="1.6" stroke-dasharray="6,4" marker-end="url(#mae-arr-r)"/>
+    <text x="48" y="252" fill="#b85c00" font-weight="700" font-size="11">GRPO 回流</text>
+    <text x="48" y="268" fill="#b85c00" font-size="10" font-style="italic">只更新 π_θ</text>
+    <text x="48" y="282" fill="#b85c00" font-size="10" font-style="italic">(专家 / skill 不动)</text>
+  </svg>
+  </div>
+
+  <p class="body"><strong>分层动作空间</strong><span>编排器面前是两张菜单: 上面一张列出所有冻结专家 (谁来干), 下面一张列出所有 skill (用哪一招)。每步两张菜单各点 1 项, 组合起来就是一个动作。</span></p>
+
+  <p class="body"><strong>为什么这么设计</strong><span>对比让 LLM 自己生成 "我现在想 OCR 一下" 这种自由文字: 自由文字理论上无穷多种写法, RL 无从下手。改成菜单选择 (例: 4 专家 × 5 skill = 只有 20 个可能动作), 动作空间一下子可枚举, RL 才学得动。</span></p>
+
+  $$ a_t = (m_t, s_t) \sim \pi_\theta(\,\cdot \mid o_t),\quad m_t \in \mathcal{M}_{\text{frozen}},\; s_t \in \mathcal{S}_{\text{atomic}} \cup \mathcal{S}_{\text{composite}} $$
+  <p class="body p-cont">怎么读: 每一步, π_θ 看了观测 o_t 之后, 从冻结专家集合 𝓜 里抽一个 m_t (谁干), 同时从 skill 集合 𝓢 (含 atomic 和 composite 两类) 里抽一个 s_t (干什么), 这俩组成动作 a_t。整个采样过程只是在两张 dropdown 菜单里各按一下。</p>
+
+  <p class="body"><strong>Outcome-based RL</strong><span>只用最终任务对错当 reward,中间专家调用一概不打分——避免给冻结专家硬造伪标签。优化用 GRPO。</span></p>
+
+  $$ \mathcal{L}(\theta) = -\mathbb{E}_{\tau\sim\pi_\theta}\Big[\sum_{t} \log \pi_\theta(a_t\mid o_t)\cdot \hat{A}(\tau)\Big],\quad \hat{A}(\tau)=R(\tau)-\overline{R}_{\text{group}} $$
+  <p class="body p-cont">怎么读: 一条轨迹的 advantage = 它的最终 reward 减掉同组平均。赢了就放大整串 (model, skill) 选择,输了就压。不用 PRM,省一大笔标注。</p>
+
+  <div class="note">打个比方: Maestro 像剧组的<strong>调度导演</strong>——演员(专家)和动作模板(skill)都定型了,导演只决定"这场戏谁上、用哪个套路",最后票房好坏就是他唯一的 KPI。</div>
+
+  <p class="body"><strong>零样本插专家</strong><span>因为接口是 (model_id, skill_id) 这种符号,新专家挂进注册表就能用,π<sub>θ</sub> 不重训也能在推理时把它纳入候选。</span></p>
+  <p class="body"><strong>什么时候要重训</strong><span>想榨干新专家就跑一轮短 RL 微调编排器,专家权重一动不动。代价: 当专家池规模变化大时,组合分布漂移,advantage 估计需要重新校准。</span></p>
+
+  <p class="body"><strong>结果</strong><span>多模态 benchmark(MathVista、ChartQA、视觉推理混合集)上,4B 编排器 + 冻结专家池整体准确率高于"所有专家融成一个大 SFT 模型"的强基线;新专家加入无需重训编排器即可拿到增量收益,验证组合爆炸下小策略仍可学。</span></p>
+</div>
+<div class="paper paper-grid">
+  <h4>[4] Evolving-RL <span class="tag">小红书 + PKU</span> <span class="tag">2026.05</span></h4>
+
+  <p class="body punchline">一句话: 让"干活的脑"和"写skill的脑"共用一份权重, skill被 solver 用爽了, 写skill的手才发奖金。</p>
+
+  <p class="body"><strong>动机</strong><span>过去 self-evolving agent 只在外面挂记忆库 / prompt 模板, backbone 权重根本不动。</span></p>
+
+  <p class="body"><strong>动机·续</strong><span>更糟的是 extractor（总结经验）和 solver（执行任务）各练各的, skill抽得漂亮 solver 也用不上。</span></p>
+
+  <div style="margin:8px 0 12px 78px;border:1px solid #ddd;background:#fafafa;padding:10px 8px;">
+    <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 660 190" width="660" height="190">
+      <defs>
+        <marker id="erl-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+        </marker>
+        <marker id="erl-arr-d" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#b85c00"/>
+        </marker>
+      </defs>
+
+      <rect x="8" y="22" width="148" height="58" rx="8" ry="8" fill="#fff" stroke="#333" stroke-width="1.2"/>
+      <text x="82" y="44" text-anchor="middle" font-size="13" font-family="sans-serif" font-weight="bold">① Solver 裸跑</text>
+      <text x="82" y="64" text-anchor="middle" font-size="11" font-family="sans-serif" fill="#555">拿原始 trace τ₀</text>
+
+      <rect x="172" y="22" width="156" height="58" rx="8" ry="8" fill="#fff" stroke="#333" stroke-width="1.2"/>
+      <text x="250" y="42" text-anchor="middle" font-size="13" font-family="sans-serif" font-weight="bold">② Extractor 蒸 skill</text>
+      <text x="250" y="62" text-anchor="middle" font-size="10.5" font-family="sans-serif" fill="#555">workflow/触发/纠错/适用</text>
+
+      <rect x="344" y="22" width="156" height="58" rx="8" ry="8" fill="#fff" stroke="#333" stroke-width="1.2"/>
+      <text x="422" y="42" text-anchor="middle" font-size="13" font-family="sans-serif" font-weight="bold">③ Top-K 检索</text>
+      <text x="422" y="62" text-anchor="middle" font-size="10.5" font-family="sans-serif" fill="#555">Qwen3-Emb-4B 余弦</text>
+
+      <rect x="516" y="22" width="136" height="58" rx="8" ry="8" fill="#fff" stroke="#333" stroke-width="1.2"/>
+      <text x="584" y="44" text-anchor="middle" font-size="13" font-family="sans-serif" font-weight="bold">④ Solver 重跑</text>
+      <text x="584" y="64" text-anchor="middle" font-size="10.5" font-family="sans-serif" fill="#555">带 skill 得 τ'</text>
+
+      <line x1="156" y1="51" x2="172" y2="51" stroke="#333" stroke-width="1.4" marker-end="url(#erl-arr)"/>
+      <line x1="328" y1="51" x2="344" y2="51" stroke="#333" stroke-width="1.4" marker-end="url(#erl-arr)"/>
+      <line x1="500" y1="51" x2="516" y2="51" stroke="#333" stroke-width="1.4" marker-end="url(#erl-arr)"/>
+
+      <path d="M 584 80 C 584 150, 250 170, 165 110" fill="none" stroke="#b85c00" stroke-width="1.4" stroke-dasharray="6 4" marker-end="url(#erl-arr-d)"/>
+      <text x="370" y="160" text-anchor="middle" font-size="11.5" font-family="sans-serif" fill="#b85c00" font-style="italic">reward 回流 → 同时奖励 ① solver 与 ② extractor</text>
+    </svg>
+  </div>
+
+  <p class="body"><strong>四阶段闭环</strong><span>Solver 裸跑一条 trace, Extractor 把 trace 蒸成 N 条结构化 skill, 每条有 workflow / 触发规则 / 纠错 / 适用条件四字段, 杜绝"加油下次努力"式空话。</span></p>
+
+  <p class="body"><strong>检索与回流</strong><span>用 Qwen3-Embedding-4B（冻结索引器, 不吃梯度）按余弦相似度查 top-K skill 喂回 solver。重跑后 reward 同时打给 solver（做对了+）和 extractor（你这条 skill 真有用+）。</span></p>
+
+  <p class="body"><strong>共参数 GRPO</strong><span>GRPO 把两类角色的 rollout 混进同一个 group 算 advantage。</span></p>
+
+  <p class="body"><strong>共参数·续</strong><span>extractor 和 solver 共享同一份 backbone, 只是 prompt 不同。于是 extractor 的梯度方向天然被 solver 的回报牵着走, "抽得能用"才有正信号。</span></p>
+
+  <p class="body"><strong>奖励设计</strong><span>纯 RLVR。不引入 PRM 也不引入 RaaS（外部大模型当裁判）。</span></p>
+
+  <p class="body"><strong>奖励·分工</strong><span>source 任务上 solver 拿 task reward; retrieved 任务上 extractor 拿"加 skill 后 solver 涨了多少分"作为信号——典型的 counterfactual 增量奖励。</span></p>
+
+  $$
+  \mathcal{J}(\theta) = \mathbb{E}_{\tau \sim \pi_\theta^{\text{sol}}}\big[r(\tau)\big] + \lambda \cdot \mathbb{E}_{s \sim \pi_\theta^{\text{ext}},\, \tau' \sim \pi_\theta^{\text{sol}}(\cdot \mid s)}\big[r(\tau') - r(\tau_0)\big]
+  $$
+
+  <p class="body p-cont">怎么读: 第一项 solver 自己刷分; 第二项 extractor 抽 skill <em>s</em>, 让 solver 带 skill 重跑得 τ', 奖励 = 带 skill 比裸跑 τ₀ 涨了多少。两项共享同一份 θ, 一次反传同时教会"会做"和"会总结"。</p>
+
+  <div class="note">打个比方: solver 是实习生, extractor 是他自己写的工作skill。传统做法skill写没写好没人验; Evolving-RL 是——明天带skill再做一遍, 真涨分了今天写skill的那只手也发奖金, skill自然越写越"对自己有用"。</div>
+
+  <p class="body"><strong>检索细节</strong><span>retrieval 走 IID 的 in-domain pool, skill 池只装当前 batch 周边任务, 防 extractor 把答案硬塞进 skill 字段作弊。</span></p>
+
+  <p class="body"><strong>结果</strong><span>数学推理 + 工具调用 + Web agent 三类 benchmark 上, 相比纯 GRPO solver baseline 平均 +5~9 pt。</span></p>
+
+  <p class="body"><strong>结果·消融</strong><span>"共参数"比"两模型分训"高 ~3 pt; "reward 回流 extractor"比"extractor 走 SFT 模仿"高 ~4 pt; 训练后期 workflow 字段长度 -30%, 触发规则命中率上升——skill 越练越短越能用。</span></p>
+</div>
+
+<div class="paper paper-grid">
+  <h4>[5] SDAR — Self-Distilled Agentic RL <span class="tag">ZJU-REAL</span> <span class="tag">aux loss</span> <span class="tag">蒸馏门控</span> <span class="tag">verl 兼容</span></h4>
+
+  <p class="body punchline">一句话: 同模型双前向自蒸馏, 只在"看了攻略才会"的 token 上拉 student。</p>
+
+  <p class="body"><strong>动机</strong><span>agentic 任务 reward 稀疏, 想让模型学一些高层 skill (怎么 clean、怎么 pick_and_place), 但又不愿意推理时还在 prompt 里挂一份 skill 说明书。SDAR 想把"看攻略才会做"的能力直接压进权重, 推理时把攻略撤掉。</span></p>
+
+  <div style="margin:8px 0 12px 78px;border:1px solid #ddd;background:#fafafa;padding:10px 8px;">
+    <svg viewBox="0 0 700 260" width="100%" style="max-width:700px;display:block;font-family:system-ui,sans-serif;font-size:11px;">
+      <defs>
+        <marker id="sdar-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#333"/>
+        </marker>
+        <marker id="sdar-arr-r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse">
+          <path d="M0,0 L10,5 L0,10 z" fill="#b85c00"/>
+        </marker>
+      </defs>
+
+      <!-- prompt 输入 -->
+      <rect x="14" y="40" width="86" height="40" rx="6" fill="#fff" stroke="#333"/>
+      <text x="57" y="58" text-anchor="middle" font-weight="700" font-size="11">x</text>
+      <text x="57" y="72" text-anchor="middle" font-size="9.5" fill="#666">原 prompt</text>
+
+      <rect x="14" y="140" width="86" height="40" rx="6" fill="#FFF4E6" stroke="#b85c00"/>
+      <text x="57" y="158" text-anchor="middle" font-weight="700" font-size="11" fill="#b85c00">r ⊕ x</text>
+      <text x="57" y="172" text-anchor="middle" font-size="9.5" fill="#666">skill 攻略 + x</text>
+
+      <!-- 双前向 同模型 -->
+      <rect x="140" y="20" width="160" height="80" rx="8" fill="#fff" stroke="#1a3a5c" stroke-width="2"/>
+      <text x="220" y="44" text-anchor="middle" font-weight="700" font-size="12" fill="#1a3a5c">π_θ (forward #1)</text>
+      <text x="220" y="62" text-anchor="middle" font-size="10" fill="#666">student 视角</text>
+      <text x="220" y="80" text-anchor="middle" font-family="'Fira Code',monospace" font-size="11">log π_θ(y_t | x)</text>
+
+      <rect x="140" y="120" width="160" height="80" rx="8" fill="#FFF4E6" stroke="#b85c00" stroke-width="2"/>
+      <text x="220" y="144" text-anchor="middle" font-weight="700" font-size="12" fill="#b85c00">π_θ (forward #2)</text>
+      <text x="220" y="162" text-anchor="middle" font-size="10" fill="#666">teacher 视角 (带攻略)</text>
+      <text x="220" y="180" text-anchor="middle" font-family="'Fira Code',monospace" font-size="11">log π_θ(y_t | r,x)</text>
+
+      <line x1="100" y1="60" x2="140" y2="60" stroke="#333" stroke-width="1.4" marker-end="url(#sdar-arr)"/>
+      <line x1="100" y1="160" x2="140" y2="160" stroke="#b85c00" stroke-width="1.4" marker-end="url(#sdar-arr-r)"/>
+
+      <!-- 同参数标注 -->
+      <path d="M 220 100 L 220 120" stroke="#999" stroke-width="1" stroke-dasharray="3 3"/>
+      <text x="305" y="113" font-size="10" fill="#888" font-style="italic">同一份 θ</text>
+
+      <!-- δ_t 差 -->
+      <rect x="340" y="60" width="120" height="60" rx="6" fill="#fff" stroke="#333"/>
+      <text x="400" y="80" text-anchor="middle" font-weight="700" font-size="12">δ_t = teacher − student</text>
+      <text x="400" y="98" text-anchor="middle" font-size="10" fill="#666">攻略带来多少 log-prob</text>
+      <text x="400" y="112" text-anchor="middle" font-size="10" fill="#666">→ 越大说明越靠攻略</text>
+
+      <line x1="300" y1="60" x2="340" y2="78" stroke="#333" stroke-width="1.4" marker-end="url(#sdar-arr)"/>
+      <line x1="300" y1="160" x2="340" y2="102" stroke="#b85c00" stroke-width="1.4" marker-end="url(#sdar-arr)"/>
+
+      <!-- sigmoid 门控 -->
+      <rect x="490" y="60" width="100" height="60" rx="6" fill="#fff" stroke="#1a3a5c" stroke-width="2"/>
+      <text x="540" y="82" text-anchor="middle" font-weight="700" font-size="12" fill="#1a3a5c">g_t = σ(β·δ_t)</text>
+      <!-- mini sigmoid curve -->
+      <g transform="translate(498,90)" stroke="#1a3a5c" fill="none" stroke-width="1.4">
+        <line x1="0" y1="22" x2="80" y2="22" stroke="#ccc"/>
+        <line x1="40" y1="6" x2="40" y2="28" stroke="#ccc"/>
+        <path d="M 0 22 C 28 22, 32 22, 40 18 C 48 14, 52 8, 80 8"/>
+      </g>
+      <text x="490" y="135" font-size="9.5" fill="#666">0~1 软门控</text>
+
+      <line x1="460" y1="90" x2="490" y2="90" stroke="#333" stroke-width="1.4" marker-end="url(#sdar-arr)"/>
+
+      <!-- 加权 NLL -->
+      <rect x="600" y="60" width="92" height="60" rx="6" fill="#FFF4E6" stroke="#b85c00" stroke-width="2"/>
+      <text x="646" y="82" text-anchor="middle" font-weight="700" font-size="12" fill="#b85c00">𝓛_SDAR</text>
+      <text x="646" y="98" text-anchor="middle" font-size="10" fill="#666">−Σ g_t · log π_θ</text>
+      <text x="646" y="112" text-anchor="middle" font-size="9.5" fill="#888" font-style="italic">aux loss</text>
+
+      <line x1="590" y1="90" x2="600" y2="90" stroke="#b85c00" stroke-width="1.4" marker-end="url(#sdar-arr-r)"/>
+
+      <!-- 与 GRPO 并行 -->
+      <rect x="340" y="170" width="250" height="50" rx="6" fill="#fff" stroke="#333" stroke-dasharray="4 3"/>
+      <text x="465" y="190" text-anchor="middle" font-weight="700" font-size="11">主 policy gradient (GRPO)</text>
+      <text x="465" y="208" text-anchor="middle" font-size="10" fill="#666">advantage / rollout / reward 一动不动</text>
+
+      <line x1="646" y1="120" x2="646" y2="170" stroke="#b85c00" stroke-width="1.4"/>
+      <line x1="646" y1="170" x2="592" y2="195" stroke="#b85c00" stroke-width="1.4" marker-end="url(#sdar-arr-r)"/>
+      <text x="600" y="165" font-size="10" fill="#b85c00" font-style="italic">+ 加在一起</text>
+
+      <!-- 推理时撤掉 -->
+      <text x="14" y="240" font-size="10.5" fill="#666" font-style="italic">推理: r 撤掉, 只剩 x — 攻略压进权重, 模型自己"还记得"。</text>
+    </svg>
+  </div>
+
+  <p class="body"><strong>双前向</strong><span>对当前 student π_θ, 第一遍只喂原 prompt x, 第二遍把人工写的 skill markdown r 拼在 x 前面再 forward 一次。两次共享同一份权重, 第二次充当"看了攻略的 teacher"——这就是 self-distillation 的来源: 老师就是带 hint 的自己。</span></p>
+
+  <p class="body"><strong>δ_t 门控</strong><span>对每个生成 token y_t, 算 teacher 比 student 多出来的 log-prob δ_t, 再过 sigmoid 压成 0~1 的软门控 g_t, β 控制切换陡峭程度:</span></p>
+
+  $$ \delta_t = \log \pi_\theta(y_t \mid r, x) - \log \pi_\theta(y_t \mid x),\qquad g_t = \sigma(\beta \cdot \delta_t) $$
+
+  <p class="body p-cont">g_t → 1 意味着"看了攻略才会", 该蒸馏; g_t → 0 说明 student 已经反超, 别瞎纠正。</p>
+
+  <p class="body"><strong>加权 NLL</strong><span>aux loss 形式是 student 自身负对数似然, 再被 g_t 加权——可以理解为把 teacher 近似成 one-hot 后退化出来的 token-level CE/KL, 只是用 g_t 决定每个 token 学多少。它跟主 policy gradient 并行相加, GRPO 那一套 advantage、rollout、reward 没动:</span></p>
+
+  $$ \mathcal{L}_{\text{SDAR}} = -\sum_{t} g_t \cdot \log \pi_\theta(y_t \mid x) $$
+
+  <p class="body"><strong>推理时撤掉 r</strong><span>student 必须把"看攻略才学得到"的那部分技巧内化到权重里。→ 深读</span></p>
+
+  <div class="note">打个比方: student 自己先做一遍考卷, 再让<strong>同一个人</strong>翻开攻略再做一遍。哪几道题"翻了攻略才会做" (δ_t 大), 就专门把这几道的解法压进肌肉记忆; 学生已经会的题不再瞎练。考场上攻略一收, 该会的还是会。</div>
+</div>
+<h2 class="sec">本章方法对比</h2>
+<table>
+  <tr><th>方法</th><th>skill 单元形态</th><th>获取方式</th><th>是否进 RL loss</th><th>与 GRPO 耦合</th><th>代表 benchmark</th></tr>
+  <tr><td><strong>Skill-RM</strong></td><td>reward skill 三件套</td><td>judge 调工具聚合</td><td>只产 reward 不更新</td><td>verl+GRPO 组内 z-score</td><td>VerInstruct 混合</td></tr>
+  <tr><td><strong>StraTA</strong></td><td>strategy 隐变量 z</td><td>开局采样自然语言</td><td>是, strategy 独立算 A</td><td>双层 GRPO (K×N)</td><td>SWE-bench +6~12pp</td></tr>
+  <tr><td><strong>Maestro</strong></td><td>(专家, skill) 二元组</td><td>注册表符号化</td><td>是, outcome only</td><td>4B 编排器吃 GRPO</td><td>MathVista/ChartQA</td></tr>
+  <tr><td><strong>Evolving-RL</strong></td><td>四字段结构化 skill</td><td>extractor 蒸 trace</td><td>是, counterfactual 增量</td><td>共参数混进同组</td><td>数学+Web +5~9pt</td></tr>
+  <tr><td><strong>SDAR</strong></td><td>人工 skill markdown r</td><td>训练期外挂攻略</td><td>aux NLL, g_t 加权</td><td>与 GRPO 并行相加, 不动 advantage</td><td>agentic 多轮 (ALFWorld 系)</td></tr>
+</table>
+<div class="note"><strong>Limitations:</strong> (1) 可迁移 skill library 仍未真正建立：StraTA 的 strategy 文本未沉淀为跨任务库，Maestro 注册表规模未量化, SDAR 的攻略 r 还是人工写死——『skill 是否真的能复用』在这几篇里仍以承诺多于证明。(2) GRPO 与 skill 层级的耦合方式没共识：StraTA 双层 group-relative、Maestro 纯 outcome、Skill-RM 把 skill 灌进 judge、SDAR 走 aux loss 与 GRPO 并行——四种耦合方式之间缺一组 head-to-head 对照。</div>
+</div>
+</body>
+</html>
