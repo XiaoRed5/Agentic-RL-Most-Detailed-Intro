@@ -13,6 +13,7 @@
 - [Agentic RL入门3：transformer 架构](./Agentic%20RL%E5%85%A5%E9%97%A83%EF%BC%9Atransformer%E6%9E%B6%E6%9E%84.html)
 - [Agentic RL入门4：Credit 错分与算法接口](./algorithms.html)
 - [Agentic RL入门5：Skill-based Agentic RL](./Agentic%20RL%E5%85%A5%E9%97%A85%EF%BC%9ASkill-based%20Agentic%20RL.html)
+- [Agentic RL入门6：多轮工具调用](./Agentic%20RL%E5%85%A5%E9%97%A86%EF%BC%9A%E5%A4%9A%E8%BD%AE%E5%B7%A5%E5%85%B7%E8%B0%83%E7%94%A8.html)
 - ...
 
 ## 在线阅读
@@ -23,6 +24,7 @@
 - [Agentic RL入门3：transformer 架构](https://xiaored5.github.io/Agentic-RL-Most-Detailed-Intro/Agentic%20RL%E5%85%A5%E9%97%A83%EF%BC%9Atransformer%E6%9E%B6%E6%9E%84.html)
 - [Agentic RL入门4：Credit 错分与算法接口](https://xiaored5.github.io/Agentic-RL-Most-Detailed-Intro/algorithms.html)
 - [Agentic RL入门5：Skill-based Agentic RL](https://xiaored5.github.io/Agentic-RL-Most-Detailed-Intro/Agentic%20RL%E5%85%A5%E9%97%A85%EF%BC%9ASkill-based%20Agentic%20RL.html)
+- [Agentic RL入门6：多轮工具调用](https://xiaored5.github.io/Agentic-RL-Most-Detailed-Intro/Agentic%20RL%E5%85%A5%E9%97%A86%EF%BC%9A%E5%A4%9A%E8%BD%AE%E5%B7%A5%E5%85%B7%E8%B0%83%E7%94%A8.html)
 
 ## 本地预览
 

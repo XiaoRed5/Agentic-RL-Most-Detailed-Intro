@@ -1,0 +1,1342 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Agentic RL入门6：多轮工具调用</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.11/dist/contrib/auto-render.min.js"
+        onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});"></script>
+<style>/* === XHS 1080px canvas === */
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:#f3f3f3}
+body{font-family:'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC',sans-serif;color:#222;font-size:21px;line-height:1.65}
+.xhs-canvas{width:1080px;margin:0 auto;background:#fff;padding:36px 40px 72px}
+code{font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:.9em;background:#f3f4f6;padding:1px 6px;border-radius:4px;color:#d04040}
+
+/* KaTeX */
+.katex-display{margin:14px 0!important;padding:14px 18px;background:#faf9ff;border-left:4px solid #8b5cf6;border-radius:0 8px 8px 0;overflow-x:auto;font-size:22px}
+.katex-display>.katex{font-size:1.0em}
+.katex{font-size:1.0em;white-space:nowrap;display:inline-block}
+.katex-mathml{position:absolute!important;clip:rect(1px,1px,1px,1px)!important;padding:0!important;border:0!important;height:1px!important;width:1px!important;overflow:hidden!important}
+.katex-html{white-space:nowrap}
+
+/* Headings */
+h1{font-size:42px;font-weight:800;letter-spacing:-0.5px;line-height:1.32;color:#111;margin:0 0 18px}
+.subtitle{color:#666;font-size:22px;margin:6px 0 22px}
+h2.sec{display:inline-block;background:#1a3a8a;color:#fff;font-size:28px;font-weight:800;padding:8px 20px;border-radius:10px;margin:40px 0 16px}
+h3.subsec{display:inline-block;background:#ffe0b5;color:#7a4a00;font-size:24px;font-weight:800;padding:6px 18px;border-radius:8px;margin:24px 0 12px}
+p{margin:6px 0;text-align:left;hyphens:none;word-break:normal;overflow-wrap:break-word}
+strong{font-weight:800;color:#1a3a8a}
+
+/* Paper card (XHS) */
+.paper{background:#fff;border:1px solid #e6e6e6;border-radius:16px;padding:24px 26px;margin:24px 0;box-shadow:0 2px 14px rgba(0,0,0,.05)}
+.paper h4{font-size:30px;font-weight:800;color:#000;line-height:1.35;margin-bottom:10px;letter-spacing:-0.3px}
+.paper h4 a{color:#000;text-decoration:none}
+.paper p{font-size:21px;color:#333;line-height:1.65;margin:6px 0}
+.paper p.body{color:#222}
+.tag{display:inline-block;font-size:17px;background:#f1fbef;border:1px solid #bfe8b8;color:#1e6b1e;padding:2px 10px;border-radius:6px;margin:2px 4px 2px 0;font-weight:700;font-family:'PingFang SC',sans-serif;vertical-align:middle}
+.tag-star{background:#ffe9b8;border-color:#e0a040;color:#7a4a00}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;margin:20px 0;font-size:20px;background:#fff;border-radius:10px;overflow:hidden}
+th{background:#1a3a8a;color:#fff;padding:12px 14px;text-align:left;font-weight:800;font-size:18px;letter-spacing:.02em}
+td{border:1px solid #e6e6e6;padding:10px 14px;line-height:1.55;color:#333}
+tr:last-child td{border-bottom:1px solid #e6e6e6}
+
+/* Note callout (类比块) */
+.note{background:#fff5e8;border:1px solid #efd5ac;border-radius:12px;padding:14px 18px;margin:14px 0;font-size:21px;line-height:1.6;color:#5a3a18}
+.note strong{font-weight:800;color:#7a4a00}
+
+/* paper-grid: 标签 + 正文双列 */
+.paper-grid p.body{display:grid;grid-template-columns:96px 1fr;gap:18px;align-items:start;margin:12px 0;font-size:21px}
+.paper-grid p.body > strong:first-child{color:#1a3a8a;font-weight:800;font-size:19px;text-align:left;line-height:1.7;padding-top:2px}
+.paper-grid p.body > strong:first-child + span{display:block;color:#222}
+.paper-grid p.body.p-cont{display:block;margin-left:114px;color:#555;font-size:20px;font-style:italic;background:#f7f7f7;border-left:3px solid #999;padding:8px 14px;border-radius:0 6px 6px 0}
+.paper-grid p.body.punchline{display:block;background:#fffaf0;border-left:4px solid #e0a040;color:#5a4a18;font-size:22px;font-weight:700;font-style:normal;padding:12px 16px;border-radius:0 10px 10px 0;margin:8px 0 14px}
+.paper-grid .katex-display{margin:10px 0 10px 114px!important}
+.punchline{background:#fffaf0;border-left:4px solid #e0a040;color:#5a4a18;font-size:22px;font-weight:700;padding:12px 16px;border-radius:0 10px 10px 0;display:block;margin:8px 0 14px}
+
+/* === visualisations (内嵌 viz 块, 字号同步放大) === */
+.pipeline-map{margin:20px 0 22px;border:1px solid #e6e6e6;background:#fff;border-radius:12px;overflow:hidden}
+.agentic-credit{display:grid;gap:0;border-bottom:1px solid #e6e6e6}
+.credit-section{padding:14px 16px;border-bottom:1px solid #e6e6e6}
+.credit-section:last-child{border-bottom:none}
+.credit-section-title{font-weight:800;color:#1a3a8a;font-size:19px;margin-bottom:10px}
+.traj-list{display:grid;gap:9px}
+.traj-row{display:grid;grid-template-columns:52px 1fr auto;gap:10px;align-items:center;font-size:17px;line-height:1.5}
+.traj-id{font-family:'SF Mono',monospace;color:#555;font-weight:700}
+.traj-path{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.traj-token{background:#fff;border:1px solid #d8d8d8;padding:4px 9px;border-radius:5px}
+.traj-token.decision{border-color:#1a3a8a;color:#1a3a8a;font-weight:700}
+.traj-token.obs{border-style:dashed;color:#666;background:#fafafa}
+.traj-token.bad{border-color:#d04040;color:#9f2e2e;background:#ffe5e5}
+.traj-arrow{color:#999}
+.traj-reward{font-family:'SF Mono',monospace;text-align:center;border:1px solid #d8d8d8;padding:4px 10px;background:#fafafa;color:#555;white-space:nowrap;border-radius:5px}
+.traj-reward.good{border-color:#1e6b1e;color:#1e6b1e;font-weight:700;background:#f1fbef}
+.traj-reward.fail{border-color:#d04040;color:#9f2e2e;background:#ffe5e5}
+.credit-legend{margin-top:9px;color:#666;font-size:16px;line-height:1.5}
+
+.broadcast-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:12px;align-items:stretch}
+.broadcast-card{border:1px solid #d8d8d8;background:#fff;padding:12px 14px;font-size:18px;line-height:1.55;text-align:left;border-radius:8px}
+.broadcast-card strong{display:block;color:#1a3a8a;font-size:20px;margin-bottom:6px}
+.broadcast-card.bad{background:#ffe5e5;border-color:#e2b8b8;color:#7a2727}
+.broadcast-card.bad strong{color:#9f2e2e}
+.broadcast-line{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:7px}
+.broadcast-pill{border:1px solid #d8d8d8;background:#fff;padding:4px 9px;font-family:'SF Mono',monospace;font-size:17px;color:#444;border-radius:5px}
+.broadcast-pill.hot{border-color:#1a3a8a;color:#1a3a8a;font-weight:700;background:#eef0fb}
+
+.credit-map{display:grid;grid-template-columns:120px 28px 1fr;gap:10px;align-items:center;margin-bottom:11px}
+.credit-map-from,.credit-map-to{border:1px solid #d8d8d8;background:#fafafa;padding:9px 11px;font-size:18px;line-height:1.5;text-align:left;border-radius:6px}
+.credit-map-from{font-family:'SF Mono',monospace;text-align:center;color:#1a3a8a;font-weight:700;background:#eef0fb}
+.credit-map-arrow{text-align:center;color:#999;font-weight:700;font-size:22px}
+
+.parallel-branch-map{display:grid;grid-template-columns:140px minmax(0,1fr);gap:12px;align-items:stretch;margin:14px 0 16px 114px}
+.parallel-agent{border:1px solid #d8d8d8;background:#fafafa;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:120px;padding:14px;text-align:center;font-weight:700;line-height:1.4;border-radius:8px}
+.parallel-agent span{display:block;margin-top:6px;color:#333;font-size:17px}
+.parallel-branches{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.parallel-branch{border:1px solid #d8d8d8;background:#fff;display:flex;flex-direction:column;justify-content:center;gap:5px;min-height:120px;padding:12px 13px;font-size:17px;line-height:1.5;text-align:left;border-radius:8px}
+.parallel-branch strong{font-size:1.1em;color:#1a3a8a}
+.parallel-branch code{background:transparent;padding:0;color:#333;font-size:.95em}
+.parallel-branch em{font-style:normal;color:#555}
+.parallel-branch.bad{border-color:#e2b8b8;background:#ffe5e5;color:#7a2727}
+.parallel-branch.bad strong,.parallel-branch.bad em{color:#9f2e2e}
+.parallel-branch.bad em{font-weight:700}
+
+.step-credit-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
+.step-credit{border:1px solid #d8d8d8;border-top:4px solid #1a3a8a;background:#fff;padding:10px;min-height:90px;border-radius:8px}
+.step-credit.neg{border-top-color:#d04040}
+.step-credit.mask{border-top-style:dashed;color:#666;background:#fafafa}
+.step-credit .sym{display:block;font-family:'SF Mono',monospace;color:#777;font-size:16px;margin-bottom:4px}
+.step-credit strong{display:block;color:#1a3a8a;font-family:'SF Mono',monospace;font-size:18px;margin-bottom:4px}
+.step-credit small{display:block;color:#555;font-size:16px;line-height:1.4}
+.credit-update-note{margin-top:10px;color:#555;font-size:17px;line-height:1.55;text-align:left}
+
+.interface-map{display:grid;gap:10px;margin:14px 0 24px;background:transparent}
+.interface-row{display:grid;grid-template-columns:160px 1fr 1fr minmax(140px,auto);gap:10px;align-items:stretch;min-height:90px;padding:10px;border:1px solid #e6e6e6;background:#fafafa;border-radius:8px}
+.interface-head{display:flex;flex-direction:column;justify-content:center;padding:11px 12px;border-left:5px solid #1a3a8a;background:#fff;border-radius:0 6px 6px 0}
+.interface-num{display:block;font-family:'SF Mono',monospace;color:#777;font-size:16px;margin-bottom:4px}
+.interface-title{display:block;color:#1a3a8a;font-weight:800;font-size:19px;line-height:1.4}
+.interface-cell{padding:11px 12px;border:1px solid #e6e6e6;background:#fff;font-size:17px;line-height:1.55;text-align:left;color:#444;border-radius:6px}
+.interface-label{display:block;color:#999;font-size:14px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+.interface-paper{display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #e6e6e6;padding:11px 12px;background:#fff;color:#333;font-family:'SF Mono',monospace;font-size:16px;line-height:1.5;text-align:center;white-space:nowrap;border-radius:6px}
+.interface-paper .interface-label{text-align:center;margin-bottom:6px;font-family:'PingFang SC',sans-serif}
+.interface-row[data-layer="rollout"] .interface-head{border-left-color:#666}
+.interface-row[data-layer="credit"] .interface-head{border-left-color:#3d5a80}
+.interface-row[data-layer="reward"] .interface-head{border-left-color:#6b705c}
+.interface-row[data-layer="skill"] .interface-head{border-left-color:#7d5a50}
+.interface-row[data-layer="loss"] .interface-head{border-left-color:#8a4f7d}
+
+@media print{body{font-size:12pt}}</style>
+</head>
+<body>
+<div class="xhs-canvas">
+
+<style>
+/* === XHS Hero · 3-block 入门版 === */
+.hero-card{background:#FAF7F0;border:2px solid #1a3a5c;border-radius:16px;padding:24px 32px 22px;box-shadow:4px 4px 0 #1a3a5c;margin:0 0 28px;font-family:'PingFang SC','Inter',sans-serif}
+.hero-pill{display:inline-block;background:#1a3a5c;color:#FAF7F0;padding:4px 14px;border-radius:999px;font-family:'Inter',sans-serif;font-size:13px;letter-spacing:.18em;font-weight:700;margin-bottom:10px}
+.hero-title{font-size:38px;color:#1a3a5c;font-weight:800;line-height:1.2;margin:0 0 18px;letter-spacing:-.5px}
+.hero-title em{font-style:normal;color:#c0392b;background:linear-gradient(180deg,transparent 62%,#ffe082 62%);padding:0 4px}
+.hero-deck{font-size:17px;color:#555;line-height:1.6;margin-bottom:24px;font-weight:500}
+
+/* 3 block container */
+.h3-grid{display:grid;grid-template-columns:1fr;gap:14px}
+.h3-block{background:#FFFDF7;border:1.5px solid #1a3a5c;border-radius:12px;padding:16px 20px}
+.h3-step{display:inline-flex;align-items:center;gap:10px;margin-bottom:10px}
+.h3-num{width:32px;height:32px;border-radius:50%;background:#1a3a5c;color:#FAF7F0;font-family:'Inter',sans-serif;font-size:17px;font-weight:800;display:inline-flex;align-items:center;justify-content:center}
+.h3-q{font-size:21px;font-weight:800;color:#1a3a5c;letter-spacing:-.2px}
+
+/* Block 1: τ-bench 是什么 (paper-grounded) */
+.b1-def{font-size:14.5px;color:#2c2c2c;line-height:1.55;margin:0 0 10px;padding:9px 13px;background:#fff;border-left:4px solid #1a3a5c;border-radius:0 8px 8px 0}
+.b1-def b{color:#1a3a5c}
+.b1-arch{display:grid;grid-template-columns:1fr 50px 1fr 50px 1fr;gap:6px;align-items:stretch;margin:0 0 10px}
+.b1-arch .node{background:#fff;border:1.5px solid #d8d8d8;border-radius:10px;padding:10px 12px;display:flex;flex-direction:column;gap:4px;min-height:108px}
+.b1-arch .node h5{font-family:'Inter',sans-serif;font-size:11.5px;color:#8A8A8A;letter-spacing:.14em;font-weight:800;margin:0}
+.b1-arch .node .nm{font-size:16px;color:#1a3a5c;font-weight:800;line-height:1.25}
+.b1-arch .node .nd{font-size:13px;color:#444;line-height:1.5}
+.b1-arch .node.user{border-left:5px solid #3a7d3a}
+.b1-arch .node.agent{border-left:5px solid #c0392b;background:#fff5f5}
+.b1-arch .node.tools{border-left:5px solid #1a3a5c}
+.b1-arch .conn{display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Inter',sans-serif;font-size:11px;color:#888;font-weight:700;letter-spacing:.05em}
+.b1-arch .conn .arr{font-size:22px;color:#1a3a5c;line-height:1}
+.b1-arch .conn .lab{margin-top:3px;color:#666}
+.b1-arch .node .tag-mini{display:inline-block;font-family:'Inter',monospace;font-size:11px;background:#f3f4f6;border:1px solid #e6e6e6;color:#555;padding:1px 6px;border-radius:4px;margin-right:3px}
+.b1-stats{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:0 0 12px}
+.b1-stat{background:#fff;border:1.5px solid #d8d8d8;border-radius:10px;padding:11px 14px;font-size:13.5px;color:#2c2c2c;line-height:1.55}
+.b1-stat .dt{font-family:'Inter',sans-serif;font-size:11px;letter-spacing:.14em;color:#1a3a5c;font-weight:800;margin-bottom:4px}
+.b1-stat .dn{font-family:'Inter',sans-serif;font-size:17px;font-weight:800;color:#1a3a5c;margin-bottom:3px}
+.b1-stat b{color:#1a3a5c}
+.b1-stat.retail{border-top:4px solid #3a7d3a}
+.b1-stat.airline{border-top:4px solid #c0392b}
+.b1-eval{background:#1a3a5c;color:#FAF7F0;border-radius:10px;padding:10px 14px;font-size:13.5px;line-height:1.55}
+.b1-eval .ek{font-family:'Inter',sans-serif;font-size:11px;letter-spacing:.18em;font-weight:800;color:#ffe082}
+.b1-eval code{font-family:'SF Mono',monospace;background:rgba(255,224,130,.18);color:#ffe082;padding:1px 6px;border-radius:4px;font-size:12.5px}
+.b1-eval b{color:#ffe082}
+.b1-shock{margin-top:8px;background:#fff5f5;border:1.5px solid #c0392b;border-radius:10px;padding:9px 13px;font-size:13.5px;color:#7a2727;line-height:1.5}
+.b1-shock b{color:#c0392b;font-family:'Inter',sans-serif;font-size:14.5px;font-weight:800}
+
+/* Block 2: 痛点 */
+.b2-line{font-size:16px;color:#2c2c2c;line-height:1.65;margin-bottom:14px}
+.b2-line b{color:#1a3a5c}
+.b2-timeline{background:#fff;border:1.5px solid #d8d8d8;border-radius:10px;padding:16px 18px 14px;margin-top:6px}
+.b2-traj{display:flex;align-items:center;gap:0;margin-bottom:10px;position:relative}
+.b2-step{flex:1;height:32px;background:#f3f3f3;border:1px solid #d8d8d8;display:flex;align-items:center;justify-content:center;font-family:'Inter',monospace;font-size:11px;color:#888;border-right:none}
+.b2-step:first-child{border-radius:6px 0 0 6px}
+.b2-step:last-child{border-right:1px solid #d8d8d8;border-radius:0 6px 6px 0;background:#c0392b;color:#fff;font-weight:800;font-size:13px;flex:0 0 56px}
+.b2-pain-grid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin-top:6px}
+.b2-pain{background:#fff5f5;border-left:4px solid #c0392b;padding:10px 14px;font-size:14.5px;color:#2c2c2c;line-height:1.55;border-radius:0 8px 8px 0}
+.b2-pain b{display:block;color:#c0392b;font-weight:800;font-size:13px;letter-spacing:.05em;margin-bottom:3px}
+
+/* Block 3: 5 张处方 */
+.b3-intro{font-size:15.5px;color:#2c2c2c;line-height:1.65;margin-bottom:14px}
+.b3-intro b{color:#1a3a5c}
+.b3-grid{display:grid;grid-template-columns:repeat(6,1fr);gap:10px}
+.b3-card{background:#fff;border:1.5px solid #1a3a5c;border-radius:10px;padding:12px 13px;display:flex;flex-direction:column;gap:6px;min-height:140px;grid-column:span 2}
+.b3-grid > .b3-card:nth-child(4){grid-column:2 / span 2}
+.b3-grid > .b3-card:nth-child(5){grid-column:span 2}
+.b3-tag{font-family:'Inter',sans-serif;font-size:10.5px;letter-spacing:.08em;font-weight:800;color:#FAF7F0;background:#c0392b;padding:3px 8px;border-radius:4px;align-self:flex-start;line-height:1.3}
+.b3-pain{background:#fff5f5;border-left:4px solid #c0392b;border-radius:0 6px 6px 0;padding:7px 11px;font-size:12.5px;color:#2c2c2c;line-height:1.5;margin-bottom:2px}
+.b3-pain b{display:block;color:#c0392b;font-family:'Inter','PingFang SC',sans-serif;font-size:12.5px;font-weight:800;letter-spacing:.02em;margin-bottom:2px}
+.b3-name{font-family:'Inter',sans-serif;font-size:16px;font-weight:800;color:#1a3a5c;line-height:1.2;letter-spacing:-.2px;margin-top:2px}
+.b3-cure{font-size:13px;color:#2c2c2c;line-height:1.5;flex:1}
+.b3-win{margin-top:auto;padding-top:8px;border-top:1px dashed #d8d8d8;font-family:'Inter',sans-serif;font-size:12.5px;color:#1e6b1e;font-weight:800;line-height:1.4}
+.b3-win span{display:block;color:#888;font-size:11px;font-weight:500;margin-top:1px}
+
+/* Foot */
+.hero-foot{margin-top:20px;display:flex;align-items:center;gap:12px;font-family:'Inter',sans-serif;font-size:11.5px;letter-spacing:.2em;color:#8A8A8A;text-transform:uppercase;font-weight:700}
+.hero-foot .line{flex:1;height:1px;background:#cfc8b8}
+</style>
+
+<div class="hero-card">
+  <div class="hero-pill">SURVEY · Multi-Turn Tool-Use RL · 5 篇</div>
+  <h1 class="hero-title">τ-bench · <em>多轮工具调用 RL</em> — 5 个坑, 5 篇 paper</h1>
+
+  <div class="h3-grid">
+
+    <!-- ============ Block 1: τ-bench 是什么 (paper-grounded) ============ -->
+    <div class="h3-block">
+      <div class="h3-step"><span class="h3-num">1</span><span class="h3-q">τ-bench 是什么?</span></div>
+
+      <div class="b1-def">
+        <b>Tool-Agent-User Interaction Benchmark</b> (Yao et al. NeurIPS 2024) — agent 一边和 <b>LLM 模拟的真实用户</b>多轮对话, 一边按<b>领域政策</b>调 API 改数据库。
+      </div>
+
+      <!-- 三方架构 -->
+      <div class="b1-arch">
+        <div class="node user">
+          <h5>USER</h5>
+          <div class="nm">LLM 模拟用户</div>
+          <div class="nd">信息不全、会改主意、问反问题</div>
+        </div>
+        <div class="conn"><div class="arr">⇄</div><div class="lab">对话</div></div>
+        <div class="node agent">
+          <h5>AGENT (被评测)</h5>
+          <div class="nm">读 policy + 调 API</div>
+          <div class="nd">每步要么发消息, 要么 tool_call</div>
+        </div>
+        <div class="conn"><div class="arr">⇄</div><div class="lab">API</div></div>
+        <div class="node tools">
+          <h5>TOOLS + DB + POLICY</h5>
+          <div class="nm">真实业务后端</div>
+          <div class="nd"><span class="tag-mini">read</span><span class="tag-mini">write</span> + Markdown 政策</div>
+        </div>
+      </div>
+
+      <!-- 两个 domain 的规模 -->
+      <div class="b1-stats">
+        <div class="b1-stat retail">
+          <div class="dt">τ-RETAIL</div>
+          <div class="dn">115 tasks</div>
+          <b>15 个 API</b> (8 read + 7 write) · 500 用户 · 50 商品 · 1000 订单
+        </div>
+        <div class="b1-stat airline">
+          <div class="dt">τ-AIRLINE</div>
+          <div class="dn">50 tasks</div>
+          <b>13 个 API</b> (7 read + 6 write) · 500 用户 · 300 航班 · 2000 预订
+        </div>
+      </div>
+
+      <!-- 评测协议 — 压成一行, 只讲 reward, 不讲 pass^k -->
+      <div class="b1-eval" style="display:block">
+        <span class="ek" style="display:inline-block;margin-bottom:0;margin-right:8px">评分</span>
+        <code>r = r<sub>action</sub> × r<sub>output</sub> ∈ {0, 1}</code> → DB 终态对齐 <b>且</b>回复含 user 要的信息, 才得 1
+      </div>
+    </div>
+
+    <!-- ============ Block 2: 5 篇 paper 各从一个 τ-bench 挑战出发 ============ -->
+    <div class="h3-block" style="border-color:#1e6b1e">
+      <div class="h3-step"><span class="h3-num" style="background:#1e6b1e">2</span><span class="h3-q" style="color:#1e6b1e">5 张方 — 各从 τ-bench 的一道难题出发</span></div>
+
+      <div class="b3-grid" style="margin-top:2px">
+        <div class="b3-card">
+          <div class="b3-pain"><b>挑战 A · 失败全丢</b>R=0 的轨迹 30 步全白跑, 0 梯度</div>
+          <div class="b3-name">Fission-GRPO</div>
+          <div class="b3-cure">从断点 + 错误诊断重新采样, 教模型"<b>调错了要纠错</b>"</div>
+        </div>
+
+        <div class="b3-card">
+          <div class="b3-pain"><b>挑战 B · 谁背锅?</b>30 步只有终态 0/1, 不知哪步该改</div>
+          <div class="b3-name">TARL</div>
+          <div class="b3-cure">强模型给每个 turn 打分, <b>压成一个轨迹标量</b>再喂 GRPO</div>
+        </div>
+
+        <div class="b3-card">
+          <div class="b3-pain"><b>挑战 C · 奖励越加越偏</b>朴素 dense reward 反而比 sparse 还差</div>
+          <div class="b3-name">MT-GRPO</div>
+          <div class="b3-cure">先做相关性体检: 跟最终成功<b>同向才留</b>, 反向直接扔</div>
+        </div>
+
+        <div class="b3-card">
+          <div class="b3-pain"><b>挑战 D · 用户太假</b>训练时若用固定 prompt 假用户, agent 只学死套路</div>
+          <div class="b3-name">MUA-RL</div>
+          <div class="b3-cure">训练时<b>引入更强/更多样的 user simulator</b>, 逼 agent "先澄清再动手"</div>
+        </div>
+
+        <div class="b3-card">
+          <div class="b3-pain"><b>挑战 E · 环境太少</b>τ-bench 只有几百 task, 不够烧 RL</div>
+          <div class="b3-name">CodeGym</div>
+          <div class="b3-cure">代码题改造: <b>函数=工具, unit_test=verifier</b>, 合 13k 环境</div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</div>
+
+
+<div class="paper paper-grid tarl-card">
+  <style>
+    .tarl-card{background:#FFFDF7;border:2px solid #1a3a5c;border-radius:14px;padding:24px 28px;box-shadow:4px 4px 0 #1a3a5c;font-family:'PingFang SC','Inter',sans-serif}
+    .tarl-card h4{font-family:'Inter',sans-serif;font-size:24px;color:#1a3a5c;font-weight:800;margin:0 0 6px;line-height:1.25;letter-spacing:-.3px}
+    .tarl-card h4 .tag{display:inline-block;font-family:'Inter',sans-serif;font-size:12px;background:#fff;border:1px solid #1a3a5c;border-radius:4px;color:#1a3a5c;padding:1px 6px;margin-left:6px;font-weight:600;vertical-align:middle}
+    .tarl-card .mg-tl{margin:12px 0 16px;font-family:'Caveat','Comic Sans MS',cursive;font-size:24px;color:#c0392b;font-weight:700;line-height:1.35;background:#FFF4E6;border-left:4px solid #c0392b;padding:10px 16px;border-radius:0 8px 8px 0}
+    .tarl-card .mg-section{margin-top:18px}
+    .tarl-card .mg-section-tag{display:inline-block;font-family:'Inter',sans-serif;font-size:11px;color:#FAF7F0;background:#1a3a5c;letter-spacing:.18em;font-weight:700;padding:2px 9px;border-radius:3px;margin-bottom:10px}
+    .tarl-card .mg-pain{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
+    .tarl-card .mg-pain-box{background:#FFF;border:1.5px solid #1a3a5c;border-radius:8px;padding:14px 16px}
+    .tarl-card .mg-pain-box.bad{border-color:#c0392b;background:#fff5f5}
+    .tarl-card .mg-pain-box .ph{font-family:'Caveat',cursive;font-size:22px;font-weight:700;line-height:1.1;color:#1a3a5c;margin-bottom:4px}
+    .tarl-card .mg-pain-box.bad .ph{color:#c0392b}
+    .tarl-card .mg-pain-box .pn{font-family:'Inter',sans-serif;font-size:13px;color:#34495e;line-height:1.55}
+    .tarl-card .mg-pain-box .pdata{margin-top:8px;padding-top:7px;border-top:1px dashed #c9b98a;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:800;color:#1a3a5c}
+    .tarl-card .mg-pain-box.bad .pdata{color:#c0392b}
+    .tarl-card .mg-pain-box .pdata span{font-family:'PingFang SC',sans-serif;font-size:12px;font-weight:500;color:#666;margin-left:4px}
+    .tarl-card .mg-prose{font-family:'Inter','PingFang SC',sans-serif;font-size:14.5px;color:#2c2c2c;line-height:1.7;margin:8px 0}
+    .tarl-card .mg-prose b{color:#1a3a5c;font-weight:800}
+    .tarl-card .mg-prose em{font-style:normal;color:#c0392b;font-weight:700;background:linear-gradient(180deg,transparent 65%,#ffe082 65%);padding:0 3px}
+    .tarl-card .mg-table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13.5px;background:#FFF;border:1.5px solid #1a3a5c;border-radius:8px;overflow:hidden}
+    .tarl-card .mg-table th{background:#1a3a5c;color:#FAF7F0;padding:8px 12px;text-align:left;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;letter-spacing:.04em}
+    .tarl-card .mg-table td{padding:8px 12px;border-top:1px solid #e6e6e6;color:#2c2c2c;line-height:1.5}
+    .tarl-card .mg-table td:first-child{font-family:'Inter',monospace;font-weight:700;color:#1a3a5c;width:88px;white-space:nowrap}
+    .tarl-card .mg-table tr.killed td{background:#fff5f5;color:#9f2e2e;text-decoration:line-through;text-decoration-color:#c0392b}
+    .tarl-card .mg-table tr.killed td:first-child{color:#c0392b;text-decoration:line-through}
+    .tarl-card .mg-table .verdict-ok{color:#1e6b1e;font-weight:800}
+    .tarl-card .mg-table .verdict-kill{color:#c0392b;font-weight:800}
+    .tarl-card .mg-flow{margin:12px 0 6px;background:#FFF;border:1.5px dashed #1a3a5c;border-radius:10px;padding:14px 12px 12px;overflow-x:auto}
+    .tarl-card .mg-flow svg{width:100%;height:auto;display:block;min-width:680px}
+    .tarl-card .mg-bigstat{display:grid;grid-template-columns:1.2fr 1fr;gap:14px;margin-top:14px;align-items:stretch}
+    .tarl-card .mg-stat{background:#FFF;border:1.5px solid #1a3a5c;border-radius:8px;padding:14px 16px}
+    .tarl-card .mg-stat .sh{font-family:'Inter',sans-serif;font-size:11.5px;color:#8A8A8A;letter-spacing:.15em;font-weight:700;margin-bottom:6px}
+    .tarl-card .mg-stat .sn{font-family:'Inter',sans-serif;font-size:28px;font-weight:800;color:#1a3a5c;line-height:1;letter-spacing:-.5px}
+    .tarl-card .mg-stat.win .sn{color:#1e6b1e}
+    .tarl-card .mg-stat.fail .sn{color:#c0392b}
+    .tarl-card .mg-stat .ss{font-family:'PingFang SC',sans-serif;font-size:12.5px;color:#444;margin-top:4px;line-height:1.5}
+    .tarl-card .mg-analogy{margin-top:14px;background:#fff5e8;border:1.5px solid #efd5ac;border-radius:8px;padding:12px 16px;font-family:'Inter','PingFang SC',sans-serif;font-size:13.5px;color:#5a3a18;line-height:1.65}
+    .tarl-card .mg-analogy b{color:#7a4a00;font-weight:800}
+    .tarl-card details{margin-top:14px;background:#f7f7f9;border:1px solid #d8d8d8;border-radius:8px;padding:10px 14px;font-size:13.5px}
+    .tarl-card details summary{cursor:pointer;color:#1a3a5c;font-weight:700;font-family:'Inter',sans-serif;font-size:13px;letter-spacing:.05em}
+    .tarl-card details p{margin:8px 0;line-height:1.65}
+    @media (max-width:780px){
+      .tarl-card .mg-pain,.tarl-card .mg-bigstat{grid-template-columns:1fr}
+      .tarl-card h4{font-size:20px}
+      .tarl-card .mg-tl{font-size:20px}
+    }
+  </style>
+
+  <h4>[1] TARL: Process-Supervised RL for Interactive Multimodal Tool-Use Agents <span class="tag">ByteDance Seed &amp; JHU</span> <span class="tag">2025.09</span></h4>
+
+  <div class="mg-tl">"请 LLM 给每个 turn 打分, 再注回 PPO" 听起来很对 — 但<span style="color:#1a3a5c">直接训练发散</span>。这篇 paper 提出: judge 还是请, 但<span style="color:#1a3a5c">塌成一个整轨迹标量</span>再喂 GRPO。</div>
+
+  <!-- ① 反直觉痛点 -->
+  <div class="mg-section">
+    <span class="mg-section-tag">① 反直觉痛点</span>
+    <div class="mg-prose">τ-bench 30 轮工具调用任务, 终态只给一个 0/1 — 8B agent 跑完 32k token, 最后只知"订单办对没办对", 中间错在哪个 turn 全部埋了。直觉解法: 请 GPT-4.1 给每 turn 打个 PRM 分, 当 dense reward 注回该 turn 喂 PPO。听起来更密、信号更足。论文直接试了一遍:</div>
+    <div class="mg-pain">
+      <div class="mg-pain-box">
+        <div class="ph">只给终态 0/1 (sparse baseline)</div>
+        <div class="pn">信号稀薄但<em style="color:#1a3a5c">至少不污染梯度</em>。8B 学生 GRPO 能从 42.6 慢慢爬。</div>
+        <div class="pdata">51.3 <span>τ-Retail pass^1</span></div>
+      </div>
+      <div class="mg-pain-box bad">
+        <div class="ph">Per-turn judge 注入 PPO</div>
+        <div class="pn">judge 一次失败级联反复扣分, <em>后面所有 turn 的 advantage 都被同一个错污染</em>, 梯度方向被一两条 trajectory 拖偏。</div>
+        <div class="pdata">训练发散 <span>(curve 直接掉)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② 翻车机制 -->
+  <div class="mg-section">
+    <span class="mg-section-tag">② 为什么翻车 — Per-turn Assignment 对 noise 极脆</span>
+    <div class="mg-prose">问题不在 "judge 不准", 而在 <b>每个 turn 各算 advantage</b> 这套机制本身扛不住 judge 的局部偏差。一条 30 turn trajectory 里 judge 只要在某一个失败 turn 上多扣几分, 这个错就会顺着<b>该 turn 所属的 group 归一化</b>传给整条 trajectory 的下游 turn — 因为 PPO 的 per-turn advantage 是<b>组内 z-score</b>, 一个异常值就会把均值标准差都拽歪。结果是<em>训练对 judge 噪声极度敏感</em>, 一两条带噪 rollout 就能让整 batch 梯度方向反转。</div>
+  </div>
+
+  <!-- ③ 解药 / 组件 A -->
+  <div class="mg-section">
+    <span class="mg-section-tag">③ 解药 A: judge 还是请, 但塌成一个标量 R̃</span>
+    <div class="mg-prose">跑完整条 trajectory 后离线请 GPT-4.1 一次, 对每个 turn 输出 r<sub>i</sub> ∈ {−1, 0, +1}: <b>+1</b> = 推进任务 / <b>0</b> = 中性 / <b>−1</b> = 重大偏离 (如 policy violation, 工具误用)。**关键**: 不把 r<sub>i</sub> 挂回 turn token, 而是按 "10 : 5 : cap-5" 三路塌缩成<em>一个 trajectory-level 标量</em> R̃。整条轨迹只有一个 R̃ 进 GRPO 算 group advantage, <b>所有 agent token 共享同一个 A</b> — judge 噪声被压在一处, 无法 per-turn 放大。</div>
+    <table class="mg-table">
+      <tr><th>三档塌缩</th><th>规则</th><th>作用</th></tr>
+      <tr><td>10 · R_term</td><td>终态 verifier 给的 0/1 ×10</td><td class="verdict-ok">✓ 真相压顶, 权重最大</td></tr>
+      <tr><td>5 · 𝟙[∃ −1] · (−1)</td><td>整条最多扣一次, 见 −1 就扣</td><td class="verdict-ok">✓ 不可饶恕的错</td></tr>
+      <tr><td>clip(Σr/T, ±5)</td><td>0/+1 信号先 /T 归一, 再 clip ±5</td><td class="verdict-ok">✓ 过程信号, 防长度偏置</td></tr>
+      <tr class="killed"><td>per-turn 注入</td><td>把 r<sub>i</sub> 直接挂该 turn token 当 dense reward</td><td class="verdict-kill">✗ 扔 (训练发散)</td></tr>
+    </table>
+  </div>
+
+  <!-- ④ 流程图 -->
+  <div class="mg-section">
+    <span class="mg-section-tag">④ judge → 塌缩 → GRPO 流程一张图看完</span>
+    <div class="mg-flow">
+      <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="tarl-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#1a3a5c"/>
+          </marker>
+        </defs>
+        <g font-family="Inter,sans-serif" font-size="11" font-weight="800" fill="#1a3a5c" letter-spacing="2">
+          <text x="80" y="20">5-turn rollout</text>
+          <text x="280" y="20">GPT-4.1 judge 打分</text>
+          <text x="500" y="20">塌成一个 R̃</text>
+          <text x="660" y="20" text-anchor="middle">GRPO</text>
+        </g>
+
+        <!-- 左: 5-turn 轨迹 -->
+        <g font-family="Inter,sans-serif">
+          <rect x="20" y="35" width="135" height="26" rx="5" fill="#fff" stroke="#1a3a5c" stroke-width="1.5"/>
+          <text x="30" y="52" font-size="12" fill="#2c2c2c">t=1: search</text>
+          <rect x="20" y="65" width="135" height="26" rx="5" fill="#fff" stroke="#1a3a5c" stroke-width="1.5"/>
+          <text x="30" y="82" font-size="12" fill="#2c2c2c">t=2: ask user</text>
+          <rect x="20" y="95" width="135" height="26" rx="5" fill="#fff5f5" stroke="#c0392b" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <text x="30" y="112" font-size="12" font-weight="700" fill="#c0392b">t=3: policy 违规</text>
+          <rect x="20" y="125" width="135" height="26" rx="5" fill="#fff" stroke="#1a3a5c" stroke-width="1.5"/>
+          <text x="30" y="142" font-size="12" fill="#2c2c2c">t=4: refund</text>
+          <rect x="20" y="155" width="135" height="26" rx="5" fill="#fff" stroke="#1a3a5c" stroke-width="1.5"/>
+          <text x="30" y="172" font-size="12" fill="#2c2c2c">t=5: confirm</text>
+        </g>
+        <g stroke="#1a3a5c" stroke-width="1.5" fill="none">
+          <line x1="158" y1="48" x2="278" y2="80" marker-end="url(#tarl-arr)"/>
+          <line x1="158" y1="78" x2="278" y2="95" marker-end="url(#tarl-arr)"/>
+          <line x1="158" y1="108" x2="278" y2="115" marker-end="url(#tarl-arr)"/>
+          <line x1="158" y1="138" x2="278" y2="130" marker-end="url(#tarl-arr)"/>
+          <line x1="158" y1="168" x2="278" y2="150" marker-end="url(#tarl-arr)"/>
+        </g>
+
+        <!-- 中: judge 盒 -->
+        <rect x="282" y="60" width="180" height="120" rx="8" fill="#FFFDF7" stroke="#1a3a5c" stroke-width="2.5"/>
+        <g font-family="Inter,sans-serif" fill="#2c2c2c">
+          <text x="372" y="83" text-anchor="middle" font-size="13" font-weight="800" fill="#1a3a5c">"这 turn 推进了吗?"</text>
+          <text x="372" y="103" text-anchor="middle" font-size="11" fill="#666" font-style="italic">每 turn 输出 r∈{−1,0,+1}</text>
+          <line x1="300" y1="113" x2="444" y2="113" stroke="#c9b98a" stroke-dasharray="3 3"/>
+          <text x="372" y="132" text-anchor="middle" font-size="12" font-family="Inter,monospace" font-weight="700">r = [0, 0, −1, +1, +1]</text>
+          <text x="372" y="152" text-anchor="middle" font-size="11" fill="#666">每条至多 1 个 −1</text>
+          <text x="372" y="168" text-anchor="middle" font-size="11" fill="#666">防失败级联</text>
+        </g>
+        <line x1="462" y1="120" x2="528" y2="120" stroke="#1a3a5c" stroke-width="1.5" fill="none" marker-end="url(#tarl-arr)"/>
+
+        <!-- 右: 塌缩盒 + GRPO -->
+        <rect x="532" y="40" width="160" height="34" rx="5" fill="#fff" stroke="#1a3a5c" stroke-width="1.5"/>
+        <text x="612" y="58" text-anchor="middle" font-family="Inter,sans-serif" font-size="11.5" font-weight="700" fill="#1a3a5c">10 · R_term</text>
+        <text x="612" y="69" text-anchor="middle" font-family="Inter,sans-serif" font-size="9.5" fill="#666">终态真相压顶</text>
+
+        <rect x="532" y="79" width="160" height="34" rx="5" fill="#fff5f5" stroke="#c0392b" stroke-width="1.5"/>
+        <text x="612" y="97" text-anchor="middle" font-family="Inter,sans-serif" font-size="11.5" font-weight="700" fill="#c0392b">−5 · 𝟙[∃ −1]</text>
+        <text x="612" y="108" text-anchor="middle" font-family="Inter,sans-serif" font-size="9.5" fill="#666">单次重罚</text>
+
+        <rect x="532" y="118" width="160" height="34" rx="5" fill="#fff" stroke="#1a3a5c" stroke-width="1.5"/>
+        <text x="612" y="136" text-anchor="middle" font-family="Inter,sans-serif" font-size="11.5" font-weight="700" fill="#1a3a5c">clip(Σr/T, ±5)</text>
+        <text x="612" y="147" text-anchor="middle" font-family="Inter,sans-serif" font-size="9.5" fill="#666">过程信号 + 防长度偏</text>
+
+        <rect x="532" y="158" width="160" height="28" rx="5" fill="#f1fbef" stroke="#1e6b1e" stroke-width="2"/>
+        <text x="612" y="177" text-anchor="middle" font-family="Inter,sans-serif" font-size="13" font-weight="800" fill="#1e6b1e">R̃ ∈ [−5, +15] → GRPO</text>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ⑤ 组件 B: math 课程 -->
+  <div class="mg-section">
+    <span class="mg-section-tag">⑤ 解药 B: 混 math 题保住 long-CoT 肌肉</span>
+    <div class="mg-prose">光有 R̃ 还不够 — 纯 τ-bench 训练会让 agent 越训越"省话", <em>"wait" 这种 reflection token 频率快速下降</em>, CoT 缩短退化成 short tool-call。论文在 batch 里按比例<b>混入 DeepScaleR 中等难度数学题</b> (只用终态 0/1 verifier, 不走 judge), 把"长思考肌肉"绑定住。定量上: TARL 单独贡献 51.3 → 53.9, 再混 MATH 才推到 57.4 — 两者各贡献约一半, 是一个很便宜的正则项。</div>
+    <div class="mg-analogy">
+      <b>打个比方:</b> 考试老师不每题判 (太碎, 一处错连带一片), 也不只判最后大题 (太疏, 中间过程一片黑)。而是收完整张卷子一起看 — 每题快划「正确 / 无功无过 / 严重偏离」三档, 但全卷只允许扣一次「严重偏离」红叉, 第二次起不再追加。最后总分 = 大题对错 ×10 − 是否吃过红叉 ×5 + 普通题平均 (上限 ±5)。学生拿到的是一份"对整张卷子的评价", 不是"对第 17 行的评价"。<b>另外</b>: 老师还在期末模考里夹几道纯数学题, 防学生只刷专业题忘了怎么写长推理。
+    </div>
+  </div>
+
+  <!-- ⑥ 结果 -->
+  <div class="mg-section">
+    <span class="mg-section-tag">⑥ 结果 — 反直觉证据</span>
+    <div class="mg-bigstat">
+      <div class="mg-stat win">
+        <div class="sh">τ-RETAIL PASS^1 (8B)</div>
+        <div class="sn">51.3 → 57.4</div>
+        <div class="ss"><b style="color:#1e6b1e">+6.1pp</b> · 与 GPT-4.1 teacher (60.9) 仅差 3.5; pass^4 27.0 → 33.9</div>
+      </div>
+      <div class="mg-stat win">
+        <div class="sh">QWEN2.5-OMNI 语音模态</div>
+        <div class="sn">14.8 → 37.4</div>
+        <div class="ss"><b style="color:#1e6b1e">+22.6pp</b> · 即便纯文本数据训练也能拉到 32.2 — tool-use 寄存在语言层, 不在模态层</div>
+      </div>
+    </div>
+    <div class="mg-prose" style="margin-top:12px">反直觉的核心证据: <em>per-turn 注入直接发散, 轨迹级聚合反而稳</em>。一句 takeaway: <b>bitter lesson 在 agent RL 上的又一次复读 — 信号越聚合, 抗噪能力越强</b>。</div>
+  </div>
+
+  <details>
+    <summary>想看公式细节? 点开 ↓</summary>
+    <p><b>TARL 塌缩公式</b> (γ=λ=1, advantage 退化成 trajectory return − group baseline):</p>
+    $$ \tilde R(\tau)\;=\;10\cdot R(\tau)\;-\;5\cdot \mathbb{1}\!\left[\exists\, r_i=-1\right]\;+\;\mathrm{clip}\!\left(\tfrac{1}{T}\!\sum_{i:\,r_i\in\{0,1\}}\! r_i,\ -5,\ 5\right) $$
+    <p>怎么读: 第一项 ×10 把终态真相放大压顶 (远高于过程); 第二项 −5 是 major deviation 红叉, 单条轨迹最多扣一次; 第三项把 0/1 turn 信号先 1/T 归一防"30 turn 自然分高", 再 clip ±5 不让过程压过真相。R̃ 落在 [−5, +15], 给 group-relative advantage 留足 spread。</p>
+    <p style="margin-top:10px"><b>负向消融</b> (三个"更高级"的方案全被自己 KO, 这是论文最有教育意义的部分):</p>
+    <ul style="margin:6px 0 6px 22px;padding:0;line-height:1.85;font-family:'Inter','PingFang SC',sans-serif;font-size:13px">
+      <li><b>PPO + per-turn assignment</b> — 训练不稳, 效果劣于 trajectory-level</li>
+      <li><b>Top-20% 高熵 token 选择性 RL</b> — 测试集无收益</li>
+      <li><b>Real-time intervention</b> (judge 在 rollout 中实时打断) — KL 爆炸, 训练崩盘</li>
+    </ul>
+    <p style="margin-top:10px"><b>关键超参</b>: 单任务最多 30 turn / context 32768; batch 128 task × 4 rollout; APIGEN-MT-5k 下采样 ~3000 条; ~250 step 收敛; user simulator = GPT-4 ReAct; 语音模态用 SeedTTS 把对话翻成语音; 沙盒移植成 SQLite + RESTful + MCP。</p>
+    <p style="margin-top:10px;color:#666;font-size:12.5px"><b>顺带提一句成本</b>: 每条 rollout 调一次 GPT-4.1 judge, 单 step ~128 次 API — 对 8B 模型来说 "judge 钱比卡钱贵"。</p>
+  </details>
+</div>
+
+<div class="paper paper-grid mt-grpo-card">
+  <style>
+    .mt-grpo-card{background:#FFFDF7;border:2px solid #1a3a5c;border-radius:14px;padding:24px 28px;box-shadow:4px 4px 0 #1a3a5c;font-family:'PingFang SC','Inter',sans-serif}
+    .mt-grpo-card h4{font-family:'Inter',sans-serif;font-size:24px;color:#1a3a5c;font-weight:800;margin:0 0 6px;line-height:1.25;letter-spacing:-.3px}
+    .mt-grpo-card h4 .tag{display:inline-block;font-family:'Inter',sans-serif;font-size:12px;background:#fff;border:1px solid #1a3a5c;border-radius:4px;color:#1a3a5c;padding:1px 6px;margin-left:6px;font-weight:600;vertical-align:middle}
+    .mt-grpo-card .mg-tl{margin:12px 0 16px;font-family:'Caveat','Comic Sans MS',cursive;font-size:24px;color:#c0392b;font-weight:700;line-height:1.35;background:#FFF4E6;border-left:4px solid #c0392b;padding:10px 16px;border-radius:0 8px 8px 0}
+    .mt-grpo-card .mg-section{margin-top:18px}
+    .mt-grpo-card .mg-section-tag{display:inline-block;font-family:'Inter',sans-serif;font-size:11px;color:#FAF7F0;background:#1a3a5c;letter-spacing:.18em;font-weight:700;padding:2px 9px;border-radius:3px;margin-bottom:10px}
+    .mt-grpo-card .mg-pain{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
+    .mt-grpo-card .mg-pain-box{background:#FFF;border:1.5px solid #1a3a5c;border-radius:8px;padding:14px 16px}
+    .mt-grpo-card .mg-pain-box.bad{border-color:#c0392b;background:#fff5f5}
+    .mt-grpo-card .mg-pain-box .ph{font-family:'Caveat',cursive;font-size:22px;font-weight:700;line-height:1.1;color:#1a3a5c;margin-bottom:4px}
+    .mt-grpo-card .mg-pain-box.bad .ph{color:#c0392b}
+    .mt-grpo-card .mg-pain-box .pn{font-family:'Inter',sans-serif;font-size:13px;color:#34495e;line-height:1.55}
+    .mt-grpo-card .mg-pain-box .pdata{margin-top:8px;padding-top:7px;border-top:1px dashed #c9b98a;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:800;color:#1a3a5c}
+    .mt-grpo-card .mg-pain-box.bad .pdata{color:#c0392b}
+    .mt-grpo-card .mg-pain-box .pdata span{font-family:'PingFang SC',sans-serif;font-size:12px;font-weight:500;color:#666;margin-left:4px}
+    .mt-grpo-card .mg-prose{font-family:'Inter','PingFang SC',sans-serif;font-size:14.5px;color:#2c2c2c;line-height:1.7;margin:8px 0}
+    .mt-grpo-card .mg-prose b{color:#1a3a5c;font-weight:800}
+    .mt-grpo-card .mg-prose em{font-style:normal;color:#c0392b;font-weight:700;background:linear-gradient(180deg,transparent 65%,#ffe082 65%);padding:0 3px}
+    .mt-grpo-card .mg-table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13.5px;background:#FFF;border:1.5px solid #1a3a5c;border-radius:8px;overflow:hidden}
+    .mt-grpo-card .mg-table th{background:#1a3a5c;color:#FAF7F0;padding:8px 12px;text-align:left;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;letter-spacing:.04em}
+    .mt-grpo-card .mg-table td{padding:8px 12px;border-top:1px solid #e6e6e6;color:#2c2c2c;line-height:1.5}
+    .mt-grpo-card .mg-table td:first-child{font-family:'Inter',monospace;font-weight:700;color:#1a3a5c;width:88px;white-space:nowrap}
+    .mt-grpo-card .mg-table tr.killed td{background:#fff5f5;color:#9f2e2e;text-decoration:line-through;text-decoration-color:#c0392b}
+    .mt-grpo-card .mg-table tr.killed td:first-child{color:#c0392b;text-decoration:line-through}
+    .mt-grpo-card .mg-table .verdict-ok{color:#1e6b1e;font-weight:800}
+    .mt-grpo-card .mg-table .verdict-kill{color:#c0392b;font-weight:800}
+    .mt-grpo-card .mg-flow{margin:12px 0 6px;background:#FFF;border:1.5px dashed #1a3a5c;border-radius:10px;padding:14px 12px 12px;overflow-x:auto}
+    .mt-grpo-card .mg-flow svg{width:100%;height:auto;display:block;min-width:680px}
+    .mt-grpo-card .mg-bigstat{display:grid;grid-template-columns:1.2fr 1fr;gap:14px;margin-top:14px;align-items:stretch}
+    .mt-grpo-card .mg-stat{background:#FFF;border:1.5px solid #1a3a5c;border-radius:8px;padding:14px 16px}
+    .mt-grpo-card .mg-stat .sh{font-family:'Inter',sans-serif;font-size:11.5px;color:#8A8A8A;letter-spacing:.15em;font-weight:700;margin-bottom:6px}
+    .mt-grpo-card .mg-stat .sn{font-family:'Inter',sans-serif;font-size:28px;font-weight:800;color:#1a3a5c;line-height:1;letter-spacing:-.5px}
+    .mt-grpo-card .mg-stat.win .sn{color:#1e6b1e}
+    .mt-grpo-card .mg-stat.fail .sn{color:#c0392b}
+    .mt-grpo-card .mg-stat .ss{font-family:'PingFang SC',sans-serif;font-size:12.5px;color:#444;margin-top:4px;line-height:1.5}
+    .mt-grpo-card .mg-analogy{margin-top:14px;background:#fff5e8;border:1.5px solid #efd5ac;border-radius:8px;padding:12px 16px;font-family:'Inter','PingFang SC',sans-serif;font-size:13.5px;color:#5a3a18;line-height:1.65}
+    .mt-grpo-card .mg-analogy b{color:#7a4a00;font-weight:800}
+    .mt-grpo-card details{margin-top:14px;background:#f7f7f9;border:1px solid #d8d8d8;border-radius:8px;padding:10px 14px;font-size:13.5px}
+    .mt-grpo-card details summary{cursor:pointer;color:#1a3a5c;font-weight:700;font-family:'Inter',sans-serif;font-size:13px;letter-spacing:.05em}
+    .mt-grpo-card details p{margin:8px 0;line-height:1.65}
+    @media (max-width:780px){
+      .mt-grpo-card .mg-pain,.mt-grpo-card .mg-bigstat{grid-template-columns:1fr}
+      .mt-grpo-card h4{font-size:20px}
+      .mt-grpo-card .mg-tl{font-size:20px}
+    }
+  </style>
+
+  <h4>[2] MT-GRPO + IRC <span class="tag">Amity Research</span> <span class="tag">2026.04</span></h4>
+
+  <div class="mg-tl">"中间过程也给分" 听起来很对 — 但加错了反而比 sparse 还差 6.5pp。这篇 paper 提出: <span style="color:#1a3a5c">先体检, 再用</span>。</div>
+
+  <!-- A. 痛点对比 -->
+  <div class="mg-section">
+    <span class="mg-section-tag">① 反直觉痛点</span>
+    <div class="mg-prose">直觉上, 给中间每个 turn 都打分 (<b>dense reward</b>) 应该比只给最后 0/1 (<b>sparse reward</b>) 学得更快。但作者实测发现 — 加得不对, 反而把训练带偏:</div>
+    <div class="mg-pain">
+      <div class="mg-pain-box">
+        <div class="ph">只给最后一分 (sparse)</div>
+        <div class="pn">中间 30 步全是空白, 信号稀薄但<em style="color:#1a3a5c">至少不会带歪方向</em>。</div>
+        <div class="pdata">64.6 <span>Airline pass rate</span></div>
+      </div>
+      <div class="mg-pain-box bad">
+        <div class="ph">朴素 dense (每步都加分)</div>
+        <div class="pn">"读类工具 +0.3 / 写类 +0.1 / 多说话 +0..." 全收。结果<em>方向打架</em>: 11% 的 turn 死信号。</div>
+        <div class="pdata">57.3 <span>(−6.5 比 sparse 还差!)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- B. 翻车机制 -->
+  <div class="mg-section">
+    <span class="mg-section-tag">② 为什么翻车 — Advantage Misalignment</span>
+    <div class="mg-prose">同一条<b>最终成功</b>的轨迹里, 某个中间 turn 的局部分如果比同组其他 rollout 低, GRPO 会判它"<em>不值得学</em>" — 但它明明在成功轨迹里, 最终成败说"<b>学它</b>"。两个信号方向相反, 互相抵消, 形成<b>死信号</b> (没梯度更新)。作者把这叫 <b>Advantage Misalignment</b>: 看似积极向上的中间步骤奖励, 跟"是否成功"的相关方向其实是反的, 加得越多越糟。</div>
+  </div>
+
+  <!-- C. IRC 体检 -->
+  <div class="mg-section">
+    <span class="mg-section-tag">③ 解药 IRC — 给每档 reward 做相关性体检</span>
+    <div class="mg-prose">解药很朴素: 每档 reward 进 loss 前先问一句 — "<em>出现这档奖励的轨迹, 是不是更容易最终成功?</em>" 相关性低的当噪声扔掉, 方向反的降权。下表是作者切出的 7 档候选 reward, 体检后 <b>msg 直接被扔, gold/state 留下</b>:</div>
+    <table class="mg-table">
+      <tr><th>reward 档</th><th>判定规则</th><th>体检结论</th></tr>
+      <tr><td>gold</td><td>tool call 参数与标准答案完全一致</td><td class="verdict-ok">✓ 留 (强正相关)</td></tr>
+      <tr><td>soft</td><td>近似标准答案 (参数没完全 match)</td><td class="verdict-ok">✓ 留</td></tr>
+      <tr><td>read</td><td>读类工具 (查询, 不改 DB)</td><td class="verdict-ok">✓ 留 (+0.3)</td></tr>
+      <tr><td>state</td><td>写类工具且成功改了状态</td><td class="verdict-ok">✓ 留 (+0.1)</td></tr>
+      <tr class="killed"><td>msg</td><td>对 user 回复 (不调工具)</td><td class="verdict-kill">✗ 扔 (跟成败无关)</td></tr>
+      <tr><td>err</td><td>工具调用报错</td><td class="verdict-ok">✓ 留 (−0.1)</td></tr>
+      <tr><td>dup</td><td>同一工具用同样参数重复调用</td><td class="verdict-ok">✓ 留 (−0.2)</td></tr>
+    </table>
+  </div>
+
+  <!-- D. 体检流程 SVG (简化) -->
+  <div class="mg-section">
+    <span class="mg-section-tag">④ 体检流程 (一张图看完)</span>
+    <div class="mg-flow">
+      <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="mt-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#1a3a5c"/>
+          </marker>
+        </defs>
+
+        <!-- 阶段标 -->
+        <g font-family="Inter,sans-serif" font-size="11" font-weight="800" fill="#1a3a5c" letter-spacing="2">
+          <text x="100" y="20">候选 7 档</text>
+          <text x="365" y="20">成功率相关性体检</text>
+          <text x="620" y="20" text-anchor="middle">进训练</text>
+        </g>
+
+        <!-- 左:候选 reward 列表 -->
+        <g font-family="Inter,sans-serif">
+          <rect x="20" y="35" width="160" height="32" rx="6" fill="#fff" stroke="#1a3a5c" stroke-width="1.5"/>
+          <text x="32" y="55" font-size="13" font-weight="700" fill="#1a3a5c">read</text>
+          <text x="172" y="55" text-anchor="end" font-size="12" fill="#666">+0.3</text>
+
+          <rect x="20" y="73" width="160" height="32" rx="6" fill="#fff" stroke="#1a3a5c" stroke-width="1.5"/>
+          <text x="32" y="93" font-size="13" font-weight="700" fill="#1a3a5c">state</text>
+          <text x="172" y="93" text-anchor="end" font-size="12" fill="#666">+0.1</text>
+
+          <rect x="20" y="111" width="160" height="32" rx="6" fill="#fff5f5" stroke="#c0392b" stroke-width="1.5" stroke-dasharray="4 3"/>
+          <text x="32" y="131" font-size="13" font-weight="700" fill="#c0392b">msg ?</text>
+          <text x="172" y="131" text-anchor="end" font-size="11" fill="#c0392b" font-style="italic">方向不明</text>
+
+          <rect x="20" y="149" width="160" height="32" rx="6" fill="#fff" stroke="#1a3a5c" stroke-width="1.5"/>
+          <text x="32" y="169" font-size="13" font-weight="700" fill="#1a3a5c">err</text>
+          <text x="172" y="169" text-anchor="end" font-size="12" fill="#666">−0.1</text>
+        </g>
+
+        <!-- 箭头 → 体检 -->
+        <g stroke="#1a3a5c" stroke-width="1.5" fill="none">
+          <line x1="184" y1="51" x2="284" y2="78" marker-end="url(#mt-arr)"/>
+          <line x1="184" y1="89" x2="284" y2="96" marker-end="url(#mt-arr)"/>
+          <line x1="184" y1="127" x2="284" y2="115" marker-end="url(#mt-arr)"/>
+          <line x1="184" y1="165" x2="284" y2="135" marker-end="url(#mt-arr)"/>
+        </g>
+
+        <!-- 中:体检盒 -->
+        <rect x="288" y="55" width="180" height="130" rx="8" fill="#FFFDF7" stroke="#1a3a5c" stroke-width="2.5"/>
+        <g font-family="Inter,sans-serif" fill="#2c2c2c">
+          <text x="378" y="78" text-anchor="middle" font-size="13" font-weight="800" fill="#1a3a5c">"出现 → 是否成功?"</text>
+          <text x="378" y="98" text-anchor="middle" font-size="11" fill="#666" font-style="italic">每档算成功率相关性 ρ (PointBiserial)</text>
+          <line x1="306" y1="108" x2="450" y2="108" stroke="#c9b98a" stroke-dasharray="3 3"/>
+          <text x="378" y="128" text-anchor="middle" font-size="12">成功率差不明显 → <tspan font-weight="800" fill="#c0392b">扔</tspan></text>
+          <text x="378" y="148" text-anchor="middle" font-size="12">方向反 → <tspan font-weight="800" fill="#E76F51">降权</tspan></text>
+          <text x="378" y="168" text-anchor="middle" font-size="12">方向对 → <tspan font-weight="800" fill="#1e6b1e">留</tspan></text>
+        </g>
+
+        <!-- 箭头 → 训练 -->
+        <line x1="468" y1="120" x2="540" y2="120" stroke="#1a3a5c" stroke-width="1.5" fill="none" marker-end="url(#mt-arr)"/>
+
+        <!-- 右:训练盒 -->
+        <rect x="544" y="65" width="160" height="110" rx="8" fill="#f1fbef" stroke="#1e6b1e" stroke-width="2"/>
+        <g font-family="Inter,sans-serif">
+          <text x="624" y="95" text-anchor="middle" font-size="14" font-weight="800" fill="#1e6b1e">GTPO 训练</text>
+          <text x="624" y="116" text-anchor="middle" font-size="11" fill="#444">局部分主导,</text>
+          <text x="624" y="132" text-anchor="middle" font-size="11" fill="#444">最终成败做弱锚点</text>
+          <text x="624" y="156" text-anchor="middle" font-family="Caveat,cursive" font-size="15" font-weight="700" fill="#1e6b1e">两路信号 不打架</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <!-- E. GTPO -->
+  <div class="mg-section">
+    <span class="mg-section-tag">⑤ GTPO — 让两路信号不打架 (MT-GRPO 的训练那一步)</span>
+    <div class="mg-prose">体检过的 reward 怎么进 loss? 这一步在论文里叫 <b>GTPO</b> — 是 MT-GRPO 框架里"具体怎么更新参数"的那一环。还是两路信号 (每个 turn 的<b>局部分</b> / 整条轨迹的<b>最终成败</b>), 但<em>调音量</em>: 让局部分主导每个 turn 的更新方向, 让最终成败只在远处当弱指南针锚住大方向 — 两路就不再打架。</div>
+    <div class="mg-analogy">
+      <b>打个比方:</b> IRC 像给员工 KPI 校准 ABC 档前, 先抽样看每档 KPI 跟最终业绩的相关性 — "晨会出勤率"这种几乎没相关性的指标, 哪怕看起来再"积极向上", 加进考核也只会把方向带歪。GTPO 像把"季度 KPI"折现到月度, 再留一个弱的年度指南针, 让月度细分指标主导日常但不被年终汇总盖过。
+    </div>
+  </div>
+
+  <!-- F. 结果 -->
+  <div class="mg-section">
+    <span class="mg-section-tag">⑥ 结果 — 反直觉证据</span>
+    <div class="mg-bigstat">
+      <div class="mg-stat win">
+        <div class="sh">TAU-AIRLINE PASS</div>
+        <div class="sn">58.0 → 69.5</div>
+        <div class="ss"><b style="color:#1e6b1e">+11.5pp</b> · 30B 模型, 逼近 Claude Sonnet 4.5 (70.0)</div>
+      </div>
+      <div class="mg-stat fail">
+        <div class="sh">DEAD-TURN 比例</div>
+        <div class="sn">11% → 1.4%</div>
+        <div class="ss">死信号几乎清零, 中间步奖励真的开始干活</div>
+      </div>
+    </div>
+    <div class="mg-prose" style="margin-top:12px">反直觉的核心证据: 不做体检, <em>朴素 dense 57.3 比 sparse 64.6 还低 6.5pp</em>。Dense reward 不是免费午餐 — <b>校准, 是 2026 年 tool-use RL 的新基本动作</b>。</div>
+  </div>
+
+  <details>
+    <summary>想看公式细节? 点开 ↓</summary>
+    <p><b>GTPO hybrid advantage</b> (γ=0.9 折现 / λ=0.3 outcome 占比, grid 调出):</p>
+    $$ A^{\text{hybrid}}_{i,k} \;=\; \mathrm{GN}\!\Big(\sum_{l=k}^{K-1}\gamma^{\,l-k} r_{i,l} \;+\; \gamma^{\,K-k} o_i\Big) \;+\; \lambda\, A^O_i $$
+    <p>怎么读: 把当前 turn 之后所有局部分 r_{i,l} 按 γ 折现累加 (越远的 turn 影响越弱), outcome o_i 也折现放末位, 整段做组内 z-score (GN); 外面再叠一个轻量的 trajectory outcome advantage A^O — λ=0.3 让它"在但不压人"。γ=1 等于不折现, λ=1 等于 outcome 跟 process 同等量级, 都会把音量调回打架状态。</p>
+    <p style="margin-top:10px"><b>IRC 体检公式</b>:</p>
+    $$ \rho_c \;=\; \mathrm{PointBiserial}\!\big(\,\mathbb{1}[c\in\tau_i],\ o_i\,\big),\qquad r_c \leftarrow \begin{cases} \alpha\,\rho_c & |\rho_c|>\delta \\ 0 & \text{otherwise} \end{cases} $$
+    <p>怎么读: 把"轨迹里出没出现这档 reward (0/1)"和"最终成不成功 (0/1)"算 PointBiserial 相关系数 ρ_c — 数学上就是"出现组的平均成功率 − 没出现组的平均成功率"再做标准化。|ρ| 太小直接置 0 (msg 死在这步); 通过的还要查一道"当前梯度方向跟 ρ 同号吗?" — 不同号说明加这档 reward 跟优化方向打架, 降权处理。两步迭代 2–3 轮收敛。</p>
+    <p style="margin-top:10px;color:#666;font-size:12.5px"><b>顺带一个工程修复 (deep_equal)</b>: golden action 的参数比对用浅层 dict equality 会漏 ("3" vs 3 / None vs 缺字段), 作者写了一个 _deep_equal 规范化, 削掉 23.5% 的假阳性, V8 比 V6 再 +1.3pp。</p>
+  </details>
+</div>
+
+<div class="paper paper-grid mua-rl-card">
+  <style>
+    .mua-rl-card{background:#FFFDF7;border:2px solid #1a3a5c;border-radius:14px;padding:24px 28px;box-shadow:4px 4px 0 #1a3a5c;font-family:'PingFang SC','Inter',sans-serif}
+    .mua-rl-card h4{font-family:'Inter',sans-serif;font-size:24px;color:#1a3a5c;font-weight:800;margin:0 0 6px;line-height:1.25;letter-spacing:-.3px}
+    .mua-rl-card h4 .tag{display:inline-block;font-family:'Inter',sans-serif;font-size:12px;background:#fff;border:1px solid #1a3a5c;border-radius:4px;color:#1a3a5c;padding:1px 6px;margin-left:6px;font-weight:600;vertical-align:middle}
+    .mua-rl-card .mg-tl{margin:12px 0 16px;font-family:'Caveat','Comic Sans MS',cursive;font-size:24px;color:#c0392b;font-weight:700;line-height:1.35;background:#FFF4E6;border-left:4px solid #c0392b;padding:10px 16px;border-radius:0 8px 8px 0}
+    .mua-rl-card .mg-section{margin-top:18px}
+    .mua-rl-card .mg-section-tag{display:inline-block;font-family:'Inter',sans-serif;font-size:11px;color:#FAF7F0;background:#1a3a5c;letter-spacing:.18em;font-weight:700;padding:2px 9px;border-radius:3px;margin-bottom:10px}
+    .mua-rl-card .mg-pain{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
+    .mua-rl-card .mg-pain-box{background:#FFF;border:1.5px solid #1a3a5c;border-radius:8px;padding:14px 16px}
+    .mua-rl-card .mg-pain-box.bad{border-color:#c0392b;background:#fff5f5}
+    .mua-rl-card .mg-pain-box .ph{font-family:'Caveat',cursive;font-size:22px;font-weight:700;line-height:1.1;color:#1a3a5c;margin-bottom:4px}
+    .mua-rl-card .mg-pain-box.bad .ph{color:#c0392b}
+    .mua-rl-card .mg-pain-box .pn{font-family:'Inter',sans-serif;font-size:13px;color:#34495e;line-height:1.55}
+    .mua-rl-card .mg-pain-box .pdata{margin-top:8px;padding-top:7px;border-top:1px dashed #c9b98a;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:800;color:#1a3a5c}
+    .mua-rl-card .mg-pain-box.bad .pdata{color:#c0392b}
+    .mua-rl-card .mg-pain-box .pdata span{font-family:'PingFang SC',sans-serif;font-size:12px;font-weight:500;color:#666;margin-left:4px}
+    .mua-rl-card .mg-prose{font-family:'Inter','PingFang SC',sans-serif;font-size:14.5px;color:#2c2c2c;line-height:1.7;margin:8px 0}
+    .mua-rl-card .mg-prose b{color:#1a3a5c;font-weight:800}
+    .mua-rl-card .mg-prose em{font-style:normal;color:#c0392b;font-weight:700;background:linear-gradient(180deg,transparent 65%,#ffe082 65%);padding:0 3px}
+    .mua-rl-card .mg-table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13.5px;background:#FFF;border:1.5px solid #1a3a5c;border-radius:8px;overflow:hidden}
+    .mua-rl-card .mg-table th{background:#1a3a5c;color:#FAF7F0;padding:8px 12px;text-align:left;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;letter-spacing:.04em}
+    .mua-rl-card .mg-table td{padding:8px 12px;border-top:1px solid #e6e6e6;color:#2c2c2c;line-height:1.5}
+    .mua-rl-card .mg-table td:first-child{font-family:'Inter',monospace;font-weight:700;color:#1a3a5c;width:88px;white-space:nowrap}
+    .mua-rl-card .mg-table tr.killed td{background:#fff5f5;color:#9f2e2e;text-decoration:line-through;text-decoration-color:#c0392b}
+    .mua-rl-card .mg-table tr.killed td:first-child{color:#c0392b;text-decoration:line-through}
+    .mua-rl-card .mg-table .verdict-ok{color:#1e6b1e;font-weight:800}
+    .mua-rl-card .mg-table .verdict-kill{color:#c0392b;font-weight:800}
+    .mua-rl-card .mg-flow{margin:12px 0 6px;background:#FFF;border:1.5px dashed #1a3a5c;border-radius:10px;padding:14px 12px 12px;overflow-x:auto}
+    .mua-rl-card .mg-flow svg{width:100%;height:auto;display:block;min-width:680px}
+    .mua-rl-card .mg-bigstat{display:grid;grid-template-columns:1.2fr 1fr;gap:14px;margin-top:14px;align-items:stretch}
+    .mua-rl-card .mg-stat{background:#FFF;border:1.5px solid #1a3a5c;border-radius:8px;padding:14px 16px}
+    .mua-rl-card .mg-stat .sh{font-family:'Inter',sans-serif;font-size:11.5px;color:#8A8A8A;letter-spacing:.15em;font-weight:700;margin-bottom:6px}
+    .mua-rl-card .mg-stat .sn{font-family:'Inter',sans-serif;font-size:28px;font-weight:800;color:#1a3a5c;line-height:1;letter-spacing:-.5px}
+    .mua-rl-card .mg-stat.win .sn{color:#1e6b1e}
+    .mua-rl-card .mg-stat.fail .sn{color:#c0392b}
+    .mua-rl-card .mg-stat .ss{font-family:'PingFang SC',sans-serif;font-size:12.5px;color:#444;margin-top:4px;line-height:1.5}
+    .mua-rl-card .mg-analogy{margin-top:14px;background:#fff5e8;border:1.5px solid #efd5ac;border-radius:8px;padding:12px 16px;font-family:'Inter','PingFang SC',sans-serif;font-size:13.5px;color:#5a3a18;line-height:1.65}
+    .mua-rl-card .mg-analogy b{color:#7a4a00;font-weight:800}
+    .mua-rl-card details{margin-top:14px;background:#f7f7f9;border:1px solid #d8d8d8;border-radius:8px;padding:10px 14px;font-size:13.5px}
+    .mua-rl-card details summary{cursor:pointer;color:#1a3a5c;font-weight:700;font-family:'Inter',sans-serif;font-size:13px;letter-spacing:.05em}
+    .mua-rl-card details p{margin:8px 0;line-height:1.65}
+    @media (max-width:780px){
+      .mua-rl-card .mg-pain,.mua-rl-card .mg-bigstat{grid-template-columns:1fr}
+      .mua-rl-card h4{font-size:20px}
+      .mua-rl-card .mg-tl{font-size:20px}
+    }
+  </style>
+
+  <h4>[3] MUA-RL: Multi-turn User-interacting Agent RL for Agentic Tool Use <span class="tag">Meituan + CAS + PKU</span> <span class="tag">2025.08</span></h4>
+
+  <div class="mg-tl">"训练时把 user 压成 t=0 一段静态 prompt 应该够用" 听起来很对 — 但 <span style="color:#1a3a5c">Airline 永远卡在 23.5</span>, 因为 agent 从没见过会改主意的真人。这篇 paper 提出: <span style="color:#1a3a5c">user 也得是 live LLM 进程</span>, 跟 agent 同台采样。</div>
+
+  <!-- ① 反直觉痛点 -->
+  <div class="mg-section">
+    <span class="mg-section-tag">① 反直觉痛点</span>
+    <div class="mg-prose">直觉上, 把任务意图一次性塞 t=0 的 system prompt — "用户想退订单号 A123, 金额 $300, 给他办了" — 训练时 agent 拿到完整需求, 直接学怎么调工具完成就好。但 <b>τ-bench 评测时 user 是 GPT-4 演的活进程</b>, 只说半句话还会反问改主意, agent 必须先挖意图再用工具。两边 setup 错位:</div>
+    <div class="mg-pain">
+      <div class="mg-pain-box">
+        <div class="ph">SFT 录像 / 静态 prompt</div>
+        <div class="pn">teacher 跑完整 loop 录轨迹, 学生只模仿 agent 那一侧。看起来"看了完整对话",<em style="color:#1a3a5c">但 user 是固定的录音, 不是 live 进程</em>。</div>
+        <div class="pdata">23.5 <span>τ-Airline baseline</span></div>
+      </div>
+      <div class="mg-pain-box bad">
+        <div class="ph">压平成单轮</div>
+        <div class="pn">意图全塞 t=0 prompt, 训练退化成"已知 A=3、B=5 求 C"。<em>真 user 一开口只说"想退机票", agent 不会反问就崩</em>。</div>
+        <div class="pdata">train ≠ eval <span>(评测 user 是 GPT-4 live 演)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② 翻车机制 -->
+  <div class="mg-section">
+    <span class="mg-section-tag">② 为什么翻车 — Train/Eval Gap</span>
+    <div class="mg-prose">τ-bench 评测阶段本身就是<b>三方对话</b>: GPT-4 演 user、被测 agent、tool/DB。但过去一年的 agentic RL 训练阶段几乎都把 user 简化掉 — 要么 zero-shot 直接打榜不训, 要么 SFT 一份 teacher 录像, 要么把 user 意图全塞开头一段 prompt。结果是: agent 在训练时<em>从没见过 user 在我策略更新后会改主意</em>这种场景, 学到的只是"模仿录像里 teacher 反问的句式", 不是"在新 user 上学会反问"。换个真实 user 行为分布就崩 — 这就是 <b>train/eval gap</b>: 你的训练分布缺了一整个 axis (live user 的随机性), 模型自然 OOD。</div>
+  </div>
+
+  <!-- ③ 解药 A: 三角 rollout -->
+  <div class="mg-section">
+    <span class="mg-section-tag">③ 解药 A: 三角 rollout — 把 user 也接成 LLM 进程</span>
+    <div class="mg-prose">解药很朴素: 把 env 拆成两个独立 LLM 角色 — 一个演 user (会只说半句话、会反问、会改主意), 一个演工具响应 (或直接挂真实 MCP server)。<b>Agent 居中, 每回合面对的是不知道下一句会怎么追问的"活世界"</b>, 必须自己反问、调工具、再回话。下表对比 4 种 user 接入方式, 只有"live LLM 进程"能复刻评测分布:</div>
+    <table class="mg-table">
+      <tr><th>user 接入</th><th>训练时表现</th><th>体检结论</th></tr>
+      <tr><td>Live LLM</td><td>每回合 GPT-4o 现场生成, 会改主意</td><td class="verdict-ok">✓ 留 (复刻评测)</td></tr>
+      <tr class="killed"><td>静态 prompt</td><td>意图压成 t=0 一段, 后续 agent 自言自语</td><td class="verdict-kill">✗ 扔 (无反问需求)</td></tr>
+      <tr class="killed"><td>SFT 录像</td><td>固定对话历史, user 那侧不再回话</td><td class="verdict-kill">✗ 扔 (off-policy)</td></tr>
+      <tr class="killed"><td>固定脚本</td><td>规则模板出 user 反应, 行为分布窄</td><td class="verdict-kill">✗ 扔 (模板可背)</td></tr>
+    </table>
+  </div>
+
+  <!-- ④ 三角拓扑 SVG -->
+  <div class="mg-section">
+    <span class="mg-section-tag">④ 三角 rollout 拓扑 (一张图看完)</span>
+    <div class="mg-flow">
+      <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="mua-rl-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#1a3a5c"/>
+          </marker>
+        </defs>
+
+        <!-- 阶段标 -->
+        <g font-family="Inter,sans-serif" font-size="11" font-weight="800" fill="#1a3a5c" letter-spacing="2">
+          <text x="90" y="20">User-LLM (GPT-4o)</text>
+          <text x="360" y="20" text-anchor="middle">Agent (训练对象, 8B/32B)</text>
+          <text x="630" y="20" text-anchor="middle">Tool / DB</text>
+        </g>
+
+        <!-- 左: user 框 -->
+        <g font-family="Inter,sans-serif">
+          <rect x="20" y="40" width="170" height="60" rx="6" fill="#fff" stroke="#1a3a5c" stroke-width="1.5"/>
+          <text x="105" y="60" text-anchor="middle" font-size="12" font-weight="700" fill="#1a3a5c">"想退一下机票"</text>
+          <text x="105" y="76" text-anchor="middle" font-size="11" fill="#666" font-style="italic">意图不全</text>
+          <text x="105" y="92" text-anchor="middle" font-size="11" fill="#666">会反问 / 改主意</text>
+
+          <rect x="20" y="115" width="170" height="50" rx="6" fill="#fff" stroke="#1a3a5c" stroke-width="1.5"/>
+          <text x="105" y="135" text-anchor="middle" font-size="12" font-weight="700" fill="#1a3a5c">"订单号 A123"</text>
+          <text x="105" y="153" text-anchor="middle" font-size="11" fill="#666" font-style="italic">(被 agent 反问后才给)</text>
+        </g>
+
+        <!-- 中: agent 框 -->
+        <rect x="265" y="40" width="190" height="130" rx="8" fill="#FFFDF7" stroke="#1a3a5c" stroke-width="2.5"/>
+        <g font-family="Inter,sans-serif" fill="#2c2c2c">
+          <text x="360" y="62" text-anchor="middle" font-size="13" font-weight="800" fill="#1a3a5c">Agent 居中</text>
+          <line x1="280" y1="72" x2="440" y2="72" stroke="#c9b98a" stroke-dasharray="3 3"/>
+          <text x="360" y="92" text-anchor="middle" font-size="12">① 反问订单号</text>
+          <text x="360" y="112" text-anchor="middle" font-size="12">② tool_call</text>
+          <text x="360" y="132" text-anchor="middle" font-size="12">③ 改 DB</text>
+          <text x="360" y="155" text-anchor="middle" font-family="Caveat,cursive" font-size="14" font-weight="700" fill="#1e6b1e">边问边调</text>
+        </g>
+
+        <!-- 右: DB 框 -->
+        <g font-family="Inter,sans-serif">
+          <rect x="530" y="55" width="170" height="60" rx="6" fill="#fff" stroke="#1a3a5c" stroke-width="1.5"/>
+          <text x="615" y="75" text-anchor="middle" font-size="12" font-weight="700" fill="#1a3a5c">订单 + 余额</text>
+          <text x="615" y="92" text-anchor="middle" font-size="11" fill="#666">JSON 响应</text>
+          <text x="615" y="108" text-anchor="middle" font-size="11" fill="#666" font-style="italic">(SQLite 模拟)</text>
+
+          <rect x="530" y="130" width="170" height="40" rx="6" fill="#f1fbef" stroke="#1e6b1e" stroke-width="2"/>
+          <text x="615" y="146" text-anchor="middle" font-size="11" font-weight="700" fill="#1e6b1e">hash(DB_final) ==?</text>
+          <text x="615" y="162" text-anchor="middle" font-family="Caveat,cursive" font-size="13" font-weight="700" fill="#1e6b1e">R ∈ {0, 1}</text>
+        </g>
+
+        <!-- 箭头: user ↔ agent -->
+        <g stroke="#1a3a5c" stroke-width="1.5" fill="none">
+          <line x1="190" y1="70" x2="263" y2="80" marker-end="url(#mua-rl-arr)"/>
+          <line x1="265" y1="100" x2="192" y2="130" marker-end="url(#mua-rl-arr)"/>
+          <line x1="190" y1="140" x2="263" y2="120" marker-end="url(#mua-rl-arr)"/>
+        </g>
+        <!-- 箭头: agent ↔ DB -->
+        <g stroke="#1a3a5c" stroke-width="1.5" fill="none">
+          <line x1="455" y1="100" x2="528" y2="85" marker-end="url(#mua-rl-arr)"/>
+          <line x1="530" y1="100" x2="457" y2="120" marker-end="url(#mua-rl-arr)"/>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ⑤ 解药 B: 极简 reward (MUA-RL 框架里"reward 怎么算"这一步) -->
+  <div class="mg-section">
+    <span class="mg-section-tag">⑤ 解药 B: 极简 reward — 只判 DB 终态 (MUA-RL 框架里"怎么打分"那一步)</span>
+    <div class="mg-prose">三角 rollout 解决了"训练 setup"; 接下来"怎么算 reward"这一步, MUA-RL 反其道而行 — <b>砍掉所有 shaping, 只判 DB 终态对不对, R ∈ {0,1}</b>。τ-bench 原本除了 DB 终态还有第二道关 (agent 回复 user 要包含规定标准串, 比如"退款已提交 $300"), 同时奖励两件事会让 agent 学会<em>先复读模板字符串骗分</em>, 再随便调几个工具的捷径。砍掉文字关后, 必须真把工具用对才有分 — 文字怎么聊不打小算盘。</div>
+    <div class="mg-analogy">
+      <b>打个比方:</b> 旧 setup 像"已知 A=3, B=5, 求 C, 同时复读一句标准话术算满分"; MUA-RL 是"客户聊天提需求, 你问出 A、B, 调工具算 C, 老板只看客户账户改对没 — 改对发奖金, 怎么聊、措辞标不标准, 老板不管"。三角 rollout 给的是"客户是活的"这个 setup, 极简 reward 给的是"老板只认结果"这个指挥棒, 两条加一起把训练对齐到真实生产分布。
+    </div>
+  </div>
+
+  <!-- ⑥ 结果 -->
+  <div class="mg-section">
+    <span class="mg-section-tag">⑥ 结果 — 反直觉证据</span>
+    <div class="mg-bigstat">
+      <div class="mg-stat win">
+        <div class="sh">TAU2 RETAIL (Qwen3)</div>
+        <div class="sn">32B → 反超 235B</div>
+        <div class="ss"><b style="color:#1e6b1e">67.3 vs 64.9</b> · 7× 参数被 setup 翻盘</div>
+      </div>
+      <div class="mg-stat win">
+        <div class="sh">τ-AIRLINE</div>
+        <div class="sn">23.5 → 45.4</div>
+        <div class="ss"><b style="color:#1e6b1e">+21.9pp</b> · baseline → MUA-RL</div>
+      </div>
+    </div>
+    <div class="mg-prose" style="margin-top:12px">反直觉的核心证据: 不动算法 (GRPO 本体没改, KL β=0.001, G=8), 只把 user 接成 live LLM + 砍掉文字 shaping, <em>32B 就反超 235B</em>。<b>setup &gt; reward shaping &gt; 参数量 — 把环境改对, 小模型能吃大模型</b>。</div>
+  </div>
+
+  <!-- 公式块 -->
+  <details>
+    <summary>想看公式 + 超参细节? 点开 ↓</summary>
+    <p><b>极简 reward 形状</b> (没 shaping、没 critic、没格式分):</p>
+    $$ r_i \;=\; \mathbb{1}\!\big[\,\mathrm{hash}(\mathrm{DB}_i^{\text{final}}) = \mathrm{hash}(\mathrm{DB}^{\text{ref}})\big] $$
+    <p>怎么读: 每条 rollout 跑到 done, 把 agent 改过的 DB 终态 hash 一下跟 reference DB 比, 一致给 1 不一致给 0, 喂回 GRPO 算组内 z-score。没 dense step reward、没 critic、没文字模板分 — 文字关砍掉是因为它跟工具调用并列时, agent 会优先学复读模板的捷径 (文字模板比工具好骗)。</p>
+    <p style="margin-top:10px"><b>关键超参</b>: G=8 (32K context × 30 turns 显存能塞下); KL β=0.001 (多轮 tool use 需要大量探索, 强 KL 会把 agent 锁回 cold-start 模式); 单任务最多 30 turns, token 上限 32768; rollout 收敛后稳定在 21-23 turns。User-LLM = GPT-4o-2024-11-20; Tool-LLM 演工具或直接挂真实 MCP server; cold-start ~2000 条 (人 + DeepSeek-R1 双重核验) SFT 打底, 再上 GRPO; 165 个训练任务 × 25 epoch ≈ 33k trajectory。</p>
+    <p style="margin-top:10px;color:#666;font-size:12.5px"><b>消融对照</b>: RL-only > cold-start-only (Retail 61.6 vs 58.2), 但二者叠加才到 67.3 — SFT 模仿轨迹会以偏概全, RL 探索才是真在挖新行为。14B 模型在 Telecom 拿 33.4 直接压过 GPT-4o 的 24.1, 再次印证 setup &gt; 参数量。</p>
+  </details>
+</div>
+
+<div class="paper paper-grid codegym-card">
+  <style>
+    .codegym-card{background:#FFFDF7;border:2px solid #1a3a5c;border-radius:14px;padding:24px 28px;box-shadow:4px 4px 0 #1a3a5c;font-family:'PingFang SC','Inter',sans-serif}
+    .codegym-card h4{font-family:'Inter',sans-serif;font-size:24px;color:#1a3a5c;font-weight:800;margin:0 0 6px;line-height:1.25;letter-spacing:-.3px}
+    .codegym-card h4 .tag{display:inline-block;font-family:'Inter',sans-serif;font-size:12px;background:#fff;border:1px solid #1a3a5c;border-radius:4px;color:#1a3a5c;padding:1px 6px;margin-left:6px;font-weight:600;vertical-align:middle}
+    .codegym-card .mg-tl{margin:12px 0 16px;font-family:'Caveat','Comic Sans MS',cursive;font-size:24px;color:#c0392b;font-weight:700;line-height:1.35;background:#FFF4E6;border-left:4px solid #c0392b;padding:10px 16px;border-radius:0 8px 8px 0}
+    .codegym-card .mg-section{margin-top:18px}
+    .codegym-card .mg-section-tag{display:inline-block;font-family:'Inter',sans-serif;font-size:11px;color:#FAF7F0;background:#1a3a5c;letter-spacing:.18em;font-weight:700;padding:2px 9px;border-radius:3px;margin-bottom:10px}
+    .codegym-card .mg-pain{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
+    .codegym-card .mg-pain-box{background:#FFF;border:1.5px solid #1a3a5c;border-radius:8px;padding:14px 16px}
+    .codegym-card .mg-pain-box.bad{border-color:#c0392b;background:#fff5f5}
+    .codegym-card .mg-pain-box .ph{font-family:'Caveat',cursive;font-size:22px;font-weight:700;line-height:1.1;color:#1a3a5c;margin-bottom:4px}
+    .codegym-card .mg-pain-box.bad .ph{color:#c0392b}
+    .codegym-card .mg-pain-box .pn{font-family:'Inter',sans-serif;font-size:13px;color:#34495e;line-height:1.55}
+    .codegym-card .mg-pain-box .pdata{margin-top:8px;padding-top:7px;border-top:1px dashed #c9b98a;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:800;color:#1a3a5c}
+    .codegym-card .mg-pain-box.bad .pdata{color:#c0392b}
+    .codegym-card .mg-pain-box .pdata span{font-family:'PingFang SC',sans-serif;font-size:12px;font-weight:500;color:#666;margin-left:4px}
+    .codegym-card .mg-prose{font-family:'Inter','PingFang SC',sans-serif;font-size:14.5px;color:#2c2c2c;line-height:1.7;margin:8px 0}
+    .codegym-card .mg-prose b{color:#1a3a5c;font-weight:800}
+    .codegym-card .mg-prose em{font-style:normal;color:#c0392b;font-weight:700;background:linear-gradient(180deg,transparent 65%,#ffe082 65%);padding:0 3px}
+    .codegym-card .mg-table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13.5px;background:#FFF;border:1.5px solid #1a3a5c;border-radius:8px;overflow:hidden}
+    .codegym-card .mg-table th{background:#1a3a5c;color:#FAF7F0;padding:8px 12px;text-align:left;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;letter-spacing:.04em}
+    .codegym-card .mg-table td{padding:8px 12px;border-top:1px solid #e6e6e6;color:#2c2c2c;line-height:1.5}
+    .codegym-card .mg-table td:first-child{font-family:'Inter',monospace;font-weight:700;color:#1a3a5c;width:88px;white-space:nowrap}
+    .codegym-card .mg-table tr.killed td{background:#fff5f5;color:#9f2e2e;text-decoration:line-through;text-decoration-color:#c0392b}
+    .codegym-card .mg-table tr.killed td:first-child{color:#c0392b;text-decoration:line-through}
+    .codegym-card .mg-table .verdict-ok{color:#1e6b1e;font-weight:800}
+    .codegym-card .mg-table .verdict-kill{color:#c0392b;font-weight:800}
+    .codegym-card .mg-flow{margin:12px 0 6px;background:#FFF;border:1.5px dashed #1a3a5c;border-radius:10px;padding:14px 12px 12px;overflow-x:auto}
+    .codegym-card .mg-flow svg{width:100%;height:auto;display:block;min-width:680px}
+    .codegym-card .mg-bigstat{display:grid;grid-template-columns:1.2fr 1fr;gap:14px;margin-top:14px;align-items:stretch}
+    .codegym-card .mg-stat{background:#FFF;border:1.5px solid #1a3a5c;border-radius:8px;padding:14px 16px}
+    .codegym-card .mg-stat .sh{font-family:'Inter',sans-serif;font-size:11.5px;color:#8A8A8A;letter-spacing:.15em;font-weight:700;margin-bottom:6px}
+    .codegym-card .mg-stat .sn{font-family:'Inter',sans-serif;font-size:28px;font-weight:800;color:#1a3a5c;line-height:1;letter-spacing:-.5px}
+    .codegym-card .mg-stat.win .sn{color:#1e6b1e}
+    .codegym-card .mg-stat.fail .sn{color:#c0392b}
+    .codegym-card .mg-stat .ss{font-family:'PingFang SC',sans-serif;font-size:12.5px;color:#444;margin-top:4px;line-height:1.5}
+    .codegym-card .mg-analogy{margin-top:14px;background:#fff5e8;border:1.5px solid #efd5ac;border-radius:8px;padding:12px 16px;font-family:'Inter','PingFang SC',sans-serif;font-size:13.5px;color:#5a3a18;line-height:1.65}
+    .codegym-card .mg-analogy b{color:#7a4a00;font-weight:800}
+    .codegym-card details{margin-top:14px;background:#f7f7f9;border:1px solid #d8d8d8;border-radius:8px;padding:10px 14px;font-size:13.5px}
+    .codegym-card details summary{cursor:pointer;color:#1a3a5c;font-weight:700;font-family:'Inter',sans-serif;font-size:13px;letter-spacing:.05em}
+    .codegym-card details p{margin:8px 0;line-height:1.65}
+    @media (max-width:780px){
+      .codegym-card .mg-pain,.codegym-card .mg-bigstat{grid-template-columns:1fr}
+      .codegym-card h4{font-size:20px}
+      .codegym-card .mg-tl{font-size:20px}
+    }
+  </style>
+
+  <h4>[4] CodeGym — Generalizable End-to-End Tool-Use RL with Synthetic Environments <span class="tag">ByteDance Seed × CMU</span> <span class="tag">2025.09</span></h4>
+
+  <div class="mg-tl">"tool-use RL 卡在算法" 听起来对 — 但同样的合成数据下 <span style="color:#1a3a5c">SFT 学到 65.6, 但 OOD 一动不动 (42.3 → 42.3)</span>。这篇 paper 提出: 卡的不是算法, 是<span style="color:#1a3a5c">没足够多可自动打分的环境</span> — 把代码题改写成 POMDP, 一次合成 13k env。</div>
+
+  <!-- ① 反直觉痛点 -->
+  <div class="mg-section">
+    <span class="mg-section-tag">① 反直觉痛点</span>
+    <div class="mg-prose">直觉上, tool-use RL 训得不好就调算法 — 改 GRPO advantage 函数、加 critic、做 reward shaping。但作者实测发现: <em>同样的合成数据下</em>, SFT 抄答案学格式能把训练集刷到 65.6, OOD 却完全不动 (42.3→42.3); RL 也能把训练集拉到 81, 但同时 OOD <em>真的 +7.3</em>。差距不在算法, 在 <b>训练 env 数量太少</b>:</div>
+    <div class="mg-pain">
+      <div class="mg-pain-box">
+        <div class="ph">直接拿真实 benchmark 训</div>
+        <div class="pn">τ-bench / ALFWorld 一共就<em style="color:#1a3a5c">几百条</em>。RL 要的"百万次完整轨迹 × 0/1 打分"压根填不满, env 一旦稀缺, 流水线 scale 不动。</div>
+        <div class="pdata">几百条 <span>(域单一, 一换工具集就跌)</span></div>
+      </div>
+      <div class="mg-pain-box bad">
+        <div class="ph">SFT 一份 ReAct 数据集</div>
+        <div class="pn">学到的是"Action / Observation"<em>格式</em>, 不是"该不该调 / 调哪个 / 调完看啥"的决策。看上去 in-domain 漂亮, OOD 直接退化成抄不到的题。</div>
+        <div class="pdata">65.6 / 42.3 <span>(in-domain / OOD, OOD 不动)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② 翻车机制 -->
+  <div class="mg-section">
+    <span class="mg-section-tag">② 为什么翻车 — 环境是稀缺品, 不是 loss 写得不够细</span>
+    <div class="mg-prose">人对 RL 失败的本能反应是"loss 是不是写错了" — 加 critic、调 advantage、做 reward shaping。但 CodeGym 的反证很硬: 同样的合成数据、同一个 base model, <b>抄答案 SFT 把训练集刷到 65.6 但 OOD 完全不动</b>, <b>RL 把训练集刷到 81 同时 OOD +7.3</b>。两条曲线的差异不在 loss, 在<em>数据本身是否能产生有区分度的 rollout</em>。瓶颈不是 GRPO loss 写得不够细, 而是没有足够多样的"可自动打分"环境 — 一个 RL pipeline 要 scale, 真正缺的是<b>百万级 × 多领域 × 可自动 verify</b> 的训练 env, 不是新算法。</div>
+  </div>
+
+  <!-- ③ 解药 A: 代码题 → POMDP -->
+  <div class="mg-section">
+    <span class="mg-section-tag">③ 解药 A: 代码题 → POMDP — 一次合成 13k env</span>
+    <div class="mg-prose">反直觉的切入点 — <b>代码题已经是被人类严格分解过的"原子动作合集"</b>: 每个 helper function 是一张工具卡, 每段 main flow 是一份说明书, unit_test 天然是 0/1 verifier。CodeGym 让一个强 LLM 做两件事: <b>Stage A</b> 对每道题做语义抽取 — 函数变 tool 并自动配 docstring, if/for 流程变 state transition, 题里的隐式数据结构作为 agent 看不到的全局 state, observation 只暴露工具返回值, 一道题就成了标准 POMDP。<b>Stage B</b> 让出题人自己解 10 次 (pass@K=10), 至少 1 份能全过才采纳, 全军覆没的直接丢, 同时把这份 solution 留作 oracle trajectory。下表对比哪些能留下:</div>
+    <table class="mg-table">
+      <tr><th>合成 env 类型</th><th>判定规则</th><th>体检结论</th></tr>
+      <tr><td>函数→tool</td><td>helper 函数自带签名 + docstring, 天然 schema</td><td class="verdict-ok">✓ 留 (无歧义)</td></tr>
+      <tr><td>unit_test→R</td><td>题目自带测试用例, 终态全过 = 1, 否则 0</td><td class="verdict-ok">✓ 留 (verifier 免费)</td></tr>
+      <tr><td>pass@10 ≥1</td><td>LLM 自解 10 次, 至少 1 次 unit_test 全过</td><td class="verdict-ok">✓ 留 (存在可达解)</td></tr>
+      <tr class="killed"><td>pass@10 = 0</td><td>10 次全军覆没, 可能题面歧义 / 工具不自洽</td><td class="verdict-kill">✗ 扔 (假环境)</td></tr>
+      <tr class="killed"><td>tools &lt; 4</td><td>少于 4 个 distinct tool 的轨迹本质是 RAG</td><td class="verdict-kill">✗ 扔 (学不到 orchestration)</td></tr>
+    </table>
+  </div>
+
+  <!-- ④ 流程图 SVG -->
+  <div class="mg-section">
+    <span class="mg-section-tag">④ 合成流程 (一张图看完)</span>
+    <div class="mg-flow">
+      <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="codegym-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#1a3a5c"/>
+          </marker>
+        </defs>
+
+        <g font-family="Inter,sans-serif" font-size="11" font-weight="800" fill="#1a3a5c" letter-spacing="2">
+          <text x="80" y="20">leetcode-like</text>
+          <text x="250" y="20">Stage A 抽取</text>
+          <text x="420" y="20">Stage B 过滤</text>
+          <text x="620" y="20" text-anchor="middle">13k env → GRPO</text>
+        </g>
+
+        <!-- 左: 代码题 -->
+        <g font-family="Inter,sans-serif">
+          <rect x="20" y="60" width="130" height="90" rx="6" fill="#fff" stroke="#1a3a5c" stroke-width="1.5"/>
+          <text x="85" y="80" text-anchor="middle" font-size="12" font-weight="700" fill="#1a3a5c">代码题</text>
+          <text x="85" y="100" text-anchor="middle" font-size="11" fill="#666">def helper(...)</text>
+          <text x="85" y="116" text-anchor="middle" font-size="11" fill="#666">if / for / while</text>
+          <text x="85" y="132" text-anchor="middle" font-size="11" fill="#666">unit_tests</text>
+        </g>
+
+        <line x1="150" y1="105" x2="190" y2="105" stroke="#1a3a5c" stroke-width="1.5" marker-end="url(#codegym-arr)"/>
+
+        <!-- 中左: Stage A -->
+        <g font-family="Inter,sans-serif">
+          <rect x="195" y="40" width="140" height="38" rx="6" fill="#fff" stroke="#1a3a5c" stroke-width="1.5"/>
+          <text x="265" y="58" text-anchor="middle" font-size="12" font-weight="700" fill="#1a3a5c">函数 → tool</text>
+          <text x="265" y="72" text-anchor="middle" font-size="10" fill="#666">+ docstring</text>
+
+          <rect x="195" y="85" width="140" height="38" rx="6" fill="#fff" stroke="#1a3a5c" stroke-width="1.5"/>
+          <text x="265" y="103" text-anchor="middle" font-size="12" font-weight="700" fill="#1a3a5c">if/for → T(s,a)</text>
+          <text x="265" y="117" text-anchor="middle" font-size="10" fill="#666">隐式 state</text>
+
+          <rect x="195" y="130" width="140" height="38" rx="6" fill="#fff" stroke="#1a3a5c" stroke-width="1.5"/>
+          <text x="265" y="148" text-anchor="middle" font-size="12" font-weight="700" fill="#1a3a5c">unit_test → R</text>
+          <text x="265" y="162" text-anchor="middle" font-size="10" fill="#666">终止 0/1</text>
+        </g>
+
+        <line x1="335" y1="105" x2="375" y2="105" stroke="#1a3a5c" stroke-width="1.5" marker-end="url(#codegym-arr)"/>
+
+        <!-- 中右: Stage B 过滤盒 -->
+        <rect x="378" y="55" width="170" height="100" rx="8" fill="#FFFDF7" stroke="#1a3a5c" stroke-width="2.5"/>
+        <g font-family="Inter,sans-serif" fill="#2c2c2c">
+          <text x="463" y="78" text-anchor="middle" font-size="13" font-weight="800" fill="#1a3a5c">pass@K=10</text>
+          <text x="463" y="96" text-anchor="middle" font-size="11" fill="#666" font-style="italic">LLM 自解 10 次</text>
+          <line x1="396" y1="106" x2="530" y2="106" stroke="#c9b98a" stroke-dasharray="3 3"/>
+          <text x="463" y="124" text-anchor="middle" font-size="12">≥1 份全过 → <tspan font-weight="800" fill="#1e6b1e">留</tspan></text>
+          <text x="463" y="144" text-anchor="middle" font-size="12">全军覆没 → <tspan font-weight="800" fill="#c0392b">扔</tspan></text>
+        </g>
+
+        <line x1="548" y1="105" x2="585" y2="105" stroke="#1a3a5c" stroke-width="1.5" marker-end="url(#codegym-arr)"/>
+
+        <!-- 右: 产物盒 (绿) -->
+        <rect x="588" y="55" width="115" height="100" rx="8" fill="#f1fbef" stroke="#1e6b1e" stroke-width="2"/>
+        <g font-family="Inter,sans-serif">
+          <text x="645" y="80" text-anchor="middle" font-size="14" font-weight="800" fill="#1e6b1e">13k env</text>
+          <text x="645" y="98" text-anchor="middle" font-size="10.5" fill="#444">80k+ tasks</text>
+          <text x="645" y="114" text-anchor="middle" font-size="10.5" fill="#444">6.5 tool / env</text>
+          <text x="645" y="130" text-anchor="middle" font-size="10.5" fill="#444">44 step / 轨迹</text>
+          <text x="645" y="148" text-anchor="middle" font-family="Caveat,cursive" font-size="13" font-weight="700" fill="#1e6b1e">→ GRPO G=8</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ⑤ 解药 B: 4 magic number + trial-then-overwrite -->
+  <div class="mg-section">
+    <span class="mg-section-tag">⑤ 解药 B: 4 个 magic number 卡甜区 (CodeGym 框架里"哪些 env 才进 GRPO"那一步)</span>
+    <div class="mg-prose">合成出来的 env 并不都好用 — 太简单 (全过) / 太难 (全挂) / 太短 (步数不够) / 工具太少 (退化成 RAG) 全都喂不出梯度。作者总结了 4 个 magic number 把 env 卡在"GRPO 组内方差最大"的甜区: <b>T_min=10</b> (低于 10 步学不到 long-horizon), <b>T_max=256</b> (再长 reward 信号被稀释), <b>distinct tools ≥ 4</b> (少于 4 个本质是 RAG), <b>难度过滤 ≤ 25%</b> (Qwen2.5-32B 4 次尝试解出率 ≤25%, 是组内方差最大的甜区, 太简单全 1 太难全 0 都没对比)。再叠一个工程修复 <b>trial-then-overwrite</b>: 工具执行可能崩 env, fork 一份状态去试跑, 跑成功才覆盖, 跑挂把异常作为 observation 返回 agent — 既保 server 不污染, 又给 agent 一个"调错了要自己纠"的学习信号。</div>
+    <div class="mg-analogy">
+      <b>打个比方:</b> 训厨师不必每天去米其林后厨实习; 只要给他<b>切丁 / 焯水 / 爆香 / 收汁</b>这种<b>原子动作卡</b>, 让他在自家厨房反复拼组各种菜谱, 到了真餐厅依然会做。代码题就是这种已经被人类严格分解过的原子动作合集 — 每个 helper function 是一张工具卡, 每段 main flow 是一份说明书。pass@K=10 是收菜前先自己试做一遍 (做不出来的废菜谱不要), 4 个 magic number 是挑题的甜区 (太简单太难都不练手), trial-then-overwrite 是"试做切坏不毁砧板"的安全网。
+    </div>
+  </div>
+
+  <!-- ⑥ 结果 -->
+  <div class="mg-section">
+    <span class="mg-section-tag">⑥ 结果 — 反直觉证据</span>
+    <div class="mg-bigstat">
+      <div class="mg-stat win">
+        <div class="sh">6 OOD BENCHMARK AVG</div>
+        <div class="sn">42.3 → 49.6</div>
+        <div class="ss"><b style="color:#1e6b1e">+7.3pp</b> · 干净 OOD; τ-retail +13.0 · ALFWorld +14.0</div>
+      </div>
+      <div class="mg-stat fail">
+        <div class="sh">SFT 同合成数据对照</div>
+        <div class="sn">42.3 → 42.3</div>
+        <div class="ss">in-domain 65.6 漂亮, OOD <em>一动不动</em> — 格式不是技能</div>
+      </div>
+    </div>
+    <div class="mg-prose" style="margin-top:12px">反直觉的核心证据: 同合成数据下, <em>SFT 把训练集刷到 65.6 但 OOD 42.3→42.3 完全不动, RL 把训练集刷到 81 同时 OOD +7.3</em>。论断: <b>工具使用是一种可被 RL 训练 + 跨 domain 迁移的技能, 不是格式问题</b> — 缺的从来不是新算法, 是百万级、可自动 verify 的训练 env。</div>
+  </div>
+
+  <!-- 公式块 -->
+  <details>
+    <summary>想看 POMDP 形式化 + magic number 细节? 点开 ↓</summary>
+    <p><b>env 形式化</b> (每个保留 env 是一个标准 POMDP, reward 只在终止时给一次):</p>
+    $$ \mathcal{E} \;=\; \langle S,\,A,\,T,\,R,\,O\rangle,\qquad R(s_T) \;=\; \mathbb{1}\!\left[\,\mathrm{unit\_tests}(s_T) = \text{all pass}\,\right] $$
+    <p>怎么读: S 是代码题的全部内部变量, agent 看不到 (部分可观测的来源); A 是每步选一个 tool + 参数; O 是 tool 返回值; R 在终止时跑全套 unit_test, 全过给 1 否则 0。GRPO 本体没动, 改的只是 env 接口和 reward 来源 — 用 unit_test 当 verifier, 组内 z-score 当 advantage。</p>
+    <p style="margin-top:10px"><b>4 个 magic number 卡甜区</b>: T_min=10 (低于 10 步学不到 long-horizon 规划), T_max=256 (再长 context 撑不住, reward 信号被稀释), distinct tools ≥ 4 (少于 4 个工具本质是 RAG), 难度过滤 ≤ 25% (Qwen2.5-32B 在该题 4 次尝试解出率 ≤25%, 卡在 GRPO 组内方差最大的区间; 太简单全 1 没对比, 太难全 0 没对比)。</p>
+    <p style="margin-top:10px;color:#666;font-size:12.5px"><b>难度增强 — 主动隐藏部分输入</b>: 为了防止长 CoT 模型 (如 QwQ-32B) 直接靠脑内推导绕过工具, CodeGym 会主动把题目部分输入藏起来, 必须 agent 调相应工具才能查到。这条 trick 把"工具当摆设硬推"这条捷径堵死, 强迫 agent 真的走 tool-use 路径。trial-then-overwrite 则保证 13k 并发 env server 在工具崩溃时不污染 — 这些都是 production 级部署必须解的工程问题, 不是 paper-only 把戏。</p>
+  </details>
+</div>
+
+<div class="paper paper-grid fission-card">
+  <style>
+    .fission-card{background:#FFFDF7;border:2px solid #1a3a5c;border-radius:14px;padding:24px 28px;box-shadow:4px 4px 0 #1a3a5c;font-family:'PingFang SC','Inter',sans-serif}
+    .fission-card h4{font-family:'Inter',sans-serif;font-size:24px;color:#1a3a5c;font-weight:800;margin:0 0 6px;line-height:1.25;letter-spacing:-.3px}
+    .fission-card h4 .tag{display:inline-block;font-family:'Inter',sans-serif;font-size:12px;background:#fff;border:1px solid #1a3a5c;border-radius:4px;color:#1a3a5c;padding:1px 6px;margin-left:6px;font-weight:600;vertical-align:middle}
+    .fission-card .mg-tl{margin:12px 0 16px;font-family:'Caveat','Comic Sans MS',cursive;font-size:24px;color:#c0392b;font-weight:700;line-height:1.35;background:#FFF4E6;border-left:4px solid #c0392b;padding:10px 16px;border-radius:0 8px 8px 0}
+    .fission-card .mg-section{margin-top:18px}
+    .fission-card .mg-section-tag{display:inline-block;font-family:'Inter',sans-serif;font-size:11px;color:#FAF7F0;background:#1a3a5c;letter-spacing:.18em;font-weight:700;padding:2px 9px;border-radius:3px;margin-bottom:10px}
+    .fission-card .mg-pain{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin-top:6px}
+    .fission-card .mg-pain-box{background:#FFF;border:1.5px solid #1a3a5c;border-radius:8px;padding:14px 16px}
+    .fission-card .mg-pain-box.bad{border-color:#c0392b;background:#fff5f5}
+    .fission-card .mg-pain-box .ph{font-family:'Caveat',cursive;font-size:22px;font-weight:700;line-height:1.1;color:#1a3a5c;margin-bottom:4px}
+    .fission-card .mg-pain-box.bad .ph{color:#c0392b}
+    .fission-card .mg-pain-box .pn{font-family:'Inter',sans-serif;font-size:13px;color:#34495e;line-height:1.55}
+    .fission-card .mg-pain-box .pdata{margin-top:8px;padding-top:7px;border-top:1px dashed #c9b98a;font-family:'Inter',sans-serif;font-size:13.5px;font-weight:800;color:#1a3a5c}
+    .fission-card .mg-pain-box.bad .pdata{color:#c0392b}
+    .fission-card .mg-pain-box .pdata span{font-family:'PingFang SC',sans-serif;font-size:12px;font-weight:500;color:#666;margin-left:4px}
+    .fission-card .mg-prose{font-family:'Inter','PingFang SC',sans-serif;font-size:14.5px;color:#2c2c2c;line-height:1.7;margin:8px 0}
+    .fission-card .mg-prose b{color:#1a3a5c;font-weight:800}
+    .fission-card .mg-prose em{font-style:normal;color:#c0392b;font-weight:700;background:linear-gradient(180deg,transparent 65%,#ffe082 65%);padding:0 3px}
+    .fission-card .mg-table{width:100%;border-collapse:collapse;margin-top:10px;font-size:13.5px;background:#FFF;border:1.5px solid #1a3a5c;border-radius:8px;overflow:hidden}
+    .fission-card .mg-table th{background:#1a3a5c;color:#FAF7F0;padding:8px 12px;text-align:left;font-family:'Inter',sans-serif;font-size:12px;font-weight:700;letter-spacing:.04em}
+    .fission-card .mg-table td{padding:8px 12px;border-top:1px solid #e6e6e6;color:#2c2c2c;line-height:1.5}
+    .fission-card .mg-table td:first-child{font-family:'Inter',monospace;font-weight:700;color:#1a3a5c;width:88px;white-space:nowrap}
+    .fission-card .mg-table tr.killed td{background:#fff5f5;color:#9f2e2e;text-decoration:line-through;text-decoration-color:#c0392b}
+    .fission-card .mg-table tr.killed td:first-child{color:#c0392b;text-decoration:line-through}
+    .fission-card .mg-table .verdict-ok{color:#1e6b1e;font-weight:800}
+    .fission-card .mg-table .verdict-kill{color:#c0392b;font-weight:800}
+    .fission-card .mg-flow{margin:12px 0 6px;background:#FFF;border:1.5px dashed #1a3a5c;border-radius:10px;padding:14px 12px 12px;overflow-x:auto}
+    .fission-card .mg-flow svg{width:100%;height:auto;display:block;min-width:680px}
+    .fission-card .mg-bigstat{display:grid;grid-template-columns:1.2fr 1fr;gap:14px;margin-top:14px;align-items:stretch}
+    .fission-card .mg-stat{background:#FFF;border:1.5px solid #1a3a5c;border-radius:8px;padding:14px 16px}
+    .fission-card .mg-stat .sh{font-family:'Inter',sans-serif;font-size:11.5px;color:#8A8A8A;letter-spacing:.15em;font-weight:700;margin-bottom:6px}
+    .fission-card .mg-stat .sn{font-family:'Inter',sans-serif;font-size:28px;font-weight:800;color:#1a3a5c;line-height:1;letter-spacing:-.5px}
+    .fission-card .mg-stat.win .sn{color:#1e6b1e}
+    .fission-card .mg-stat.fail .sn{color:#c0392b}
+    .fission-card .mg-stat .ss{font-family:'PingFang SC',sans-serif;font-size:12.5px;color:#444;margin-top:4px;line-height:1.5}
+    .fission-card .mg-analogy{margin-top:14px;background:#fff5e8;border:1.5px solid #efd5ac;border-radius:8px;padding:12px 16px;font-family:'Inter','PingFang SC',sans-serif;font-size:13.5px;color:#5a3a18;line-height:1.65}
+    .fission-card .mg-analogy b{color:#7a4a00;font-weight:800}
+    .fission-card details{margin-top:14px;background:#f7f7f9;border:1px solid #d8d8d8;border-radius:8px;padding:10px 14px;font-size:13.5px}
+    .fission-card details summary{cursor:pointer;color:#1a3a5c;font-weight:700;font-family:'Inter',sans-serif;font-size:13px;letter-spacing:.05em}
+    .fission-card details p{margin:8px 0;line-height:1.65}
+    @media (max-width:780px){
+      .fission-card .mg-pain,.fission-card .mg-bigstat{grid-template-columns:1fr}
+      .fission-card h4{font-size:20px}
+      .fission-card .mg-tl{font-size:20px}
+    }
+  </style>
+
+  <h4>[5] Fission-GRPO <span class="tag">CUHK + 小红书</span> <span class="tag">2026.01</span></h4>
+
+  <div class="mg-tl">"调细 reward (F1 / part credit) 能救全错样本" 听起来对 — 但 <span style="color:#1a3a5c">8 条全错时方差仍然是 0</span>。这篇 paper 提出: 不是 reward 不够细, 是<span style="color:#1a3a5c">样本本身没信号差</span>, 必须从样本生成那端做手术 — 把失败现场拼上诊断再重采。</div>
+
+  <!-- ① 反直觉痛点 -->
+  <div class="mg-section">
+    <span class="mg-section-tag">① 反直觉痛点</span>
+    <div class="mg-prose">1.7B 这类小模型撞到工具 schema 错就陷入<em style="color:#1a3a5c">幻觉重试死循环</em> — 参数缺了、值越界了, 它会一遍遍重复几乎一样的失败 call 直到 context 耗尽。结果一组 G=8 rollout 全部 R=0, 组内归一化后 advantage 也是 0, <b>这条样本对参数完全没贡献</b>。直觉补丁有两条, 但都不彻底:</div>
+    <div class="mg-pain">
+      <div class="mg-pain-box">
+        <div class="ph">调细 reward (F1 / part credit)</div>
+        <div class="pn">把奖励改成"半对也给点分"。听起来合理 — 至少有方向感了吧?<em style="color:#1a3a5c">但 8 条全错时, "0.3 vs 0.3 vs 0.3" 仍然方差为 0</em>。</div>
+        <div class="pdata">方差仍 = 0 <span>(组内 z-score 全归 0)</span></div>
+      </div>
+      <div class="mg-pain-box bad">
+        <div class="ph">预收集错误数据集 SFT</div>
+        <div class="pn">事先攒一批失败轨迹做监督学习。听上去 cheap, 但<em>策略一更新, 它自己犯的错就漂走了</em>, 数据集马上 off-policy。</div>
+        <div class="pdata">off-policy <span>(策略改 → 错误分布漂)</span></div>
+      </div>
+    </div>
+  </div>
+
+  <!-- ② 翻车机制 -->
+  <div class="mg-section">
+    <span class="mg-section-tag">② 为什么翻车 — 不是 reward 不够细, 是样本没信号差</span>
+    <div class="mg-prose">GRPO 的核心机制是<b>组内相对优势</b> — 每条 rollout 跟同组其他 rollout 比, z-score 出 advantage。这套机制的<em>致命软肋</em>: 一旦 G=8 全错, R 全 0, 不管 reward 算得多细 (binary / F1 / part credit), 组内 mean 和 std 都是常数 → z-score 全归 0 → 整组样本零梯度。问题不在 reward 表达力, <b>问题在样本本身没有信号差</b>。再细的 reward 也救不回方差 0 的样本 — 必须从样本生成那一端做手术, 让"全错"裂变出"有的修对、有的修错"的对照组。</div>
+  </div>
+
+  <!-- ③ 解药 A: 失败裂变 + LIFO buffer -->
+  <div class="mg-section">
+    <span class="mg-section-tag">③ 解药 A: 失败裂变 — 把一条 0 分轨迹切成一组能互相比较的小样本</span>
+    <div class="mg-prose">核心动作三步: <b>(a)</b> 把失败轨迹 τ_err 当"案发现场"留住; <b>(b)</b> 让老师补一段诊断反馈 f, 拼成新 prompt <code>x_corr = [原 prompt; τ_err; f]</code>, 塞进 LIFO buffer (后进先出, 优先消费最新失败); <b>(c)</b> 触发条件到时, 在 x_corr 上重采 G'=8 条 recovery rollout, advantage <b>只在这 G' 条 fission group 内部</b>做 z-score, 完全不和 Stage 1 那批原始失败混算。<em>这一刀很关键</em> — 一旦混算又会被一大堆 0 拖死, 关起门来在"看了诊断之后再生成"的这一小组里互相比, 哪怕绝对分都不高, 只要相互之间有差距, 梯度就回来了:</div>
+    <table class="mg-table">
+      <tr><th>归一化方式</th><th>判定规则</th><th>体检结论</th></tr>
+      <tr><td>fission group</td><td>G'=8 条 recovery 内部独立 z-score</td><td class="verdict-ok">✓ 留 (组内有方差)</td></tr>
+      <tr><td>LIFO buffer</td><td>失败按"最新优先"出队, 接近当前策略分布</td><td class="verdict-ok">✓ 留 (on-policy 近似)</td></tr>
+      <tr class="killed"><td>混算 + Stage 1</td><td>把 G' 条 recovery 跟 G=8 条全错混在一起归一化</td><td class="verdict-kill">✗ 扔 (大堆 0 拖死方差)</td></tr>
+      <tr class="killed"><td>预收集 SFT</td><td>事先攒错误轨迹做监督训练</td><td class="verdict-kill">✗ 扔 (off-policy 漂移)</td></tr>
+    </table>
+  </div>
+
+  <!-- ④ 流程图 SVG -->
+  <div class="mg-section">
+    <span class="mg-section-tag">④ 失败裂变流程 (一张图看完)</span>
+    <div class="mg-flow">
+      <svg viewBox="0 0 720 200" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="fission-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse">
+            <path d="M0,0 L10,5 L0,10 z" fill="#1a3a5c"/>
+          </marker>
+        </defs>
+
+        <g font-family="Inter,sans-serif" font-size="11" font-weight="800" fill="#1a3a5c" letter-spacing="2">
+          <text x="90" y="20">Stage 1: G=8 全错</text>
+          <text x="360" y="20" text-anchor="middle">Error Simulator 诊断</text>
+          <text x="620" y="20" text-anchor="middle">Stage 3: G'=8 恢复</text>
+        </g>
+
+        <!-- 左: Stage 1 全错列表 -->
+        <g font-family="Inter,sans-serif">
+          <rect x="20" y="35" width="160" height="22" fill="#fff" stroke="#c33"/>
+          <text x="30" y="51" font-size="11" fill="#c33">τ₁ call(...)</text>
+          <text x="172" y="51" text-anchor="end" font-size="11" fill="#c33" font-weight="700">R=0</text>
+
+          <rect x="20" y="60" width="160" height="22" fill="#fff" stroke="#c33"/>
+          <text x="30" y="76" font-size="11" fill="#c33">τ₂ call(...)</text>
+          <text x="172" y="76" text-anchor="end" font-size="11" fill="#c33" font-weight="700">R=0</text>
+
+          <rect x="20" y="85" width="160" height="22" fill="#fff" stroke="#c33"/>
+          <text x="30" y="101" font-size="11" fill="#c33">τ₃ call(...)</text>
+          <text x="172" y="101" text-anchor="end" font-size="11" fill="#c33" font-weight="700">R=0</text>
+
+          <text x="100" y="125" text-anchor="middle" font-size="10.5" fill="#888">⋮ (×8)</text>
+
+          <rect x="20" y="132" width="160" height="22" fill="#fff" stroke="#c33"/>
+          <text x="30" y="148" font-size="11" fill="#c33">τ₈ call(...)</text>
+          <text x="172" y="148" text-anchor="end" font-size="11" fill="#c33" font-weight="700">R=0</text>
+
+          <text x="100" y="174" text-anchor="middle" font-size="11" fill="#888" font-style="italic">advantage 全 0 → 无梯度</text>
+        </g>
+
+        <line x1="184" y1="92" x2="246" y2="92" stroke="#1a3a5c" stroke-width="1.5" marker-end="url(#fission-arr)"/>
+
+        <!-- 中: Error Simulator 盒 -->
+        <rect x="250" y="40" width="220" height="120" rx="8" fill="#FFFDF7" stroke="#1a3a5c" stroke-width="2.5"/>
+        <g font-family="Inter,sans-serif" fill="#2c2c2c">
+          <text x="360" y="62" text-anchor="middle" font-size="13" font-weight="800" fill="#1a3a5c">Error Simulator S_φ</text>
+          <text x="360" y="78" text-anchor="middle" font-size="11" fill="#666" font-style="italic">(Qwen3-32B SFT, 96% 不泄 GT)</text>
+          <line x1="268" y1="88" x2="452" y2="88" stroke="#c9b98a" stroke-dasharray="3 3"/>
+          <text x="360" y="106" text-anchor="middle" font-size="11" fill="#444">输出诊断 f:</text>
+          <rect x="264" y="112" width="192" height="22" fill="#fafafa" stroke="#aaa" stroke-dasharray="3 2"/>
+          <text x="360" y="127" text-anchor="middle" font-size="10.5" fill="#333" font-style="italic">"param status expects OPEN"</text>
+          <rect x="264" y="138" width="192" height="18" fill="#fff" stroke="#1a3a5c"/>
+          <text x="360" y="151" text-anchor="middle" font-size="11" font-weight="700">x_corr = [x; τ_err; f]</text>
+        </g>
+
+        <line x1="472" y1="100" x2="530" y2="100" stroke="#1a3a5c" stroke-width="1.5" marker-end="url(#fission-arr)"/>
+
+        <!-- 右: Stage 3 recovery 列表 (绿) -->
+        <g font-family="Inter,sans-serif">
+          <rect x="534" y="35" width="160" height="22" fill="#fff" stroke="#2a8"/>
+          <text x="544" y="51" font-size="11" fill="#2a8">τ'₁ 修对</text>
+          <text x="686" y="51" text-anchor="end" font-size="11" fill="#2a8" font-weight="700">R=1.6</text>
+
+          <rect x="534" y="60" width="160" height="22" fill="#fff" stroke="#c33"/>
+          <text x="544" y="76" font-size="11" fill="#c33">τ'₂ 又错</text>
+          <text x="686" y="76" text-anchor="end" font-size="11" fill="#c33" font-weight="700">R=0</text>
+
+          <rect x="534" y="85" width="160" height="22" fill="#fff" stroke="#2a8"/>
+          <text x="544" y="101" font-size="11" fill="#2a8">τ'₃ 部分对</text>
+          <text x="686" y="101" text-anchor="end" font-size="11" fill="#2a8" font-weight="700">R=0.9</text>
+
+          <text x="614" y="125" text-anchor="middle" font-size="10.5" fill="#888">⋮ (×8)</text>
+
+          <rect x="534" y="132" width="160" height="22" fill="#fff" stroke="#2a8"/>
+          <text x="544" y="148" font-size="11" fill="#2a8">τ'₈ 修对</text>
+          <text x="686" y="148" text-anchor="end" font-size="11" fill="#2a8" font-weight="700">R=1.4</text>
+
+          <text x="614" y="174" text-anchor="middle" font-size="11" fill="#1e6b1e" font-weight="700">组内有方差 → 梯度回来</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <!-- ⑤ 解药 B: Error Simulator 老师 -->
+  <div class="mg-section">
+    <span class="mg-section-tag">⑤ 解药 B: Error Simulator — 会指错但不报答案 (Fission 框架里"诊断 f 哪来"那一步)</span>
+    <div class="mg-prose">反馈 f 从哪来? 格式错走确定性模板 ("JSON 缺字段 status"); 语义错走一个独立训出来的诊断模型 S_φ — 用 <b>Claude Sonnet 4</b> 当老师, 在 Qwen3-32B 上 SFT 出来。它的输入是 (system+tools, 历史对话, ground-truth call, 失败 call), 输出贴近运行时报错的诊断串 (如"parameter status expects value OPEN")。<b>硬约束</b>: <em>不许直接复读 ground truth 的值, 只能给"提示性"信号</em>; 否则训练就退化成抄答案, 完全学不到"挽救"。人评结果: 96% 严格不泄露 (κ=0.71)。Error Simulator 是 Fission 框架"裂变 → 诊断 → 重采"里"诊断"那一环, 跟 fission group 归一化配合 — 没有它, 重采 rollout 没方向; 没有 fission group, 诊断给完也被 Stage 1 一堆 0 拖死。</div>
+    <div class="mg-analogy">
+      <b>打个比方:</b> 像围棋复盘 — AI 自己下完输了, 老师把棋谱倒回那一步关键失误, 在旁边写"这里黑棋形势其实领先 3 目, 问题出在你下一步"。然后让 AI 从这一步<b>重新下 8 次</b>, 8 个新下法互相比较, 谁救回来谁就拿正分, 谁继续乱来谁就拿负分。原本"整盘输 = 一个 0 分样本"被裂变成"8 个能互相比较的小样本", 训练信号一下从干涸变密集。而且<b>老师只点哪里错, 不直接告诉这一步该走哪</b> — 否则就成抄答案了。
+    </div>
+  </div>
+
+  <!-- ⑥ 结果 -->
+  <div class="mg-section">
+    <span class="mg-section-tag">⑥ 结果 — 反直觉证据</span>
+    <div class="mg-bigstat">
+      <div class="mg-stat win">
+        <div class="sh">BFCL v4 多轮 (Qwen3-8B)</div>
+        <div class="sn">28.75 → 46.75</div>
+        <div class="ss"><b style="color:#1e6b1e">+18.0pp</b> · 同算力 vanilla GRPO 42.75, Fission 再 +4.0</div>
+      </div>
+      <div class="mg-stat win">
+        <div class="sh">小模型 (Qwen3-1.7B)</div>
+        <div class="sn">7.80 → 20.38</div>
+        <div class="ss"><b style="color:#1e6b1e">+12.58pp</b> · long-context 错误恢复率 +11.8, 不是教模型多 retry</div>
+      </div>
+    </div>
+    <div class="mg-prose" style="margin-top:12px">反直觉的核心证据: <em>同尺寸 ToolACE-2-8B (37.0) / BitAgent-8B (37.75) 被 Fission-GRPO 各超 ~10 分</em>。一句 takeaway: <b>RL 视角下的"无信号样本"通过追加 context 转成"有信号样本" — 稀疏的全错信号被裂变成密集的"如何挽救"梯度</b>。</div>
+  </div>
+
+  <!-- 公式块 -->
+  <details>
+    <summary>想看公式 / 超参 / Error Simulator 细节? 点开 ↓</summary>
+    <p><b>1. Fission group advantage</b> (GRPO 本体没动, 只是归一化范围变了):</p>
+    $$ \hat{A}^{\text{fis}}_{i,t} \;=\; \frac{R(\tau_i)\,-\,\mathrm{mean}\big(\{R(\tau_j)\}_{j=1}^{G'}\big)}{\mathrm{std}\big(\{R(\tau_j)\}_{j=1}^{G'}\big)},\quad G'=G=8 $$
+    <p>怎么读: τ_i 是从 corrective context x_corr 出发的第 i 条 recovery rollout, mean/std 只在这 G'=8 条 fission group 内算, 完全不掺 Stage 1 那批原始失败。哪怕这 8 条绝对分都不高, 只要相互之间有差距, z-score 就出非零 advantage, 模型就学到"哪种修法比哪种修法好"。</p>
+    <p style="margin-top:10px"><b>2. Reward 形状</b> (三项加权 + 退火, R ∈ [0,2]):</p>
+    $$ R(\tau,t) \;=\; \tfrac{1}{3}\big[\,w_{\text{fmt}}(t)\,R_{\text{fmt}} + w_{\text{corr}}(t)\,R_{\text{corr}} + R_{\text{len}}\,\big] $$
+    <p>怎么读: R_fmt ∈ {0,1} 查 schema 合法性; R_corr = 0.5·𝟙(N=N*) + 0.5·F1(matched args), 一半奖励"调用次数对上 ground truth", 一半奖励"参数集合 F1"; R_len 是 piecewise Gaussian 抑制 retry loop 把 context 写爆。权重退火: w_fmt 沿训练步 <b>3 → 2</b>, w_corr 反向 <b>2 → 3</b> — 早期管格式, 后期管语义。</p>
+    <p style="margin-top:10px"><b>3. 关键超参</b>: G' = G = 8 (沿用 GRPO 标配); Trigger interval N ≤ 6 稳定 — 更大 buffer 就 off-policy 了, 在 Miss-Param / Long-Context 上掉点; δ_corr = 1, 即只要不是满分就算"语义错", 全部纳入 fission, 避免"差一点点"被当正例污染。</p>
+    <p style="margin-top:10px;color:#666;font-size:12.5px"><b>4. Error Simulator 训练</b>: ~2K 三元组 (system+tools, 历史对话, ground-truth call τ_gt, 失败 call τ_err, Claude Sonnet 4 写的老师诊断), Qwen3-32B 上做 SFT。硬约束"不准复读 τ_gt 的值" — 训练数据本身就只保留满足这条约束的样本; 人评 2 个标注员 κ=0.71, 96% 严格不泄露。跨域质量 (Claude judge 1-5 分): 错误定位 4.21→3.97, 可执行性 4.26→4.12, 不泄露 4.88→4.83 — 跨域略掉但没崩。数据 pipeline: 从 ~2k 候选 query 经"双 LLM 过滤"挑出 630 条高质量训练 query。</p>
+  </details>
+</div>
+
+<h2 class="sec">横向对照</h2>
+<table>
+<tr><th>方法</th><th>信用粒度</th><th>user in rollout?</th><th>合成 env?</th><th>关键奖励工程</th><th>主结果</th></tr>
+<tr><td><strong>TARL</strong></td><td>turn-level → 轨迹标量</td><td>否 (脚本)</td><td>否</td><td>judge ±1 → 10:5:cap5 聚合</td><td>τ-Retail Qwen3-8B +6.1, Omni 语音 +22.6</td></tr>
+<tr><td><strong>MT-GRPO + IRC</strong></td><td>turn-level (经校准)</td><td>否</td><td>否</td><td>PointBiserial 校准 + GTPO 折现</td><td>Tau airline 30B-A3B +11.5pp 逼近 Claude</td></tr>
+<tr><td><strong>MUA-RL</strong></td><td>outcome (DB hash)</td><td><strong>是 (GPT-4o)</strong></td><td>部分</td><td>极简 0/1, 砍掉所有 shaping</td><td>32B 反超 235B; Airline +21.9</td></tr>
+<tr><td><strong>CodeGym</strong></td><td>outcome (unit-test)</td><td>否</td><td><strong>是 (13k envs)</strong></td><td>pass@K 过滤 + trial-then-overwrite</td><td>6 OOD avg +7.3, ALFWorld +14.0</td></tr>
+<tr><td><strong>Fission-GRPO</strong></td><td>子轨迹 (fission group)</td><td>否</td><td>否</td><td>Error Simulator 诊断回灌 + 退火</td><td>Qwen3-8B BFCL +18.0, 1.7B +12.58</td></tr>
+</table>
+<h2 class="sec">开放问题 & 发展趋势</h2>
+<p><strong>1. 三件事的合体仍未出现。</strong> 没有任何一篇兼顾「turn-level reward + user-in-loop + 合成环境」三件事 — 把 TARL 的 judge、MUA-RL 的 user、CodeGym 的 env 拼在一起几乎一定有 paper。</p>
+<p><strong>2. 负样本利用还很初级。</strong> 只有 Fission-GRPO 系统用了失败轨迹; <code>user-in-loop × fission</code>(让 user simulator 在失败点变换意图)几乎无人做过。</p>
+<p><strong>3. Reward 校准还停在线性层。</strong> IRC 用 PointBiserial 是「线性相关性」检查; 非线性 / 条件相关性(某些 reward 只在特定 task family 上才正向)尚未被刻画。</p>
+<p><strong>4. Trajectory-level scalar 复辟。</strong> TARL 反证 per-turn advantage 注入不稳; IRC 用 hybrid 把 outcome anchor 留下; Fission 在 fission group 内独立归一化 — 三者隐含同一个原则: <strong>outcome reward 永远是地基,dense signal 是装饰、不是承重墙。</strong></p>
+<p><strong>5. 「Setup &gt; Algorithm」共识形成。</strong> MUA-RL 的 32B&gt;235B、CodeGym 不动算法只动环境就拿 +7.3 — 五篇里的强 baseline 都不是新算法、而是新 setup。GRPO 已经够好,差在喂给它的数据。</p>
+<div class="note"><strong>Limitations:</strong> (1) 5 篇全部在 τ-bench / BFCL 这一窄 benchmark 上验证,真实生产 agent(长尾意图、跨语种、GUI 操作)效果未知; (2) 合成数据(CodeGym) / 模拟 user(MUA-RL) / Error Simulator(Fission) 各自带「拟真度」债务,但都没系统衡量过这种 sim-to-real gap; (3) 5 篇 reward 设计的可组合性没有 head-to-head 对照 — 把 TARL 的 judge + IRC 的校准 + Fission 的裂变叠起来会不会冲突,仍是空白。</div>
+</div>
+</body>
+</html>
