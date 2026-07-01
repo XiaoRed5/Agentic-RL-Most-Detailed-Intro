@@ -1,0 +1,1476 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>如何在 5 万张国产芯片训练出万亿参数模型？</title><style>
+/* === XHS 1080px canvas === */
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:#f3f3f3}
+body{font-family:'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC',sans-serif;color:#222;font-size:21px;line-height:1.65}
+.xhs-canvas{width:1080px;margin:0 auto;background:#fff;padding:36px 40px 72px}
+code{font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:.9em;background:#f3f4f6;padding:1px 6px;border-radius:4px;color:#d04040}
+
+/* KaTeX */
+.katex-display{margin:14px 0!important;padding:14px 18px;background:#faf9ff;border-left:4px solid #8b5cf6;border-radius:0 8px 8px 0;overflow-x:auto;font-size:22px}
+.katex-display>.katex{font-size:1.0em}
+.katex{font-size:1.0em;white-space:nowrap;display:inline-block}
+.katex-mathml{position:absolute!important;clip:rect(1px,1px,1px,1px)!important;padding:0!important;border:0!important;height:1px!important;width:1px!important;overflow:hidden!important}
+.katex-html{white-space:nowrap}
+
+/* Headings */
+h1{font-size:42px;font-weight:800;letter-spacing:-0.5px;line-height:1.32;color:#111;margin:0 0 18px}
+.subtitle{color:#666;font-size:22px;margin:6px 0 22px}
+h2.sec{display:inline-block;background:#1a3a8a;color:#fff;font-size:28px;font-weight:800;padding:8px 20px;border-radius:10px;margin:40px 0 16px}
+h3.subsec{display:inline-block;background:#ffe0b5;color:#7a4a00;font-size:24px;font-weight:800;padding:6px 18px;border-radius:8px;margin:24px 0 12px}
+p{margin:6px 0;text-align:left;hyphens:none;word-break:normal;overflow-wrap:break-word}
+strong{font-weight:800;color:#1a3a8a}
+
+/* Paper card (XHS) */
+.paper{background:#fff;border:1px solid #e6e6e6;border-radius:16px;padding:24px 26px;margin:24px 0;box-shadow:0 2px 14px rgba(0,0,0,.05)}
+.paper h4{font-size:30px;font-weight:800;color:#000;line-height:1.35;margin-bottom:10px;letter-spacing:-0.3px}
+.paper h4 a{color:#000;text-decoration:none}
+.paper p{font-size:21px;color:#333;line-height:1.65;margin:6px 0}
+.paper p.body{color:#222}
+.tag{display:inline-block;font-size:17px;background:#f1fbef;border:1px solid #bfe8b8;color:#1e6b1e;padding:2px 10px;border-radius:6px;margin:2px 4px 2px 0;font-weight:700;font-family:'PingFang SC',sans-serif;vertical-align:middle}
+.tag-star{background:#ffe9b8;border-color:#e0a040;color:#7a4a00}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;margin:20px 0;font-size:20px;background:#fff;border-radius:10px;overflow:hidden}
+th{background:#1a3a8a;color:#fff;padding:12px 14px;text-align:left;font-weight:800;font-size:18px;letter-spacing:.02em}
+td{border:1px solid #e6e6e6;padding:10px 14px;line-height:1.55;color:#333}
+tr:last-child td{border-bottom:1px solid #e6e6e6}
+
+/* Note callout (类比块) */
+.note{background:#fff5e8;border:1px solid #efd5ac;border-radius:12px;padding:14px 18px;margin:14px 0;font-size:21px;line-height:1.6;color:#5a3a18}
+.note strong{font-weight:800;color:#7a4a00}
+
+/* paper-grid: 标签 + 正文双列 */
+.paper-grid p.body{display:grid;grid-template-columns:96px 1fr;gap:18px;align-items:start;margin:12px 0;font-size:21px}
+.paper-grid p.body > strong:first-child{color:#1a3a8a;font-weight:800;font-size:19px;text-align:left;line-height:1.7;padding-top:2px}
+.paper-grid p.body > strong:first-child + span{display:block;color:#222}
+.paper-grid p.body.p-cont{display:block;margin-left:114px;color:#555;font-size:20px;font-style:italic;background:#f7f7f7;border-left:3px solid #999;padding:8px 14px;border-radius:0 6px 6px 0}
+.paper-grid p.body.punchline{display:block;background:#fffaf0;border-left:4px solid #e0a040;color:#5a4a18;font-size:22px;font-weight:700;font-style:normal;padding:12px 16px;border-radius:0 10px 10px 0;margin:8px 0 14px}
+.paper-grid .katex-display{margin:10px 0 10px 114px!important}
+.punchline{background:#fffaf0;border-left:4px solid #e0a040;color:#5a4a18;font-size:22px;font-weight:700;padding:12px 16px;border-radius:0 10px 10px 0;display:block;margin:8px 0 14px}
+
+/* === visualisations (内嵌 viz 块, 字号同步放大) === */
+.pipeline-map{margin:20px 0 22px;border:1px solid #e6e6e6;background:#fff;border-radius:12px;overflow:hidden}
+.agentic-credit{display:grid;gap:0;border-bottom:1px solid #e6e6e6}
+.credit-section{padding:14px 16px;border-bottom:1px solid #e6e6e6}
+.credit-section:last-child{border-bottom:none}
+.credit-section-title{font-weight:800;color:#1a3a8a;font-size:19px;margin-bottom:10px}
+.traj-list{display:grid;gap:9px}
+.traj-row{display:grid;grid-template-columns:52px 1fr auto;gap:10px;align-items:center;font-size:17px;line-height:1.5}
+.traj-id{font-family:'SF Mono',monospace;color:#555;font-weight:700}
+.traj-path{display:flex;flex-wrap:wrap;align-items:center;gap:6px}
+.traj-token{background:#fff;border:1px solid #d8d8d8;padding:4px 9px;border-radius:5px}
+.traj-token.decision{border-color:#1a3a8a;color:#1a3a8a;font-weight:700}
+.traj-token.obs{border-style:dashed;color:#666;background:#fafafa}
+.traj-token.bad{border-color:#d04040;color:#9f2e2e;background:#ffe5e5}
+.traj-arrow{color:#999}
+.traj-reward{font-family:'SF Mono',monospace;text-align:center;border:1px solid #d8d8d8;padding:4px 10px;background:#fafafa;color:#555;white-space:nowrap;border-radius:5px}
+.traj-reward.good{border-color:#1e6b1e;color:#1e6b1e;font-weight:700;background:#f1fbef}
+.traj-reward.fail{border-color:#d04040;color:#9f2e2e;background:#ffe5e5}
+.credit-legend{margin-top:9px;color:#666;font-size:16px;line-height:1.5}
+
+.broadcast-grid{display:grid;grid-template-columns:1.1fr .9fr;gap:12px;align-items:stretch}
+.broadcast-card{border:1px solid #d8d8d8;background:#fff;padding:12px 14px;font-size:18px;line-height:1.55;text-align:left;border-radius:8px}
+.broadcast-card strong{display:block;color:#1a3a8a;font-size:20px;margin-bottom:6px}
+.broadcast-card.bad{background:#ffe5e5;border-color:#e2b8b8;color:#7a2727}
+.broadcast-card.bad strong{color:#9f2e2e}
+.broadcast-line{display:flex;flex-wrap:wrap;align-items:center;gap:7px;margin-top:7px}
+.broadcast-pill{border:1px solid #d8d8d8;background:#fff;padding:4px 9px;font-family:'SF Mono',monospace;font-size:17px;color:#444;border-radius:5px}
+.broadcast-pill.hot{border-color:#1a3a8a;color:#1a3a8a;font-weight:700;background:#eef0fb}
+
+.credit-map{display:grid;grid-template-columns:120px 28px 1fr;gap:10px;align-items:center;margin-bottom:11px}
+.credit-map-from,.credit-map-to{border:1px solid #d8d8d8;background:#fafafa;padding:9px 11px;font-size:18px;line-height:1.5;text-align:left;border-radius:6px}
+.credit-map-from{font-family:'SF Mono',monospace;text-align:center;color:#1a3a8a;font-weight:700;background:#eef0fb}
+.credit-map-arrow{text-align:center;color:#999;font-weight:700;font-size:22px}
+
+.parallel-branch-map{display:grid;grid-template-columns:140px minmax(0,1fr);gap:12px;align-items:stretch;margin:14px 0 16px 114px}
+.parallel-agent{border:1px solid #d8d8d8;background:#fafafa;display:flex;flex-direction:column;align-items:center;justify-content:center;min-height:120px;padding:14px;text-align:center;font-weight:700;line-height:1.4;border-radius:8px}
+.parallel-agent span{display:block;margin-top:6px;color:#333;font-size:17px}
+.parallel-branches{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:10px}
+.parallel-branch{border:1px solid #d8d8d8;background:#fff;display:flex;flex-direction:column;justify-content:center;gap:5px;min-height:120px;padding:12px 13px;font-size:17px;line-height:1.5;text-align:left;border-radius:8px}
+.parallel-branch strong{font-size:1.1em;color:#1a3a8a}
+.parallel-branch code{background:transparent;padding:0;color:#333;font-size:.95em}
+.parallel-branch em{font-style:normal;color:#555}
+.parallel-branch.bad{border-color:#e2b8b8;background:#ffe5e5;color:#7a2727}
+.parallel-branch.bad strong,.parallel-branch.bad em{color:#9f2e2e}
+.parallel-branch.bad em{font-weight:700}
+
+.step-credit-grid{display:grid;grid-template-columns:repeat(5,1fr);gap:9px}
+.step-credit{border:1px solid #d8d8d8;border-top:4px solid #1a3a8a;background:#fff;padding:10px;min-height:90px;border-radius:8px}
+.step-credit.neg{border-top-color:#d04040}
+.step-credit.mask{border-top-style:dashed;color:#666;background:#fafafa}
+.step-credit .sym{display:block;font-family:'SF Mono',monospace;color:#777;font-size:16px;margin-bottom:4px}
+.step-credit strong{display:block;color:#1a3a8a;font-family:'SF Mono',monospace;font-size:18px;margin-bottom:4px}
+.step-credit small{display:block;color:#555;font-size:16px;line-height:1.4}
+.credit-update-note{margin-top:10px;color:#555;font-size:17px;line-height:1.55;text-align:left}
+
+.interface-map{display:grid;gap:10px;margin:14px 0 24px;background:transparent}
+.interface-row{display:grid;grid-template-columns:160px 1fr 1fr minmax(140px,auto);gap:10px;align-items:stretch;min-height:90px;padding:10px;border:1px solid #e6e6e6;background:#fafafa;border-radius:8px}
+.interface-head{display:flex;flex-direction:column;justify-content:center;padding:11px 12px;border-left:5px solid #1a3a8a;background:#fff;border-radius:0 6px 6px 0}
+.interface-num{display:block;font-family:'SF Mono',monospace;color:#777;font-size:16px;margin-bottom:4px}
+.interface-title{display:block;color:#1a3a8a;font-weight:800;font-size:19px;line-height:1.4}
+.interface-cell{padding:11px 12px;border:1px solid #e6e6e6;background:#fff;font-size:17px;line-height:1.55;text-align:left;color:#444;border-radius:6px}
+.interface-label{display:block;color:#999;font-size:14px;font-weight:800;letter-spacing:.04em;text-transform:uppercase;margin-bottom:4px}
+.interface-paper{display:flex;flex-direction:column;align-items:center;justify-content:center;border:1px solid #e6e6e6;padding:11px 12px;background:#fff;color:#333;font-family:'SF Mono',monospace;font-size:16px;line-height:1.5;text-align:center;white-space:nowrap;border-radius:6px}
+.interface-paper .interface-label{text-align:center;margin-bottom:6px;font-family:'PingFang SC',sans-serif}
+.interface-row[data-layer="rollout"] .interface-head{border-left-color:#666}
+.interface-row[data-layer="credit"] .interface-head{border-left-color:#3d5a80}
+.interface-row[data-layer="reward"] .interface-head{border-left-color:#6b705c}
+.interface-row[data-layer="skill"] .interface-head{border-left-color:#7d5a50}
+.interface-row[data-layer="loss"] .interface-head{border-left-color:#8a4f7d}
+
+@media print{body{font-size:12pt}}
+
+.subtitle{color:#666;font-size:20px;margin:6px 0 18px;font-style:normal;font-weight:500}
+.mg-section{margin:22px 0 18px}
+.mg-section-tag{display:inline-block;background:#1a3a8a;color:#fff;font-size:15px;font-weight:800;padding:5px 14px;border-radius:6px;margin-bottom:10px;letter-spacing:.03em}
+.bad{color:#9f2e2e;font-weight:700}
+.b1-arch{display:grid;grid-template-columns:1fr 48px 1fr 48px 1fr;gap:8px;align-items:stretch;margin:10px 0 14px}
+.b1-arch .node{background:#fff;border:1.5px solid #d8d8d8;border-radius:10px;padding:14px 14px;display:flex;flex-direction:column;gap:6px;min-height:120px;justify-content:center}
+.b1-arch .node .dt{font-size:18px;font-weight:800;color:#1a3a8a;line-height:1.35}
+.b1-arch .node .dn{font-size:16px;color:#444;line-height:1.55}
+.b1-arch .node.user{border-left:5px solid #3a7d3a}
+.b1-arch .node.agent{border-left:5px solid #c0392b;background:#fff5f5}
+.b1-arch .node.tools{border-left:5px solid #1a3a5c}
+.b1-arch .conn{display:flex;flex-direction:column;align-items:center;justify-content:center;font-family:'Inter',sans-serif;font-size:14px;color:#666;font-weight:700;text-align:center}
+.b1-arch .conn .arr{font-size:22px;color:#1a3a5c;line-height:1.2;display:block}
+.b1-stats{display:grid;grid-template-columns:repeat(auto-fit,minmax(180px,1fr));gap:10px;margin:10px 0 12px}
+.b1-stat{background:#fff;border:1.5px solid #d8d8d8;border-radius:10px;padding:12px 14px;font-size:15px;color:#2c2c2c;line-height:1.55}
+.b1-stat .dt{font-size:12px;letter-spacing:.1em;color:#1a3a5c;font-weight:800;margin-bottom:4px;text-transform:uppercase}
+.b1-stat .dn{font-size:22px;font-weight:800;color:#1a3a5c;line-height:1.15}
+.b3-grid{display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:8px 0}
+.b3-card{background:#fff;border:1.5px solid #1a3a8a;border-radius:10px;padding:14px 16px;display:flex;flex-direction:column;gap:8px}
+.b3-pain{background:#fff5f5;border-left:4px solid #c0392b;border-radius:0 6px 6px 0;padding:6px 10px;font-size:13px;color:#7a2727;font-weight:700;letter-spacing:.04em}
+.b3-name{font-size:18px;font-weight:800;color:#1a3a8a;line-height:1.25;margin-top:2px}
+.b3-cure{font-size:15px;color:#2c2c2c;line-height:1.55;flex:1}
+.b3-win{font-size:13.5px;color:#1e6b1e;font-weight:800;border-top:1px dashed #d8d8d8;padding-top:8px;margin-top:auto;line-height:1.4}
+.mg-pain{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0 12px}
+.mg-pain-box{background:#fff;border:1.5px solid #1a3a8a;border-radius:8px;padding:14px 16px;font-size:16px;color:#2c2c2c;line-height:1.6}
+.mg-pain-box.bad{background:#fff5f5;border-color:#c0392b;color:#7a2727}
+.mg-pain-box strong{color:#1a3a8a;font-weight:800}
+.mg-pain-box.bad strong{color:#c0392b}
+.mg-pain-box b{color:#1a3a8a;font-weight:800}
+.mg-pain-box.bad b{color:#c0392b}
+.mg-table{width:100%;border-collapse:collapse;margin:10px 0;font-size:15px;background:#fff;border:1.5px solid #1a3a8a;border-radius:8px;overflow:hidden}
+.mg-table th{background:#1a3a8a;color:#fff;padding:9px 12px;text-align:left;font-weight:800;font-size:14px;letter-spacing:.03em}
+.mg-table td{padding:9px 12px;border-top:1px solid #e6e6e6;line-height:1.55;color:#2c2c2c}
+.mg-table td:first-child{font-weight:700;color:#1a3a8a}
+.interface-map{display:grid;gap:10px;margin:10px 0 14px}
+.interface-row{display:grid;grid-template-columns:1fr 1fr 1fr 1.2fr;gap:10px;align-items:stretch;padding:10px;border:1px solid #e6e6e6;background:#fafafa;border-radius:8px}
+.interface-row > div{padding:11px 12px;border:1px solid #e6e6e6;background:#fff;border-radius:6px;font-size:14.5px;line-height:1.55;color:#333}
+.interface-row > div strong{display:block;color:#1a3a8a;font-size:16px;margin-bottom:4px;font-weight:800}
+.paper-grid .punchline{margin:8px 0 14px}
+.paper-grid .note{margin:10px 0 14px}
+.paper-grid p{margin:8px 0;line-height:1.65;font-size:18px;color:#222}
+.paper-grid .mg-section p{margin:6px 0}
+.paper-grid h4 .tag,.paper-grid h4 .tag-star{font-size:14px;font-weight:700;vertical-align:middle}
+.subtitle b{color:#1a3a8a}
+@media (max-width:780px){
+  .b1-arch{grid-template-columns:1fr;gap:8px}
+  .b1-arch .conn{transform:rotate(90deg);height:30px}
+  .mg-pain,.interface-row,.b3-grid{grid-template-columns:1fr}
+}
+
+</style></head><body><div class="xhs-canvas">
+  <div style="text-align:center;margin-bottom:24px;padding-top:12px">
+    <h1 style="margin-bottom:6px">如何在 <span style="color:#c0392b">5 万张国产芯片</span><br/>训练出 <span style="color:#c0392b">1.6T</span> 万亿参数模型？</h1>
+    <div style="color:#666;font-size:18px;margin-top:4px">LongCat-2.0 技术拆解 · 1.6T 总参 / 33B–56B 动态激活 / 1M 上下文 / 国产 ASIC 训练</div>
+  </div>
+<div class="paper paper-grid summary-first-page" data-cut-protect>
+  <div class="mg-section">
+    <div style="background:linear-gradient(135deg,#fff7ed 0%,#fff 42%,#eef4ff 100%);border:2px solid #e0a040;border-radius:18px;padding:18px 20px;margin:10px 0 16px;box-shadow:0 10px 24px rgba(224,160,64,.12)">
+      <div style="display:grid;grid-template-columns:1.02fr .98fr;gap:18px;align-items:center;margin-bottom:16px">
+        <div>
+          <div style="font-size:30px;line-height:1.35;font-weight:900;color:#111;letter-spacing:-.4px">不是“又一个大模型”，而是一次 <span style="color:#c0392b">国产万亿模型系统工程</span> 跑通。</div>
+          <div style="margin-top:10px;font-size:18px;line-height:1.6;color:#4a4a4a">一套系统同时证明：<b>国产 5 万卡能训</b>、<b>1M 长上下文能用</b>、<b>MoE 能按 token 动态激活</b>、<b>真实应用调用量能打</b>。</div>
+        </div>
+        <div style="background:#fff;border:1.5px solid #d7e2f2;border-radius:14px;padding:10px;box-shadow:0 6px 18px rgba(26,58,138,.06)">
+          <img src="效果.png" alt="LongCat-2.0 效果概览" style="display:block;width:100%;height:auto;border-radius:10px;background:#fff"/>
+        </div>
+      </div>
+
+      <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:0">
+        <div style="background:#fff;border:2px solid #c0392b;border-radius:14px;padding:16px 16px 14px;min-height:178px;position:relative;overflow:hidden">
+          <div style="position:absolute;right:12px;top:8px;font-size:42px;opacity:.11">芯</div>
+          <div style="font-size:15px;color:#c0392b;font-weight:900;letter-spacing:.08em">国产算力</div>
+          <div style="display:flex;align-items:baseline;gap:12px;margin:6px 0;flex-wrap:wrap">
+            <span style="font-size:34px;line-height:1.15;font-weight:900;color:#c0392b">5 万+ 卡</span>
+            <span style="font-size:24px;line-height:1.15;font-weight:900;color:#111">1.6T MoE</span>
+          </div>
+          <div style="font-size:16px;line-height:1.55;color:#333">业界首次在五万张国产卡上完成万亿参数模型全流程训练和推理。</div>
+          <div style="margin-top:8px;background:#fff5f5;color:#9f2e2e;border-radius:8px;padding:6px 8px;font-size:14px;font-weight:800">稳态日吞吐 &gt; 1T tokens</div>
+        </div>
+
+        <div style="background:#fff;border:2px solid #1a3a8a;border-radius:14px;padding:16px 16px 14px;min-height:178px;position:relative;overflow:hidden">
+          <div style="position:absolute;right:12px;top:8px;font-size:42px;opacity:.10">文</div>
+          <div style="font-size:15px;color:#1a3a8a;font-weight:900;letter-spacing:.08em">长上下文</div>
+          <div style="font-size:34px;line-height:1.15;font-weight:900;color:#1a3a8a;margin:6px 0">1M token</div>
+          <div style="font-size:16px;line-height:1.55;color:#333">原生支持百万上下文，采用 <b>LSA 稀疏注意力</b>，长文本定位更精准。</div>
+          <div style="margin-top:8px;background:#eef0fb;color:#1a3a8a;border-radius:8px;padding:6px 8px;font-size:14px;font-weight:800">能“看见”整个项目代码</div>
+        </div>
+
+        <div style="background:#fff;border:2px solid #7a4a00;border-radius:14px;padding:16px 16px 14px;min-height:178px;position:relative;overflow:hidden">
+          <div style="position:absolute;right:12px;top:8px;font-size:42px;opacity:.10">构</div>
+          <div style="font-size:15px;color:#7a4a00;font-weight:900;letter-spacing:.08em">架构创新</div>
+          <div style="font-size:26px;line-height:1.2;font-weight:900;color:#7a4a00;margin:6px 0">ScMoE + 零计算专家 + MOPD</div>
+          <div style="font-size:16px;line-height:1.55;color:#333">token 级动态激活，实际只激活 <b>33B–56B</b> 参数；MOPD 融合三组专家。</div>
+          <div style="margin-top:8px;background:#fffaf0;color:#7a4a00;border-radius:8px;padding:6px 8px;font-size:14px;font-weight:800">Agent × Reasoning × Interaction → 编程 / 推理 / 交互兼顾</div>
+        </div>
+
+        <div style="background:#fff;border:2px solid #1e6b1e;border-radius:14px;padding:16px 16px 14px;min-height:178px;position:relative;overflow:hidden">
+          <div style="position:absolute;right:12px;top:8px;font-size:42px;opacity:.10">用</div>
+          <div style="font-size:15px;color:#1e6b1e;font-weight:900;letter-spacing:.08em">广泛应用</div>
+          <div style="font-size:34px;line-height:1.15;font-weight:900;color:#1e6b1e;margin:6px 0">OpenRouter Top 3</div>
+          <div style="font-size:16px;line-height:1.55;color:#333">OpenRouter 全球调用量前三；月调用量在 Hermes、Claude Code、OpenClaw 分列全球第一、第二、第三。</div>
+          <div style="display:flex;gap:6px;margin-top:8px;flex-wrap:wrap">
+            <span style="background:#f1fbef;color:#1e6b1e;border-radius:999px;padding:4px 8px;font-size:13px;font-weight:800">Hermes #1</span>
+            <span style="background:#f1fbef;color:#1e6b1e;border-radius:999px;padding:4px 8px;font-size:13px;font-weight:800">Claude Code #2</span>
+            <span style="background:#f1fbef;color:#1e6b1e;border-radius:999px;padding:4px 8px;font-size:13px;font-weight:800">OpenClaw #3</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+
+<div class="paper paper-grid">
+  <h4>架构拆解 <span class="tag">Architecture</span> <span class="tag-star">LSA + N-gram + KVP</span></h4>
+  <div class="subtitle">稀疏注意力如何撑起 1M 上下文</div>
+
+  <div class="mg-section">
+    <span class="mg-section-tag">① LSA：从“每个 Query 全量扫”改成“先索引、再稀疏读”</span>
+
+    <div data-cut-protect style="margin:12px 0 14px;background:linear-gradient(180deg,#f8fbff 0%,#ffffff 100%);border:1.5px solid #d7e2f2;border-radius:14px;padding:16px 16px 12px;box-shadow:0 6px 18px rgba(26,58,138,.06)">
+      <img src="LSA.png" alt="LongCat Sparse Attention 架构图：Query 经过轻量索引器选择 Top-k Key，并保留 Sink tokens 稳定稀疏注意力" style="display:block;width:100%;height:auto;border-radius:10px;background:#fff"/>
+      <div style="margin-top:10px;text-align:center;font-size:13px;color:#667085;line-height:1.5">图：LSA 在注意力前增加轻量 Indexer，只取少量相关 Key，并保留固定 Sink tokens 稳定分布。</div>
+    </div>
+
+    <div class="punchline">一句话：LSA 不是让 1M token 全互看，而是每个 <code>q_t</code> 先查“索引”，只读 Top-k 相关 key + 少量 sink token，把注意力计算从稠密全扫压到可控稀疏读。</div>
+
+    <div style="display:grid;grid-template-columns:1.05fr .95fr;gap:12px;margin:12px 0 14px">
+      <div class="mg-pain-box bad"><b>DSA 的瓶颈</b><br/>Lightning Indexer 给每个 query 挑 top-k key，但打分输出不连续，且评分本身接近二次开销，索引器会反过来拖慢推理。</div>
+      <div class="mg-pain-box"><b>LSA 的改法</b><br/>把索引器拆成三类可开关优化：短任务少开，超长上下文全开；Sink tokens 负责在稀疏 attention 下兜住数值稳定性。</div>
+    </div>
+
+    <div style="display:grid;grid-template-columns:repeat(3,1fr);gap:10px;margin:10px 0 12px">
+      <div style="background:#eef0fb;border:1.5px solid #1a3a8a;border-radius:10px;padding:12px 14px">
+        <div style="font-family:Inter,sans-serif;font-size:13px;color:#888;font-weight:700;letter-spacing:.08em;margin-bottom:4px">SI</div>
+        <div style="font-size:15px;font-weight:800;color:#1a3a8a;margin-bottom:4px">流感知索引</div>
+        <div style="font-size:13px;color:#444;line-height:1.55">把零散 HBM 访问重排成<b>连续顺序读</b>，让 GPU/ASIC 更容易合并搬运。</div>
+      </div>
+      <div style="background:#eef0fb;border:1.5px solid #1a3a8a;border-radius:10px;padding:12px 14px">
+        <div style="font-family:Inter,sans-serif;font-size:13px;color:#888;font-weight:700;letter-spacing:.08em;margin-bottom:4px">CLI</div>
+        <div style="font-size:15px;font-weight:800;color:#1a3a8a;margin-bottom:4px">跨层索引</div>
+        <div style="font-size:13px;color:#444;line-height:1.55">相邻层关注 token 高度重合，做到<b>一次打分、多层复用</b>。</div>
+      </div>
+      <div style="background:#eef0fb;border:1.5px solid #1a3a8a;border-radius:10px;padding:12px 14px">
+        <div style="font-family:Inter,sans-serif;font-size:13px;color:#888;font-weight:700;letter-spacing:.08em;margin-bottom:4px">HI</div>
+        <div style="font-size:15px;font-weight:800;color:#1a3a8a;margin-bottom:4px">层级化索引</div>
+        <div style="font-size:13px;color:#444;line-height:1.55">先粗筛 block，再细选 token，避免在百万上下文里逐 token 盲扫。</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mg-section">
+    <span class="mg-section-tag">② N-gram Embedding [另一条扩参轴 · n=5 / 135B 参数]</span>
+    <p><b>为什么换轴:</b> MoE 稀疏度已经做到 <b>97%</b>（每次只激活 ~3% 专家），过了甜点区，再加专家边际收益就掉下来。<b>N-gram Embedding</b> 是另一条路: <b>n-gram size = 5</b>，单这一项就<b>砸进 135B 参数</b>，embedding 表大了约 <b>2 个数量级</b>（×100）。它和 MoE 各走各的稀疏维度，<b>不打架</b>。</p>
+
+    <div class="mg-pain" style="margin:10px 0">
+      <div class="mg-pain-box" style="background:#eef9f0;border-color:#2e6b2e;color:#1a4a1a">
+        <strong style="color:#2e6b2e">✓ 为什么选 N-gram</strong><br/>
+        同样 <b>135B 参数</b>，砸到 N-gram 上回报远高于继续堆专家。顺手副作用: 大 batch 解码时<b>显存 I/O 也降了</b>，解码更快。
+      </div>
+      <div class="mg-pain-box bad">
+        <strong>⚠ 但不能超 50%</strong><br/>
+        N-gram 占总参数比例一旦过半，优势就消失。LongCat-2.0 把它<b>控制在 10% 以内</b>，作为补充而非主力——有甜点区的工具，不是越多越好。
+      </div>
+    </div>
+
+    <div data-cut-protect style="background:#fafafa;border:1px solid #e0e0e0;border-radius:10px;padding:18px 14px;margin:14px 0">
+      <div style="text-align:center;font-size:13px;color:#888;letter-spacing:.1em;font-weight:700;margin-bottom:14px">普通 TOKEN EMBED &nbsp;vs&nbsp; N-GRAM EMBED · 同样参数预算更多语义槽</div>
+      <svg viewBox="0 0 720 300" style="width:100%;height:auto;display:block">
+        <defs>
+          <marker id="ngarr" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto">
+            <path d="M0 0 L7 4 L0 8 z" fill="#1a3a5c"/>
+          </marker>
+        </defs>
+
+        <!-- 输入 token 串 -->
+        <text x="360" y="22" text-anchor="middle" font-family="PingFang SC" font-size="13" fill="#666">输入序列: <tspan font-family="SF Mono,monospace" fill="#1a3a5c" font-weight="700">"美 团 出 品"</tspan></text>
+
+        <!-- 左: 普通 token-level -->
+        <text x="160" y="55" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" font-weight="800" fill="#7a2727">普通 token embedding</text>
+        <text x="160" y="73" text-anchor="middle" font-family="PingFang SC" font-size="11" fill="#7a2727">每个字一个向量, 组合靠上层学</text>
+        <g font-family="PingFang SC" font-size="14" fill="#333">
+          <rect x="30" y="90" width="260" height="36" rx="6" fill="#fff" stroke="#c9c9c9"/>
+          <text x="48" y="113" font-family="SF Mono,monospace">"美"</text>
+          <text x="105" y="113" fill="#999">→</text>
+          <text x="135" y="113" font-family="SF Mono,monospace">e₁</text>
+          <text x="178" y="113" fill="#999" font-size="11">vec[d_h]</text>
+
+          <rect x="30" y="132" width="260" height="36" rx="6" fill="#fff" stroke="#c9c9c9"/>
+          <text x="48" y="155" font-family="SF Mono,monospace">"团"</text>
+          <text x="105" y="155" fill="#999">→</text>
+          <text x="135" y="155" font-family="SF Mono,monospace">e₂</text>
+          <text x="178" y="155" fill="#999" font-size="11">vec[d_h]</text>
+
+          <rect x="30" y="174" width="260" height="36" rx="6" fill="#fff" stroke="#c9c9c9"/>
+          <text x="48" y="197" font-family="SF Mono,monospace">"出"</text>
+          <text x="105" y="197" fill="#999">→</text>
+          <text x="135" y="197" font-family="SF Mono,monospace">e₃</text>
+          <text x="178" y="197" fill="#999" font-size="11">vec[d_h]</text>
+
+          <rect x="30" y="216" width="260" height="36" rx="6" fill="#fff" stroke="#c9c9c9"/>
+          <text x="48" y="239" font-family="SF Mono,monospace">"品"</text>
+          <text x="105" y="239" fill="#999">→</text>
+          <text x="135" y="239" font-family="SF Mono,monospace">e₄</text>
+          <text x="178" y="239" fill="#999" font-size="11">vec[d_h]</text>
+        </g>
+        <text x="160" y="275" text-anchor="middle" font-family="PingFang SC" font-size="12" fill="#7a2727">词表 V ≈ <tspan font-family="Inter">10⁵</tspan> · 一字一槽</text>
+
+        <!-- 中: 箭头 -->
+        <g transform="translate(310,160)">
+          <line x1="0" y1="0" x2="60" y2="0" stroke="#1a3a5c" stroke-width="2.5" marker-end="url(#ngarr)"/>
+          <text x="30" y="-12" text-anchor="middle" font-family="PingFang SC" font-size="11" fill="#1a3a5c" font-weight="700">补一张</text>
+          <text x="30" y="20" text-anchor="middle" font-family="PingFang SC" font-size="11" fill="#1a3a5c" font-weight="700">N-gram 表</text>
+        </g>
+
+        <!-- 右: N-gram -->
+        <text x="540" y="55" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" font-weight="800" fill="#1a3a5c">N-gram embedding (n=2~4 示意)</text>
+        <text x="540" y="73" text-anchor="middle" font-family="PingFang SC" font-size="11" fill="#1a3a5c">把"连续 N 个字的组合"也直接查表</text>
+
+        <g font-family="PingFang SC" font-size="14" fill="#1a3a5c">
+          <rect x="400" y="90" width="280" height="36" rx="6" fill="#eef0fb" stroke="#1a3a5c"/>
+          <text x="418" y="113" font-family="SF Mono,monospace" font-weight="700">"美团"</text>
+          <text x="490" y="113" fill="#999">→</text>
+          <text x="520" y="113" font-family="SF Mono,monospace" font-weight="700">e₁₂</text>
+          <text x="568" y="113" fill="#666" font-size="11">品牌名整体</text>
+
+          <rect x="400" y="132" width="280" height="36" rx="6" fill="#eef0fb" stroke="#1a3a5c"/>
+          <text x="418" y="155" font-family="SF Mono,monospace" font-weight="700">"团出"</text>
+          <text x="490" y="155" fill="#999">→</text>
+          <text x="520" y="155" font-family="SF Mono,monospace" font-weight="700">e₂₃</text>
+          <text x="568" y="155" fill="#666" font-size="11">无意义切片</text>
+
+          <rect x="400" y="174" width="280" height="36" rx="6" fill="#eef0fb" stroke="#1a3a5c"/>
+          <text x="418" y="197" font-family="SF Mono,monospace" font-weight="700">"出品"</text>
+          <text x="490" y="197" fill="#999">→</text>
+          <text x="520" y="197" font-family="SF Mono,monospace" font-weight="700">e₃₄</text>
+          <text x="568" y="197" fill="#666" font-size="11">动词短语</text>
+
+          <rect x="400" y="216" width="280" height="36" rx="6" fill="#fffbe6" stroke="#b8860b" stroke-dasharray="4 3"/>
+          <text x="418" y="239" font-family="SF Mono,monospace" font-weight="700" fill="#b8860b">"美团出品"</text>
+          <text x="528" y="239" fill="#b8860b">→</text>
+          <text x="552" y="239" font-family="SF Mono,monospace" font-weight="700" fill="#b8860b">e₁₂₃₄</text>
+          <text x="618" y="239" fill="#7a4a00" font-size="11">语义整体</text>
+        </g>
+        <text x="540" y="275" text-anchor="middle" font-family="PingFang SC" font-size="12" font-weight="700" fill="#1a3a5c">词表空间 <tspan font-family="Inter" font-size="14">× ~100</tspan>, 每槽对应更具体的局部语义</text>
+      </svg>
+    </div>
+
+    <div class="punchline">不是堆参数堆出来的稠密，而是把同样的参数放进更细颗粒的局部上下文里。</div>
+  </div>
+
+  <div class="mg-section">
+    <span class="mg-section-tag">③ KVP 解码切分示意 [攻克国产芯片三重受限]</span>
+    <p>Decode 阶段「KV-cache Parallelism, KVP」把 KV-cache <b>按 rank 切分</b>，每个 rank 在<b>本地 shard</b> 上算 partial attention，再合并 partial results。原文：「在显存容量、显存 I/O 带宽与互联带宽都较为受限的条件下，在万亿参数大模型上跑百万上下文推理是一项不小的挑战」——KVP 是直接对症的解。</p>
+    <div class="mg-pain">
+      <div class="mg-pain-box bad"><b>Naive Decode</b><br/>整份 KV-cache 单点持有 → HBM 容量爆 / 带宽打满 / 互联拥塞</div>
+      <div class="mg-pain-box"><b>KVP Decode</b><br/>KV-cache 按 rank 切片 → 本地算 partial → 合并；prefill–decode 解耦</div>
+    </div>
+  </div>
+
+  <div class="note"><b>打个比方：</b>LSA = <b>先翻索引再读书</b>——Indexer 是图书馆门口的检索卡片，告诉你这一千页里就第 12、87、340 页相关；Sink tokens 是管理员手里那几张"永远要看一眼"的镇馆卡片，保证翻索引不丢全局。KVP 则把这本"百万页大书"按工位切给不同读者各自读一段再汇总——这才让 1.6T 模型在国产 ASIC 上跑通 1M decode。</div>
+</div>
+
+
+<div class="paper paper-grid">
+  <h4>训练系统 <span class="tag">Training Infra</span> <span class="tag tag-star">3 痛点 × 3 解法 · +35% 吞吐</span></h4>
+  <div class="subtitle">国产卡能不能稳？能不能塞下？能不能撑 1M？——三道关一道道过</div>
+
+  <div class="mg-section">
+    <span class="mg-section-tag">① 三痛点速览</span>
+    <div class="b3-grid">
+      <div class="b3-card" style="border-color:#c0392b">
+        <div class="b3-pain">痛点 ① 可靠性</div>
+        <div class="b3-name">国产卡生态不如 Nvidia<br><span style="font-weight:500;color:#666;font-size:14px">抖动 / 数值差异频发</span></div>
+        <div class="b3-cure"><b>自研确定性算子 + 故障自愈</b>——5 万张卡跑月余整段无回滚</div>
+      </div>
+      <div class="b3-card" style="border-color:#c0392b">
+        <div class="b3-pain">痛点 ② 显存</div>
+        <div class="b3-name">单卡显存 &lt; H800 的 80GB<br><span style="font-weight:500;color:#666;font-size:14px">装不下 1.6T 模型</span></div>
+        <div class="b3-cure"><b>6D 并行 + 超节点 + ZeRO-1</b> 优化器分片，把模型切到能塞下</div>
+      </div>
+      <div class="b3-card" style="border-color:#c0392b">
+        <div class="b3-pain">痛点 ③ 长上下文</div>
+        <div class="b3-name">1M token<br><span style="font-weight:500;color:#666;font-size:14px">注意力计算 + 通信带宽双爆炸</span></div>
+        <div class="b3-cure"><b>LSA 算子 + 512 路 CP + 计算通信重叠</b></div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mg-section">
+    <span class="mg-section-tag">② 痛点①：确定性算子 + 故障自愈三件套</span>
+    <table class="mg-table">
+      <thead><tr><th style="width:14%">层</th><th style="width:30%">关键设计</th><th>机制</th></tr></thead>
+      <tbody>
+        <tr><td>算子层</td><td>结果可复现</td><td>通信与计算路径都做确定性。自研 Embedding / Flash Attention / LSA / MoE 多个<b>确定性算子</b>，同 seed 两次结果完全一致</td></tr>
+        <tr><td>数值层</td><td>对齐高精度</td><td><b>二叉树分段累加规约</b>减少浮点漂移；真实 LLM 负载与高精度基线比对验证；再叠一层<b>比特翻转检测</b></td></tr>
+        <tr><td>故障层</td><td>无人工接管</td><td>端到端监控自动识别 / 切流 / 恢复；修复链路必须先过<b>压测</b>才重新接入，防止"带病复工"</td></tr>
+      </tbody>
+    </table>
+    <div class="punchline">关键数字：5 万+ 张国产卡连训<b>月余</b>、<b>整段 0 回滚</b>，系统吞吐对比朴素实现 <b>+35%</b>。</div>
+<div data-cut-protect style="background:#fafafa;border:1px solid #e0e0e0;border-radius:10px;padding:18px 14px;margin:14px 0">
+<div style="text-align:center;font-size:13px;color:#888;letter-spacing:.1em;font-weight:700;margin-bottom:14px">DETERMINISM STACK · 三层叠加才换得 0 回滚</div>
+<svg viewBox="0 0 720 360" style="width:100%;height:auto;display:block" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrDown" viewBox="0 0 10 10" refX="5" refY="9" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,0 L5,9 z" fill="#1a3a5c"/>
+    </marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#444"/>
+    </marker>
+  </defs>
+
+  <!-- header strip -->
+  <text x="20" y="22" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#888" letter-spacing="2">3-LAYER DETERMINISM STACK</text>
+  <text x="700" y="22" text-anchor="end" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#888" letter-spacing="2">50,000+ DOMESTIC GPUs · MONTH-LONG RUN</text>
+  <line x1="20" y1="30" x2="700" y2="30" stroke="#e0e0e0" stroke-width="1"/>
+
+  <!-- ============ LEFT: 3 LAYER STACK ============ -->
+
+  <!-- Layer 1: Operator -->
+  <rect x="20" y="44" width="340" height="56" rx="4" fill="#fff" stroke="#1a3a5c" stroke-width="2.5"/>
+  <rect x="20" y="44" width="64" height="56" rx="4" fill="#1a3a5c"/>
+  <text x="52" y="68" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" font-weight="800" fill="#fff">L1</text>
+  <text x="52" y="86" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#fff" letter-spacing="1">OPERATOR</text>
+  <text x="96" y="61" font-family="PingFang SC,Inter,sans-serif" font-size="13" font-weight="800" fill="#1a3a5c">算子层 · 同 seed bit-exact</text>
+  <text x="96" y="78" font-family="SF Mono,monospace" font-size="10.5" fill="#333">Embedding · Flash-Attn · LSA · MoE</text>
+  <text x="96" y="93" font-family="PingFang SC,sans-serif" font-size="10" fill="#555">自研确定性算子，两次跑完全一致</text>
+
+  <!-- arrow -->
+  <line x1="190" y1="102" x2="190" y2="112" stroke="#1a3a5c" stroke-width="1.5" marker-end="url(#arrDown)"/>
+
+  <!-- Layer 2: Numerical -->
+  <rect x="20" y="115" width="340" height="56" rx="4" fill="#fff" stroke="#b8860b" stroke-width="2.5"/>
+  <rect x="20" y="115" width="64" height="56" rx="4" fill="#b8860b"/>
+  <text x="52" y="139" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" font-weight="800" fill="#fff">L2</text>
+  <text x="52" y="157" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#fff" letter-spacing="1">NUMERICAL</text>
+  <text x="96" y="132" font-family="PingFang SC,Inter,sans-serif" font-size="13" font-weight="800" fill="#7a5a08">数值层 · 浮点漂移可控</text>
+  <text x="96" y="149" font-family="SF Mono,monospace" font-size="10.5" fill="#333">binary-tree reduce · LLM-load vs FP64</text>
+  <text x="96" y="164" font-family="PingFang SC,sans-serif" font-size="10" fill="#555">二叉树分段累加 + 高精度基线 + 比特翻转检测</text>
+
+  <line x1="190" y1="173" x2="190" y2="183" stroke="#b8860b" stroke-width="1.5" marker-end="url(#arrDown)"/>
+
+  <!-- Layer 3: Operational -->
+  <rect x="20" y="186" width="340" height="56" rx="4" fill="#fff" stroke="#1e6b1e" stroke-width="2.5"/>
+  <rect x="20" y="186" width="64" height="56" rx="4" fill="#1e6b1e"/>
+  <text x="52" y="210" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" font-weight="800" fill="#fff">L3</text>
+  <text x="52" y="228" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#fff" letter-spacing="1">FAULT</text>
+  <text x="96" y="203" font-family="PingFang SC,Inter,sans-serif" font-size="13" font-weight="800" fill="#1e6b1e">故障层 · 端到端自愈</text>
+  <text x="96" y="220" font-family="SF Mono,monospace" font-size="10.5" fill="#333">detect → drain → recover → stress-pass</text>
+  <text x="96" y="235" font-family="PingFang SC,sans-serif" font-size="10" fill="#555">压测复检后才重接入（防"带病复工"）</text>
+
+  <!-- stack brace indicating cumulative -->
+  <text x="20" y="262" font-family="Inter,sans-serif" font-size="10" font-weight="700" fill="#888" letter-spacing="1.5">REPRODUCIBLE  →  NUMERICALLY EXACT  →  SELF-HEALING</text>
+
+  <!-- divider -->
+  <line x1="378" y1="44" x2="378" y2="248" stroke="#e0e0e0" stroke-width="1" stroke-dasharray="2 3"/>
+
+  <!-- ============ RIGHT: naive vs LongCat columns ============ -->
+
+  <text x="395" y="58" font-family="PingFang SC,Inter,sans-serif" font-size="11" font-weight="700" fill="#888" letter-spacing="1">MONTH-LONG TRAINING TIMELINE ↓</text>
+
+  <!-- Naive column (red, multiple crashes) -->
+  <text x="430" y="78" text-anchor="middle" font-family="PingFang SC,sans-serif" font-size="11" font-weight="700" fill="#c0392b">naive 朴素实现</text>
+  <rect x="420" y="84" width="20" height="160" fill="#fdecea" stroke="#c0392b" stroke-width="2"/>
+  <!-- red X crash markers -->
+  <g stroke="#c0392b" stroke-width="2" fill="none">
+    <line x1="416" y1="100" x2="444" y2="108"/><line x1="444" y1="100" x2="416" y2="108"/>
+    <line x1="416" y1="128" x2="444" y2="136"/><line x1="444" y1="128" x2="416" y2="136"/>
+    <line x1="416" y1="156" x2="444" y2="164"/><line x1="444" y1="156" x2="416" y2="164"/>
+    <line x1="416" y1="188" x2="444" y2="196"/><line x1="444" y1="188" x2="416" y2="196"/>
+    <line x1="416" y1="216" x2="444" y2="224"/><line x1="444" y1="216" x2="416" y2="224"/>
+  </g>
+  <text x="430" y="258" text-anchor="middle" font-family="SF Mono,monospace" font-size="10" font-weight="700" fill="#c0392b">5× rollback</text>
+  <text x="430" y="270" text-anchor="middle" font-family="PingFang SC,sans-serif" font-size="9" fill="#c0392b">回滚 / 重训</text>
+
+  <!-- VS arrow -->
+  <text x="495" y="160" text-anchor="middle" font-family="Inter,sans-serif" font-size="13" font-weight="800" fill="#888">vs</text>
+
+  <!-- LongCat column (green, smooth) -->
+  <text x="560" y="78" text-anchor="middle" font-family="PingFang SC,sans-serif" font-size="11" font-weight="700" fill="#1e6b1e">LongCat 三层栈</text>
+  <rect x="550" y="84" width="20" height="160" fill="#e8f3e8" stroke="#1e6b1e" stroke-width="2"/>
+  <!-- green dots along timeline (steady) -->
+  <g fill="#2a8a4a">
+    <circle cx="560" cy="100" r="2"/>
+    <circle cx="560" cy="120" r="2"/>
+    <circle cx="560" cy="140" r="2"/>
+    <circle cx="560" cy="160" r="2"/>
+    <circle cx="560" cy="180" r="2"/>
+    <circle cx="560" cy="200" r="2"/>
+    <circle cx="560" cy="220" r="2"/>
+  </g>
+  <text x="560" y="258" text-anchor="middle" font-family="SF Mono,monospace" font-size="11" font-weight="800" fill="#1e6b1e">✓ 0 rollback</text>
+  <text x="560" y="270" text-anchor="middle" font-family="PingFang SC,sans-serif" font-size="9" fill="#1e6b1e">全程 0 回滚</text>
+
+  <!-- +35% throughput badge -->
+  <rect x="605" y="100" width="90" height="86" rx="6" fill="#1a3a5c"/>
+  <text x="650" y="125" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="700" fill="#cfd8e3" letter-spacing="1.5">THROUGHPUT</text>
+  <text x="650" y="158" text-anchor="middle" font-family="Inter,sans-serif" font-size="28" font-weight="800" fill="#fff">+35%</text>
+  <text x="650" y="178" text-anchor="middle" font-family="PingFang SC,sans-serif" font-size="10" fill="#cfd8e3">vs 朴素实现</text>
+
+  <!-- pointer from longcat column to badge -->
+  <line x1="575" y1="150" x2="603" y2="143" stroke="#444" stroke-width="1.2" marker-end="url(#arrR)"/>
+
+  <!-- annotation under badge -->
+  <text x="650" y="210" text-anchor="middle" font-family="PingFang SC,sans-serif" font-size="10" font-weight="700" fill="#555">确定性 ≠ 慢</text>
+  <text x="650" y="223" text-anchor="middle" font-family="PingFang SC,sans-serif" font-size="9" fill="#888">规约重排反而省带宽</text>
+
+  <!-- ============ BOTTOM TAKEAWAY ============ -->
+  <line x1="20" y1="295" x2="700" y2="295" stroke="#e0e0e0" stroke-width="1"/>
+  <text x="360" y="320" text-anchor="middle" font-family="PingFang SC,Inter,sans-serif" font-size="13" font-weight="800" fill="#1a3a5c">
+    <tspan fill="#1a3a5c">结果可复现</tspan>
+    <tspan fill="#888"> · </tspan>
+    <tspan fill="#b8860b">数值精确</tspan>
+    <tspan fill="#888"> · </tspan>
+    <tspan fill="#1e6b1e">故障自愈</tspan>
+    <tspan fill="#333"> ——三层缺一，5 万张国产卡跑月余必回滚一次</tspan>
+  </text>
+  <text x="360" y="340" text-anchor="middle" font-family="PingFang SC,sans-serif" font-size="10.5" fill="#888">单做算子定 seed 还会被浮点漂移咬，单做监控找不到根因只能整段重训</text>
+</svg>
+</div>
+  </div>
+
+  <div class="mg-section">
+    <span class="mg-section-tag">③ 痛点②：6D 并行 + 超节点拓扑</span>
+    <div data-cut-protect style="background:#fafafa;border:1px solid #e0e0e0;border-radius:10px;padding:18px 14px;margin:14px 0">
+      <div style="text-align:center;font-size:13px;color:#888;letter-spacing:.1em;font-weight:700;margin-bottom:14px">6D PARALLELISM · 把模型切到 6 个维度铺到万卡上</div>
+      <svg viewBox="0 0 720 220" style="width:100%;height:auto;display:block">
+        <g font-family="Inter,sans-serif">
+          <!-- 6 dim pills -->
+          <g>
+            <rect x="20" y="20" width="105" height="70" rx="10" fill="#1a3a5c"/>
+            <text x="72.5" y="48" text-anchor="middle" font-size="20" font-weight="800" fill="#fff">TP</text>
+            <text x="72.5" y="68" text-anchor="middle" font-size="10" fill="#dfe6ff" font-family="PingFang SC">张量切多卡</text>
+            <text x="72.5" y="82" text-anchor="middle" font-size="10" fill="#dfe6ff">Tensor Parallel</text>
+          </g>
+          <g>
+            <rect x="135" y="20" width="105" height="70" rx="10" fill="#1a3a5c"/>
+            <text x="187.5" y="48" text-anchor="middle" font-size="20" font-weight="800" fill="#fff">CP</text>
+            <text x="187.5" y="68" text-anchor="middle" font-size="10" fill="#dfe6ff" font-family="PingFang SC">上下文切多卡</text>
+            <text x="187.5" y="82" text-anchor="middle" font-size="10" fill="#dfe6ff">Context Parallel</text>
+          </g>
+          <g>
+            <rect x="250" y="20" width="105" height="70" rx="10" fill="#1a3a5c"/>
+            <text x="302.5" y="48" text-anchor="middle" font-size="20" font-weight="800" fill="#fff">EP</text>
+            <text x="302.5" y="68" text-anchor="middle" font-size="10" fill="#dfe6ff" font-family="PingFang SC">MoE 专家切多卡</text>
+            <text x="302.5" y="82" text-anchor="middle" font-size="10" fill="#dfe6ff">Expert Parallel</text>
+          </g>
+          <g>
+            <rect x="365" y="20" width="105" height="70" rx="10" fill="#1a3a5c"/>
+            <text x="417.5" y="48" text-anchor="middle" font-size="20" font-weight="800" fill="#fff">DP</text>
+            <text x="417.5" y="68" text-anchor="middle" font-size="10" fill="#dfe6ff" font-family="PingFang SC">数据切多卡</text>
+            <text x="417.5" y="82" text-anchor="middle" font-size="10" fill="#dfe6ff">Data Parallel</text>
+          </g>
+          <g>
+            <rect x="480" y="20" width="105" height="70" rx="10" fill="#1a3a5c"/>
+            <text x="532.5" y="48" text-anchor="middle" font-size="20" font-weight="800" fill="#fff">PP</text>
+            <text x="532.5" y="68" text-anchor="middle" font-size="10" fill="#dfe6ff" font-family="PingFang SC">按层切流水线</text>
+            <text x="532.5" y="82" text-anchor="middle" font-size="10" fill="#dfe6ff">Pipeline Parallel</text>
+          </g>
+          <g>
+            <rect x="595" y="20" width="105" height="70" rx="10" fill="#1a3a5c"/>
+            <text x="647.5" y="48" text-anchor="middle" font-size="20" font-weight="800" fill="#fff">EMBP</text>
+            <text x="647.5" y="68" text-anchor="middle" font-size="10" fill="#dfe6ff" font-family="PingFang SC">N-gram 加速</text>
+            <text x="647.5" y="82" text-anchor="middle" font-size="10" fill="#dfe6ff">Embedding Parallel</text>
+          </g>
+
+          <!-- 超节点 -->
+          <rect x="20" y="115" width="680" height="68" rx="10" fill="#fff" stroke="#1a3a5c" stroke-width="2" stroke-dasharray="6 4"/>
+          <text x="40" y="138" font-size="14" font-weight="800" fill="#1a3a5c">超节点（Super-pod）</text>
+          <text x="40" y="158" font-size="12" fill="#444" font-family="PingFang SC">每超节点 ≤ <tspan font-weight="700" fill="#1a3a5c">48 台机器</tspan>，节点内全互联走<tspan font-weight="700" fill="#c0392b">高带宽自有网络</tspan>，节点间走 <tspan font-weight="700" fill="#1a3a5c" font-family="SF Mono,monospace">RoCE</tspan>（以太网 RDMA，"以太网上的远程直读显存"）</text>
+          <text x="40" y="175" font-size="12" fill="#1e6b1e" font-family="PingFang SC" font-weight="700">→ 同规模实测预训练吞吐 +30%，6 维切片之间的频繁通信不再是瓶颈</text>
+        </g>
+        <text x="360" y="208" text-anchor="middle" font-family="PingFang SC" font-size="13" font-weight="700" fill="#1a3a5c">把 1.6T 模型切成 6 个维度铺到万卡，超节点让"切碎了"的通信跑得起来</text>
+      </svg>
+    </div>
+    <div class="mg-pain">
+      <div class="mg-pain-box">
+        <b>显存优化四件套</b><br/>
+        ZeRO-1（优化器状态分片）+ 选择性重计算 + 分配器层 OOM 自动卸载 + 填充词元路由到零计算专家
+      </div>
+      <div class="mg-pain-box">
+        <b>Muon 优化器规模化</b><br/>
+        Muon（对标 AdamW 的新一代优化器）围绕 TP 并行 / DP 状态去冗余 / 对称矩阵乘核函数做专项工程，万卡稳定收敛
+      </div>
+    </div>
+<div data-cut-protect style="background:#fafafa;border:1px solid #e0e0e0;border-radius:10px;padding:18px 14px;margin:14px 0">
+<div style="text-align:center;font-size:13px;color:#888;letter-spacing:.1em;font-weight:700;margin-bottom:14px">6D PARALLEL · SUPER-POD FABRIC · 把 1.6T 挂在万卡集群上</div>
+<svg viewBox="0 0 720 380" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block">
+  <defs>
+    <marker id="ah-gold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#b8860b"/></marker>
+    <marker id="ah-gold-s" viewBox="0 0 10 10" refX="1" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M10,0 L0,5 L10,10 z" fill="#b8860b"/></marker>
+    <marker id="ah-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#555"/></marker>
+    <pattern id="chip-grid" x="0" y="0" width="26" height="17" patternUnits="userSpaceOnUse"><rect x="0" y="0" width="22" height="14" rx="1.5" fill="#1a3a8a" fill-opacity="0.45" stroke="#1a3a8a" stroke-width="0.6" stroke-opacity="0.7"/></pattern>
+    <pattern id="pod-chip" x="0" y="0" width="22" height="17" patternUnits="userSpaceOnUse"><rect x="0" y="0" width="18" height="12" rx="1.5" fill="#1a3a5c" fill-opacity="0.55" stroke="#1a3a5c" stroke-width="0.6"/></pattern>
+  </defs>
+
+  <!-- ===== SECTION A: 6D decomposition (y 0-168) ===== -->
+  <text x="360" y="12" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="800" fill="#888" letter-spacing="1.4">1.6T MODEL  ·  6 PARALLEL AXES  ·  SHATTERED ONTO ~10K GPUs</text>
+
+  <!-- 1.6T cube (isometric, red = pain) -->
+  <g>
+    <polygon points="60,75 105,55 150,75 105,95" fill="#c0392b" fill-opacity="0.55" stroke="#c0392b" stroke-width="2"/>
+    <polygon points="60,75 60,120 105,140 105,95" fill="#c0392b" fill-opacity="0.28" stroke="#c0392b" stroke-width="2"/>
+    <polygon points="150,75 150,120 105,140 105,95" fill="#c0392b" fill-opacity="0.42" stroke="#c0392b" stroke-width="2"/>
+    <text x="105" y="108" text-anchor="middle" font-family="Inter,sans-serif" font-size="18" font-weight="800" fill="#fff">1.6T</text>
+    <text x="105" y="122" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" font-weight="700" fill="#fff" letter-spacing="0.6">PARAMS</text>
+    <text x="105" y="158" text-anchor="middle" font-family="PingFang SC,sans-serif" font-size="10" font-weight="700" fill="#c0392b">⚠ H800 80GB 单卡装不下</text>
+  </g>
+
+  <!-- 6 axis bars -->
+  <g font-family="SF Mono,monospace" font-size="10">
+    <rect x="170" y="30" width="250" height="15" rx="2" fill="#1a3a8a" fill-opacity="0.10" stroke="#1a3a8a" stroke-width="1.1"/>
+    <text x="178" y="41" font-weight="800" fill="#1a3a8a">TP</text>
+    <text x="206" y="41" font-family="PingFang SC,sans-serif" fill="#333">张量切分 · MatMul 跨卡 all-reduce</text>
+
+    <rect x="170" y="49" width="250" height="15" rx="2" fill="#2a8a4a" fill-opacity="0.10" stroke="#2a8a4a" stroke-width="1.1"/>
+    <text x="178" y="60" font-weight="800" fill="#2a8a4a">CP</text>
+    <text x="206" y="60" font-family="PingFang SC,sans-serif" fill="#333">上下文切分 · 长序列 KV all-gather</text>
+
+    <rect x="170" y="68" width="250" height="15" rx="2" fill="#b8860b" fill-opacity="0.13" stroke="#b8860b" stroke-width="1.1"/>
+    <text x="178" y="79" font-weight="800" fill="#b8860b">EP</text>
+    <text x="206" y="79" font-family="PingFang SC,sans-serif" fill="#333">MoE 专家切分 · all-to-all 路由</text>
+
+    <rect x="170" y="87" width="250" height="15" rx="2" fill="#1a3a5c" fill-opacity="0.13" stroke="#1a3a5c" stroke-width="1.1"/>
+    <text x="178" y="98" font-weight="800" fill="#1a3a5c">DP</text>
+    <text x="206" y="98" font-family="PingFang SC,sans-serif" fill="#333">数据切分 · 梯度 reduce-scatter</text>
+
+    <rect x="170" y="106" width="250" height="15" rx="2" fill="#6b3a8a" fill-opacity="0.13" stroke="#6b3a8a" stroke-width="1.1"/>
+    <text x="178" y="117" font-weight="800" fill="#6b3a8a">PP</text>
+    <text x="206" y="117" font-family="PingFang SC,sans-serif" fill="#333">按层流水线 · 微批 send/recv</text>
+
+    <rect x="170" y="125" width="250" height="15" rx="2" fill="#1e6b1e" fill-opacity="0.13" stroke="#1e6b1e" stroke-width="1.1"/>
+    <text x="178" y="136" font-weight="800" fill="#1e6b1e">EMBP</text>
+    <text x="222" y="136" font-family="PingFang SC,sans-serif" fill="#333">N-gram 嵌入并行 · 加速预测头</text>
+  </g>
+
+  <!-- Arrow + chip grid -->
+  <path d="M425 85 L443 85" stroke="#555" stroke-width="2" marker-end="url(#ah-gray)"/>
+  <text x="434" y="78" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" font-weight="700" fill="#555">shatter</text>
+  <rect x="450" y="30" width="260" height="120" fill="url(#chip-grid)"/>
+  <text x="580" y="161" text-anchor="middle" font-family="Inter,sans-serif" font-size="11" font-weight="800" fill="#1a3a8a">~ 10,240 GPUs</text>
+
+  <!-- divider -->
+  <line x1="20" y1="172" x2="700" y2="172" stroke="#e8e8e8" stroke-width="1"/>
+
+  <!-- ===== SECTION B: 显存优化四件套 + Muon (y 178-252) ===== -->
+  <text x="20" y="187" font-family="Inter,sans-serif" font-size="10" font-weight="800" fill="#888" letter-spacing="1.2">VRAM OPT · 显存优化四件套</text>
+
+  <g font-family="PingFang SC,sans-serif">
+    <rect x="20" y="194" width="164" height="32" rx="3" fill="#fff" stroke="#1a3a8a" stroke-width="1.3"/>
+    <text x="28" y="207" font-family="SF Mono,monospace" font-size="10" font-weight="800" fill="#1a3a8a">(1) ZeRO-1</text>
+    <text x="28" y="220" font-size="9" fill="#444">优化器状态跨 DP 分片</text>
+
+    <rect x="192" y="194" width="164" height="32" rx="3" fill="#fff" stroke="#2a8a4a" stroke-width="1.3"/>
+    <text x="200" y="207" font-family="SF Mono,monospace" font-size="10" font-weight="800" fill="#2a8a4a">(2) 选择性重计算</text>
+    <text x="200" y="220" font-size="9" fill="#444">激活按层重算 · 省 activation</text>
+
+    <rect x="364" y="194" width="164" height="32" rx="3" fill="#fff" stroke="#b8860b" stroke-width="1.3"/>
+    <text x="372" y="207" font-family="SF Mono,monospace" font-size="10" font-weight="800" fill="#b8860b">(3) OOM 自动卸载</text>
+    <text x="372" y="220" font-size="9" fill="#444">分配器层兜底 · 不炸 job</text>
+
+    <rect x="536" y="194" width="164" height="32" rx="3" fill="#fff" stroke="#6b3a8a" stroke-width="1.3"/>
+    <text x="544" y="207" font-family="SF Mono,monospace" font-size="10" font-weight="800" fill="#6b3a8a">(4) 填充 → 零专家</text>
+    <text x="544" y="220" font-size="9" fill="#444">padding token 路由到零计算</text>
+  </g>
+
+  <!-- Muon bar -->
+  <rect x="20" y="234" width="680" height="18" rx="3" fill="#1e6b1e" fill-opacity="0.10" stroke="#1e6b1e" stroke-width="1.3"/>
+  <text x="30" y="247" font-family="SF Mono,monospace" font-size="10" font-weight="800" fill="#1e6b1e">Muon</text>
+  <text x="68" y="247" font-family="PingFang SC,sans-serif" font-size="10" fill="#333">TP 并行 · DP 状态去冗余 · 对称矩阵乘核函数 → <tspan font-weight="700" fill="#1e6b1e">万卡稳定收敛</tspan></text>
+
+  <!-- divider -->
+  <line x1="20" y1="262" x2="700" y2="262" stroke="#e8e8e8" stroke-width="1"/>
+
+  <!-- ===== SECTION C: Super-pod fabric (y 268-348) ===== -->
+  <text x="20" y="277" font-family="Inter,sans-serif" font-size="10" font-weight="800" fill="#888" letter-spacing="1.2">SUPER-POD FABRIC · 节点内全互联 · 节点间走 RoCE</text>
+
+  <!-- +30% badge -->
+  <rect x="565" y="266" width="125" height="16" rx="8" fill="#2a8a4a"/>
+  <text x="627" y="278" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="800" fill="#fff">同规模预训练 +30% 吞吐</text>
+
+  <!-- Pod 0 -->
+  <g>
+    <rect x="35" y="286" width="285" height="62" rx="5" fill="#fff" stroke="#1a3a5c" stroke-width="1.5"/>
+    <text x="45" y="300" font-family="Inter,sans-serif" font-size="11" font-weight="800" fill="#1a3a5c">Super-pod 0</text>
+    <text x="135" y="300" font-family="PingFang SC,sans-serif" font-size="9" font-weight="700" fill="#666">≤ 48 台机器</text>
+    <rect x="45" y="306" width="176" height="36" fill="url(#pod-chip)"/>
+    <g stroke="#1a3a8a" stroke-width="1.4" stroke-opacity="0.55">
+      <line x1="55" y1="312" x2="215" y2="338"/>
+      <line x1="55" y1="338" x2="215" y2="312"/>
+      <line x1="55" y1="324" x2="215" y2="324"/>
+      <line x1="135" y1="309" x2="135" y2="342"/>
+    </g>
+    <text x="230" y="318" font-family="PingFang SC,sans-serif" font-size="9" font-weight="700" fill="#1a3a8a">节点内</text>
+    <text x="230" y="330" font-family="PingFang SC,sans-serif" font-size="9" font-weight="700" fill="#1a3a8a">全互联</text>
+    <text x="230" y="342" font-family="SF Mono,monospace" font-size="8" font-weight="700" fill="#1a3a8a">自有网络</text>
+  </g>
+
+  <!-- RoCE between pods -->
+  <g>
+    <line x1="325" y1="308" x2="385" y2="308" stroke="#b8860b" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#ah-gold)" marker-start="url(#ah-gold-s)"/>
+    <line x1="325" y1="324" x2="385" y2="324" stroke="#b8860b" stroke-width="2" stroke-dasharray="5,3" marker-end="url(#ah-gold)" marker-start="url(#ah-gold-s)"/>
+    <text x="355" y="301" text-anchor="middle" font-family="SF Mono,monospace" font-size="9" font-weight="800" fill="#b8860b">RoCE</text>
+    <text x="355" y="340" text-anchor="middle" font-family="PingFang SC,sans-serif" font-size="8" font-weight="700" fill="#b8860b">以太网 RDMA</text>
+  </g>
+
+  <!-- Pod 1 -->
+  <g>
+    <rect x="390" y="286" width="285" height="62" rx="5" fill="#fff" stroke="#1a3a5c" stroke-width="1.5"/>
+    <text x="400" y="300" font-family="Inter,sans-serif" font-size="11" font-weight="800" fill="#1a3a5c">Super-pod 1</text>
+    <text x="490" y="300" font-family="PingFang SC,sans-serif" font-size="9" font-weight="700" fill="#666">≤ 48 台机器</text>
+    <rect x="400" y="306" width="176" height="36" fill="url(#pod-chip)"/>
+    <g stroke="#1a3a8a" stroke-width="1.4" stroke-opacity="0.55">
+      <line x1="410" y1="312" x2="570" y2="338"/>
+      <line x1="410" y1="338" x2="570" y2="312"/>
+      <line x1="410" y1="324" x2="570" y2="324"/>
+      <line x1="490" y1="309" x2="490" y2="342"/>
+    </g>
+    <text x="585" y="318" font-family="PingFang SC,sans-serif" font-size="9" font-weight="700" fill="#1a3a8a">节点内</text>
+    <text x="585" y="330" font-family="PingFang SC,sans-serif" font-size="9" font-weight="700" fill="#1a3a8a">全互联</text>
+    <text x="585" y="342" font-family="SF Mono,monospace" font-size="8" font-weight="700" fill="#1a3a8a">自有网络</text>
+  </g>
+
+  <!-- ===== TAKEAWAY (y 358-376) ===== -->
+  <text x="360" y="372" text-anchor="middle" font-family="PingFang SC,sans-serif" font-size="13" font-weight="800" fill="#1a3a8a">6 轴切碎 · 通信会爆 → 超节点把高带宽域从单机扩到数百卡，6D 切片间通信不再是瓶颈</text>
+</svg>
+</div>
+  </div>
+
+  <div class="mg-section">
+    <span class="mg-section-tag">④ 痛点③：长上下文训练三招</span>
+    <table class="mg-table">
+      <thead><tr><th style="width:22%">招式</th><th>机制 + 收益</th></tr></thead>
+      <tbody>
+        <tr><td>自研 <code>LSA</code> 算子</td><td>配套<b>确定性注意力 + KL loss</b>算子。预热阶段 forward-only，一次前向同时拿到 KL 与梯度——<b>训练成本降一半</b></td></tr>
+        <tr><td>512 路 <code>CP</code></td><td>all-gather Context Parallel 扩到 <b>≥ 512 路</b>，直接吃原生 <b>1M 数据</b>；数据预取阶段重新打散均衡切分，防卡先空转</td></tr>
+        <tr><td>计算通信重叠</td><td><code>ScMoE</code>（带通信重叠的 MoE）让 MoE 跨机通信与分支计算并行；LSA 的 top-k 索引与 KV all-gather 完全重叠——<b>通信被算掉而不是等掉</b></td></tr>
+      </tbody>
+    </table>
+<div data-cut-protect style="background:#fafafa;border:1px solid #e0e0e0;border-radius:10px;padding:18px 14px;margin:14px 0">
+<div style="text-align:center;font-size:13px;color:#888;letter-spacing:.1em;font-weight:700;margin-bottom:14px">1M CONTEXT TRAINING · 单 step 时间线：朴素实现 vs 三招叠加</div>
+<svg viewBox="0 0 720 360" xmlns="http://www.w3.org/2000/svg" style="width:100%;height:auto;display:block" font-family="Inter,sans-serif">
+  <defs>
+    <marker id="arr-r" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c0392b"/>
+    </marker>
+    <marker id="arr-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1e6b1e"/>
+    </marker>
+    <marker id="arr-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1a3a5c"/>
+    </marker>
+    <pattern id="stripe-overlap" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)">
+      <rect width="6" height="6" fill="#2a8a4a" opacity="0.35"/>
+      <line x1="0" y1="0" x2="0" y2="6" stroke="#1e6b1e" stroke-width="1.4"/>
+    </pattern>
+    <pattern id="stripe-cp" patternUnits="userSpaceOnUse" width="4" height="10">
+      <rect width="4" height="10" fill="#1a3a8a" opacity="0.18"/>
+      <line x1="2" y1="0" x2="2" y2="10" stroke="#1a3a5c" stroke-width="0.6"/>
+    </pattern>
+  </defs>
+
+  <text x="360" y="22" text-anchor="middle" font-size="14" font-weight="800" fill="#1a3a5c">1M token · 单训练 step 时间线</text>
+  <text x="360" y="38" text-anchor="middle" font-size="11" fill="#888" font-family="PingFang SC">注意力 O(N²) 与 KV 跨卡传输同时爆炸 — LSA × CP=512 × ScMoE 三招叠乘才能跑动</text>
+
+  <!-- ========== NAIVE (top, red) ========== -->
+  <text x="20" y="68" font-size="12" font-weight="800" fill="#c0392b">⚠ 朴素 1M 训练</text>
+  <text x="20" y="82" font-size="10" fill="#c0392b" font-family="PingFang SC">单卡装不下 · 注意力 O(N²) · KV all-gather 阻塞</text>
+
+  <!-- naive timeline track -->
+  <rect x="120" y="60" width="580" height="34" fill="#fff" stroke="#c0392b" stroke-width="2.5" rx="3"/>
+
+  <!-- attention O(N^2) huge block -->
+  <rect x="122" y="62" width="340" height="30" fill="#c0392b" opacity="0.78"/>
+  <text x="292" y="78" text-anchor="middle" font-size="11" font-weight="700" fill="#fff">Attention forward+backward  O(N²)  N=1M</text>
+  <text x="292" y="90" text-anchor="middle" font-size="9" fill="#fff" opacity="0.95">≈ 单 step 算力 70%</text>
+
+  <!-- KV all-gather wait gap -->
+  <rect x="462" y="62" width="170" height="30" fill="#e8c8c4" stroke="#c0392b" stroke-width="1" stroke-dasharray="3,2"/>
+  <text x="547" y="78" text-anchor="middle" font-size="10" font-weight="700" fill="#c0392b">KV all-gather 阻塞</text>
+  <text x="547" y="90" text-anchor="middle" font-size="9" fill="#c0392b" font-family="PingFang SC">卡间空转</text>
+
+  <!-- ffn tail -->
+  <rect x="632" y="62" width="66" height="30" fill="#a0524d" opacity="0.6"/>
+  <text x="665" y="80" text-anchor="middle" font-size="9" fill="#fff">FFN</text>
+
+  <!-- naive cost label -->
+  <text x="710" y="108" text-anchor="end" font-size="10" font-weight="700" fill="#c0392b">cost / step = 1.0×</text>
+
+  <!-- divider -->
+  <line x1="20" y1="130" x2="700" y2="130" stroke="#e0e0e0" stroke-width="1" stroke-dasharray="2,3"/>
+
+  <!-- ========== OPTIMIZED (bottom, green) ========== -->
+  <text x="20" y="152" font-size="12" font-weight="800" fill="#1e6b1e">✓ LongCat 三招叠乘</text>
+  <text x="20" y="166" font-size="10" fill="#1e6b1e" font-family="PingFang SC">LSA × CP=512 × ScMoE</text>
+
+  <!-- optimized timeline track -->
+  <rect x="120" y="180" width="420" height="50" fill="#fff" stroke="#1e6b1e" stroke-width="2.5" rx="3"/>
+
+  <!-- LSA shrunk attention block -->
+  <rect x="122" y="182" width="120" height="46" fill="#2a8a4a" opacity="0.82"/>
+  <text x="182" y="200" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">LSA 注意力</text>
+  <text x="182" y="213" text-anchor="middle" font-size="9" fill="#fff">forward-only 同出 KL + grad</text>
+  <text x="182" y="224" text-anchor="middle" font-size="9" fill="#fff" font-family="PingFang SC">预热阶段成本 ×0.5</text>
+
+  <!-- ScMoE compute with overlapped comm stripe underneath -->
+  <rect x="242" y="182" width="200" height="46" fill="#1e6b1e" opacity="0.78"/>
+  <text x="342" y="200" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">ScMoE Expert 计算</text>
+  <text x="342" y="213" text-anchor="middle" font-size="9" fill="#fff">跨机通信 / KV all-gather</text>
+  <text x="342" y="224" text-anchor="middle" font-size="9" fill="#fff" font-family="PingFang SC">叠在算子下面跑</text>
+
+  <!-- overlap stripe band (bottom half of ScMoE block, showing comm hidden) -->
+  <rect x="242" y="215" width="200" height="13" fill="url(#stripe-overlap)"/>
+
+  <!-- FFN tail -->
+  <rect x="442" y="182" width="96" height="46" fill="#1a3a8a" opacity="0.7"/>
+  <text x="490" y="208" text-anchor="middle" font-size="10" font-weight="700" fill="#fff">FFN</text>
+  <text x="490" y="220" text-anchor="middle" font-size="9" fill="#fff" font-family="PingFang SC">top-k 索引重叠</text>
+
+  <!-- CP=512 vertical-slice strip below optimized bar -->
+  <rect x="120" y="238" width="420" height="18" fill="url(#stripe-cp)" stroke="#1a3a5c" stroke-width="1"/>
+  <text x="124" y="251" font-size="9" font-weight="700" fill="#1a3a5c">CP=512</text>
+  <text x="175" y="251" font-size="9" fill="#1a3a5c" font-family="PingFang SC">1M token 切到 512 卡 · 预取阶段重新打散均衡</text>
+
+  <!-- optimized cost callout -->
+  <rect x="555" y="186" width="140" height="56" fill="#fff" stroke="#1e6b1e" stroke-width="2" rx="5"/>
+  <text x="625" y="204" text-anchor="middle" font-size="11" font-weight="800" fill="#1e6b1e">train cost / step</text>
+  <text x="625" y="224" text-anchor="middle" font-size="20" font-weight="800" fill="#1e6b1e">↓ 50%</text>
+  <text x="625" y="238" text-anchor="middle" font-size="9" fill="#2a8a4a" font-family="PingFang SC">1M token / step 真跑得动</text>
+
+  <!-- ========== Annotations ========== -->
+  <!-- arrow: LSA shrink -->
+  <path d="M 292 95 Q 200 130 182 178" fill="none" stroke="#1e6b1e" stroke-width="1.5" marker-end="url(#arr-g)"/>
+  <text x="60" y="148" font-size="10" font-weight="700" fill="#1e6b1e">① LSA</text>
+  <text x="60" y="160" font-size="9" fill="#1e6b1e" font-family="PingFang SC">O(N²) → 线性</text>
+
+  <!-- arrow: KV wait absorbed -->
+  <path d="M 547 95 Q 400 140 342 178" fill="none" stroke="#1e6b1e" stroke-width="1.5" marker-end="url(#arr-g)"/>
+  <text x="555" y="148" font-size="10" font-weight="700" fill="#1e6b1e">③ ScMoE</text>
+  <text x="555" y="160" font-size="9" fill="#1e6b1e" font-family="PingFang SC">通信被算掉</text>
+
+  <!-- arrow: CP=512 from naive bar to slice strip -->
+  <path d="M 350 96 Q 330 200 330 235" fill="none" stroke="#1a3a5c" stroke-width="1.5" stroke-dasharray="3,2" marker-end="url(#arr-b)"/>
+  <text x="265" y="148" font-size="10" font-weight="700" fill="#1a3a5c">② CP=512</text>
+  <text x="265" y="160" font-size="9" fill="#1a3a5c" font-family="PingFang SC">all-gather CP</text>
+
+  <!-- length ratio bracket -->
+  <line x1="120" y1="270" x2="538" y2="270" stroke="#1e6b1e" stroke-width="1"/>
+  <line x1="120" y1="266" x2="120" y2="274" stroke="#1e6b1e" stroke-width="1"/>
+  <line x1="538" y1="266" x2="538" y2="274" stroke="#1e6b1e" stroke-width="1"/>
+  <text x="329" y="284" text-anchor="middle" font-size="10" font-weight="700" fill="#1e6b1e">优化后 step 长度</text>
+
+  <line x1="120" y1="115" x2="698" y2="115" stroke="#c0392b" stroke-width="1" opacity="0.4"/>
+  <line x1="120" y1="111" x2="120" y2="119" stroke="#c0392b" stroke-width="1"/>
+  <line x1="698" y1="111" x2="698" y2="119" stroke="#c0392b" stroke-width="1"/>
+
+  <!-- ========== Takeaway ========== -->
+  <rect x="20" y="310" width="680" height="36" fill="#fff" stroke="#1e6b1e" stroke-width="1.5" rx="5"/>
+  <text x="360" y="333" text-anchor="middle" font-size="13" font-weight="800" fill="#1e6b1e" font-family="PingFang SC">LSA 把算力打下来 × CP=512 把 1M 切到 512 卡 × ScMoE 把通信藏进计算 — 三招相乘，1M 训练才真跑得动</text>
+</svg>
+</div>
+  </div>
+
+  <div class="mg-section">
+    <span class="mg-section-tag">⑤ 三阶段时间轴（结合 §3 后训练）</span>
+    <svg viewBox="0 0 760 130" style="width:100%;height:auto;display:block;margin:8px 0;">
+      <defs>
+        <marker id="arrTP" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+          <path d="M0,0 L10,5 L0,10 z" fill="#1a3a5c"/>
+        </marker>
+      </defs>
+      <line x1="40" y1="80" x2="720" y2="80" stroke="#1a3a5c" stroke-width="2.5" marker-end="url(#arrTP)"/>
+      <rect x="40" y="20" width="200" height="65" rx="8" fill="#fff4d6" stroke="#1a3a5c" stroke-width="2"/>
+      <text x="140" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#1a3a5c">① Pretraining</text>
+      <text x="140" y="62" text-anchor="middle" font-size="11" fill="#1a3a5c">&gt;35T tokens · 月余</text>
+      <text x="140" y="78" text-anchor="middle" font-size="11" fill="#c0392b">5万+ ASIC · 0 rollback · +35%</text>
+      <rect x="270" y="20" width="200" height="65" rx="8" fill="#e6f0ff" stroke="#1a3a5c" stroke-width="2"/>
+      <text x="370" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#1a3a5c">② 1M-context 扩展</text>
+      <text x="370" y="62" text-anchor="middle" font-size="11" fill="#1a3a5c">hundreds of B tokens</text>
+      <text x="370" y="78" text-anchor="middle" font-size="11" fill="#1e6b1e">+ LSA + 512 路 CP</text>
+      <rect x="500" y="20" width="220" height="65" rx="8" fill="#e6f7e6" stroke="#1a3a5c" stroke-width="2"/>
+      <text x="610" y="42" text-anchor="middle" font-size="14" font-weight="700" fill="#1a3a5c">③ MOPD 后训练</text>
+      <text x="610" y="62" text-anchor="middle" font-size="11" fill="#666" font-style="italic">→ 详见卡 4 Agentic RL</text>
+      <text x="140" y="110" text-anchor="middle" font-size="11" fill="#666">millions of accelerator-days</text>
+      <text x="370" y="110" text-anchor="middle" font-size="11" fill="#666">把有效 ctx 撑到 1M token</text>
+    </svg>
+  </div>
+
+  <div class="note"><b>一句话:</b> 国产卡训前沿模型 = <b>算子层稳 + 拓扑层切 + 长程层叠</b>三件事——5 万卡月余 0 回滚不是运气，是把这三关都过了。</div>
+</div>
+
+
+<div class="paper paper-grid">
+  <h4>Agentic RL 配方 <span class="tag">Post-training</span> <span class="tag-star">MOPD · Multi-teacher Online Policy Distillation</span></h4>
+  <div class="subtitle">不做单一 RLHF，搭 3 个专家组 → 在线蒸馏 → 同时回灌主模型</div>
+
+  <div class="mg-section">
+    <span class="mg-section-tag">① 先讲清: agentic RL 到底练什么</span>
+    <div class="punchline">「Agentic RL」= 让模型在<b>真实工具环境</b>里反复做<b>多步任务</b>（查资料、改代码、跑命令），由<b>teacher 示范</b>和<b>评分器</b>告诉它哪一步好/不好，把"会规划+会用工具"的能力直接练进权重——不依赖更长的 prompt 或外挂脚手架。</div>
+  </div>
+
+  <div class="mg-section">
+    <span class="mg-section-tag">② MOPD 三大专家组 + 6 个原子能力</span>
+    <div class="b3-grid">
+      <div class="b3-card" style="border-color:#1a3a8a">
+        <div class="b3-pain" style="background:#eaf3ff;color:#1a3a8a;border-left-color:#1a3a8a">教师 ① · Agent 能力组</div>
+        <div class="b3-name">教学生"自己动手干活"<br><span style="font-weight:500;color:#666;font-size:14px">把任务从头跑到尾</span></div>
+        <div class="b3-cure">
+          <b>3 个原子能力：</b><br>
+          · 复杂工具调用的参数精准度<br>
+          · 多轮 API 里准确解析返回值<br>
+          · 死循环 / 重复调用的自我纠错
+        </div>
+      </div>
+      <div class="b3-card" style="border-color:#1a3a8a">
+        <div class="b3-pain" style="background:#eaf3ff;color:#1a3a8a;border-left-color:#1a3a8a">教师 ② · 推理能力组</div>
+        <div class="b3-name">教学生"难题想深"<br><span style="font-weight:500;color:#666;font-size:14px">难度大就多想几步</span></div>
+        <div class="b3-cure">
+          <b>2 个原子能力：</b><br>
+          · 按问题难度<b>自适应分配思考长度</b><br>
+          · 多跳知识链路的连贯性
+        </div>
+      </div>
+      <div class="b3-card" style="border-color:#1a3a8a">
+        <div class="b3-pain" style="background:#eaf3ff;color:#1a3a8a;border-left-color:#1a3a8a">教师 ③ · 交互体验组</div>
+        <div class="b3-name">教学生"听人话 + 不胡说"<br><span style="font-weight:500;color:#666;font-size:14px">把对齐和安全揉到细节</span></div>
+        <div class="b3-cure">
+          <b>2 个原子能力：</b><br>
+          · 细粒度指令的<b>字面遵循</b><br>
+          · 有用性不打折下的<b>安全边界</b>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="mg-section">
+    <span class="mg-section-tag">③ MOPD 在线蒸馏循环（核心机制图）</span>
+    <div data-cut-protect style="background:#fafafa;border:1px solid #e0e0e0;border-radius:10px;padding:18px 14px;margin:14px 0">
+      <div style="text-align:center;font-size:13px;color:#888;letter-spacing:.1em;font-weight:700;margin-bottom:14px">MOPD = MULTI-TEACHER ONLINE POLICY DISTILLATION · 学生每生成一句, 3 位老师同时纠</div>
+      <svg viewBox="0 0 720 380" style="width:100%;height:auto;display:block">
+        <defs>
+          <marker id="mopdarr" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto">
+            <path d="M0 0 L7 4 L0 8 z" fill="#1a3a8a"/>
+          </marker>
+          <marker id="mopdarrG" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto">
+            <path d="M0 0 L7 4 L0 8 z" fill="#2a8a4a"/>
+          </marker>
+        </defs>
+
+        <!-- 学生 -->
+        <rect x="40" y="160" width="160" height="80" rx="10" fill="#eaf3ff" stroke="#1a3a8a" stroke-width="2.5"/>
+        <text x="120" y="190" text-anchor="middle" font-family="PingFang SC" font-size="16" font-weight="800" fill="#1a3a8a">学生</text>
+        <text x="120" y="210" text-anchor="middle" font-family="PingFang SC" font-size="12" fill="#1a3a8a">主干 LongCat-2.0</text>
+        <text x="120" y="226" text-anchor="middle" font-family="PingFang SC" font-size="11" fill="#666" font-style="italic">每生成 1 句话 →</text>
+
+        <!-- 学生 → 三老师 -->
+        <line x1="200" y1="190" x2="290" y2="80" stroke="#1a3a8a" stroke-width="2" marker-end="url(#mopdarr)"/>
+        <line x1="200" y1="200" x2="290" y2="200" stroke="#1a3a8a" stroke-width="2" marker-end="url(#mopdarr)"/>
+        <line x1="200" y1="210" x2="290" y2="320" stroke="#1a3a8a" stroke-width="2" marker-end="url(#mopdarr)"/>
+        <text x="245" y="135" font-family="PingFang SC" font-size="11" fill="#1a3a8a" font-weight="700">同步盯</text>
+
+        <!-- 三老师 -->
+        <g font-family="PingFang SC">
+          <rect x="295" y="45" width="180" height="70" rx="10" fill="#fff4e0" stroke="#e89a3c" stroke-width="2"/>
+          <text x="385" y="68" text-anchor="middle" font-size="14" font-weight="800" fill="#7a4a00">教师 ① Agent 能力组</text>
+          <text x="385" y="88" text-anchor="middle" font-size="11" fill="#7a4a00">"如果是我, 会先调 search...</text>
+          <text x="385" y="105" text-anchor="middle" font-size="11" fill="#7a4a00">参数应该传 query=..."</text>
+
+          <rect x="295" y="165" width="180" height="70" rx="10" fill="#fff4e0" stroke="#e89a3c" stroke-width="2"/>
+          <text x="385" y="188" text-anchor="middle" font-size="14" font-weight="800" fill="#7a4a00">教师 ② 推理能力组</text>
+          <text x="385" y="208" text-anchor="middle" font-size="11" fill="#7a4a00">"这题难, 多展开几步...</text>
+          <text x="385" y="225" text-anchor="middle" font-size="11" fill="#7a4a00">第三步推得不严谨"</text>
+
+          <rect x="295" y="285" width="180" height="70" rx="10" fill="#fff4e0" stroke="#e89a3c" stroke-width="2"/>
+          <text x="385" y="308" text-anchor="middle" font-size="14" font-weight="800" fill="#7a4a00">教师 ③ 交互体验组</text>
+          <text x="385" y="328" text-anchor="middle" font-size="11" fill="#7a4a00">"指令第 2 条没遵循...</text>
+          <text x="385" y="345" text-anchor="middle" font-size="11" fill="#7a4a00">这句话越线了"</text>
+        </g>
+
+        <!-- 三老师 → 融合 -->
+        <line x1="475" y1="80" x2="540" y2="180" stroke="#2a8a4a" stroke-width="2" marker-end="url(#mopdarrG)"/>
+        <line x1="475" y1="200" x2="540" y2="200" stroke="#2a8a4a" stroke-width="2" marker-end="url(#mopdarrG)"/>
+        <line x1="475" y1="320" x2="540" y2="220" stroke="#2a8a4a" stroke-width="2" marker-end="url(#mopdarrG)"/>
+
+        <!-- 融合 -->
+        <rect x="540" y="160" width="160" height="80" rx="10" fill="#e8f6ec" stroke="#2a8a4a" stroke-width="2.5"/>
+        <text x="620" y="186" text-anchor="middle" font-family="PingFang SC" font-size="15" font-weight="800" fill="#1a5a2a">融合 3 路反馈</text>
+        <text x="620" y="206" text-anchor="middle" font-family="PingFang SC" font-size="11" fill="#1a5a2a">3 张"如果是我"小纸条</text>
+        <text x="620" y="222" text-anchor="middle" font-family="PingFang SC" font-size="11" fill="#1a5a2a">对照学生答案</text>
+
+        <!-- 反馈回学生（环路） -->
+        <path d="M 540 160 Q 360 30 200 160" fill="none" stroke="#2a8a4a" stroke-width="2.5" stroke-dasharray="6 4" marker-end="url(#mopdarrG)"/>
+        <text x="360" y="40" text-anchor="middle" font-family="PingFang SC" font-size="13" fill="#1a5a2a" font-weight="800">实时调整下一步 (online)</text>
+
+        <text x="360" y="375" text-anchor="middle" font-family="PingFang SC" font-size="13" font-weight="700" fill="#1a3a8a">学生练的就是它实际会说的话——不被"过期教材"喂偏</text>
+      </svg>
+    </div>
+  </div>
+
+  <div class="mg-section">
+    <span class="mg-section-tag">④ 为什么"在线"不"离线"</span>
+    <div class="mg-pain">
+      <div class="mg-pain-box bad">
+        <strong>离线蒸馏 ✗</strong><br>
+        老师先把题做完<b>存成数据集</b>，学生再去背。学生越练越偏——自己实战时分布跟教材对不上，这就是 <b>训练-推理 mismatch</b>（学的时候 ≠ 实际用的时候）。
+      </div>
+      <div class="mg-pain-box">
+        <strong>在线蒸馏 ✓</strong><br>
+        学生一边自己说话，老师<b>在旁边实时纠</b>。学生练的就是它实际会说的话，<b>不存在分布错位</b>。
+      </div>
+    </div>
+  </div>
+
+  <div class="mg-section">
+    <span class="mg-section-tag">⑤ MOPD vs 传统 RLHF</span>
+    <table class="mg-table">
+      <thead><tr><th style="width:22%">对比项</th><th>传统 RLHF</th><th>MOPD</th></tr></thead>
+      <tbody>
+        <tr><td>反馈来源</td><td>1 个奖励模型，<b>信号粗</b></td><td>3 位专家教师，<b>各管一条线</b>，信号精细</td></tr>
+        <tr><td>能力扩展</td><td>新加一项要重训整条 RL pipeline</td><td><b>加一个教师就行</b>，模块化</td></tr>
+        <tr><td>训练-推理一致性</td><td>容易飘（reward hacking）</td><td><b>实时对齐，不飘</b></td></tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="punchline">一句话: MOPD = <b>3 个专家组 × 在线纠错 × 模块化扩展</b>——每位老师管一条线，学生说一句改一句，不被过期教材喂偏。</div>
+</div>
+
+
+<div class="paper paper-grid">
+  <h4>评测套件 <span class="tag">Benchmarks</span> <span class="tag-star">5 个基准 + 推理参数</span></h4>
+  <div class="subtitle">官方点名的 5 个评测套件 + 三套采样参数 + 裸模型评测设计</div>
+
+  <div class="mg-section">
+    <span class="mg-section-tag">① 评测矩阵 [基准 / 定位 / 采样参数]</span>
+    <table class="mg-table">
+      <thead>
+        <tr><th style="width:22%">基准</th><th>定位</th><th style="width:28%">采样参数</th></tr>
+      </thead>
+      <tbody>
+        <tr>
+          <td><b>FORTE</b><br><code style="font-size:12px">Full-cycle Office Real-world Task Evaluation</code></td>
+          <td>15 类岗位的真实办公 <b>agent 任务</b>「多步规划 + 工具调用」</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><b>RW-Search</b><br><code>美团自建</code></td>
+          <td>搜索智能体基准，<b>裸模型评测</b>「仅 basic Search + Browse，不做上下文管理」</td>
+          <td>—</td>
+        </tr>
+        <tr>
+          <td><b>IMO-AnswerBench</b></td>
+          <td>数学奥赛题集，长链推理</td>
+          <td><code>T=1.0 / top_p=0.95</code></td>
+        </tr>
+        <tr>
+          <td><b>Claude Code 沙盒</b><br><code>8c16g</code></td>
+          <td>仓库级修改 / 自动化任务执行（Anthropic agent harness）</td>
+          <td><code>T=1.0 / top_p=0.95</code><br><code>agent 6h timeout</code></td>
+        </tr>
+        <tr>
+          <td><b>Claude Code 沙盒</b><br><code>4c8g</code></td>
+          <td>更紧的资源约束；problematic tasks corrected</td>
+          <td><code>T=1.0 / top_p=1</code></td>
+        </tr>
+      </tbody>
+    </table>
+  </div>
+
+  <div class="mg-section">
+    <span class="mg-section-tag">② 三套采样参数（一眼对齐）</span>
+    <div class="b1-stats">
+      <div class="b1-stat"><span class="dt">IMO-AnswerBench</span><span class="dn"><code>T=1.0 / top_p=0.95</code></span></div>
+      <div class="b1-stat"><span class="dt">Claude Code 8c16g</span><span class="dn"><code>T=1.0 / top_p=0.95 / 6h</code></span></div>
+      <div class="b1-stat"><span class="dt">Claude Code 4c8g</span><span class="dn"><code>T=1.0 / top_p=1</code></span></div>
+    </div>
+  </div>
+
+  <div class="mg-section">
+    <span class="mg-section-tag">③ 裸模型评测的设计意图</span>
+    <div class="note"><b>打个比方：</b>很多搜索 agent 跑分靠外挂工程把上下文管理、query rewrite、re-ranking 全堆在 harness 里——分数高、但本体能力看不清。RW-Search 选了相反路线：<b>只给模型 basic Search + Browse 两件工具，不做任何上下文管理</b>，让<b>裸模型</b>「不依赖外部脚手架的本体能力」直接暴露在评测下。把搜索 agent 能力作为<b>可量化训练目标</b>，目的是约束训练而不是刷榜。</div>
+  </div>
+
+  <div class="punchline">5 个基准官方点名，3 套采样参数公开，对手画像「leading proprietary models」——具体分数与对比模型版本请去 blog 官方动态表查看。</div>
+</div>
+
+
+<div class="paper paper-grid">
+  <h4>推理优化 <span class="tag">Inference</span> <span class="tag-star">PD 分离 · 模型/设备/部署三层</span></h4>
+
+
+  <div class="mg-section">
+    <span class="mg-section-tag">① 模型层：动注意力本身和 MoE 怎么算</span>
+    <table class="mg-table">
+      <thead><tr><th style="width:22%">招式</th><th>机制</th></tr></thead>
+      <tbody>
+        <tr><td>① <b>absorb 矩阵吸收</b></td><td>把一些原本要单独算出来的中间矩阵<b>"吸收"进相邻矩阵乘里</b>。Prefill/Decode 两段通用，<b>少一次显存来回</b></td></tr>
+        <tr><td>② <b>indexer 与 MLA 并行</b></td><td>LSA 的轻量索引器和 MLA（Multi-head Latent Attention）开头部分<b>同时启动</b>，索引器开销被 MLA 计算盖住，不再单独占时间</td></tr>
+        <tr><td>③ <b>KVP 切 KV cache</b></td><td>把巨大的 KV cache 切到多张卡上协同读写。Decode 阶段的内存压力<b>第一次被横向摊开</b></td></tr>
+      </tbody>
+    </table>
+    <div class="mg-pain-box" style="background:#eef9f0;border-color:#1e6b1e;color:#1f6b3a;margin-top:10px">
+      <b>ScMoE：让 dense 流和 MoE 流真正同时跑</b><br/>
+      不只是"计算和通信重叠"——主动把国产卡上的<b>核心数分给 dense 分支和 MoE 分支</b>，两条流真并行，不再轮流占算力。
+    </div>
+<div data-cut-protect style="background:#fafafa;border:1px solid #e0e0e0;border-radius:10px;padding:18px 14px;margin:14px 0"><div style="text-align:center;font-size:13px;color:#888;letter-spacing:.1em;font-weight:700;margin-bottom:14px">MODEL-LAYER · 模型层 4 招都在压「等待」</div><svg viewBox="0 0 720 360" style="width:100%;height:auto;display:block" xmlns="http://www.w3.org/2000/svg"><defs><marker id="ml-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#1a3a8a"/></marker><marker id="ml-arrR" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#c0392b"/></marker><marker id="ml-arrG" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto"><path d="M0,0 L10,5 L0,10 z" fill="#2a8a4a"/></marker></defs><text x="360" y="22" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" font-weight="800" fill="#1a3a8a">Four model-layer tactics, one target · 都在抢回 forward 里的等待时间</text><rect x="15" y="38" width="340" height="132" rx="6" fill="#fff" stroke="#e8e8e8"/><text x="25" y="55" font-family="Inter,sans-serif" font-size="12" font-weight="700" fill="#1a3a8a"><tspan font-weight="800">1</tspan>  Absorb · 矩阵吸收</text><text x="25" y="78" font-family="PingFang SC" font-size="10" fill="#c0392b" font-weight="700">naive</text><rect x="62" y="68" width="36" height="22" fill="#fff" stroke="#c0392b" stroke-width="1.5"/><text x="80" y="83" text-anchor="middle" font-family="SF Mono,monospace" font-size="10" fill="#333">A</text><line x1="98" y1="79" x2="130" y2="79" stroke="#c0392b" stroke-width="1.2" marker-end="url(#ml-arrR)" stroke-dasharray="2,2"/><text x="114" y="74" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#c0392b">HBM</text><rect x="130" y="68" width="50" height="22" fill="#fff" stroke="#c0392b" stroke-width="1.5"/><text x="155" y="83" text-anchor="middle" font-family="SF Mono,monospace" font-size="10" fill="#333">W_mid</text><line x1="180" y1="79" x2="212" y2="79" stroke="#c0392b" stroke-width="1.2" marker-end="url(#ml-arrR)" stroke-dasharray="2,2"/><text x="196" y="74" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#c0392b">HBM</text><rect x="212" y="68" width="36" height="22" fill="#fff" stroke="#c0392b" stroke-width="1.5"/><text x="230" y="83" text-anchor="middle" font-family="SF Mono,monospace" font-size="10" fill="#333">B</text><text x="258" y="83" font-family="PingFang SC" font-size="9" fill="#c0392b" font-weight="700">2 次显存</text><text x="25" y="118" font-family="PingFang SC" font-size="10" fill="#2a8a4a" font-weight="700">absorb</text><rect x="62" y="108" width="106" height="22" fill="#e8f4ea" stroke="#2a8a4a" stroke-width="2"/><text x="115" y="123" text-anchor="middle" font-family="SF Mono,monospace" font-size="10" fill="#1a3a8a" font-weight="700">A · W_mid</text><line x1="168" y1="119" x2="200" y2="119" stroke="#2a8a4a" stroke-width="1.5" marker-end="url(#ml-arrG)"/><rect x="200" y="108" width="36" height="22" fill="#fff" stroke="#2a8a4a" stroke-width="2"/><text x="218" y="123" text-anchor="middle" font-family="SF Mono,monospace" font-size="10" fill="#333">B</text><text x="246" y="123" font-family="PingFang SC" font-size="9" fill="#2a8a4a" font-weight="700">省 1 次</text><text x="25" y="156" font-family="PingFang SC" font-size="10" fill="#666">中间矩阵吸收进相邻乘法 · Prefill / Decode 两段通用</text><rect x="365" y="38" width="340" height="132" rx="6" fill="#fff" stroke="#e8e8e8"/><text x="375" y="55" font-family="Inter,sans-serif" font-size="12" font-weight="700" fill="#1a3a8a"><tspan font-weight="800">2</tspan>  Indexer ∥ MLA · 索引器藏在 MLA 阴影里</text><text x="375" y="78" font-family="PingFang SC" font-size="10" fill="#c0392b" font-weight="700">naive</text><rect x="418" y="69" width="130" height="14" fill="#1a3a8a"/><text x="483" y="79" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#fff" font-weight="700">MLA head</text><rect x="548" y="69" width="60" height="14" fill="#b8860b"/><text x="578" y="79" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#fff" font-weight="700">Indexer</text><text x="615" y="79" font-family="PingFang SC" font-size="9" fill="#c0392b" font-weight="700">串行</text><text x="375" y="115" font-family="PingFang SC" font-size="10" fill="#2a8a4a" font-weight="700">parallel</text><rect x="418" y="106" width="130" height="14" fill="#1a3a8a"/><text x="483" y="116" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#fff" font-weight="700">MLA head</text><rect x="418" y="124" width="60" height="14" fill="#b8860b" opacity="0.9"/><text x="448" y="134" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#fff" font-weight="700">Indexer</text><line x1="478" y1="131" x2="548" y2="131" stroke="#2a8a4a" stroke-width="1" stroke-dasharray="3,2"/><text x="513" y="129" text-anchor="middle" font-family="PingFang SC" font-size="8" fill="#2a8a4a" font-weight="700">被 MLA 完全覆盖</text><text x="615" y="134" font-family="PingFang SC" font-size="9" fill="#2a8a4a" font-weight="700">同时启</text><text x="375" y="156" font-family="PingFang SC" font-size="10" fill="#666">LSA 索引器与 MLA 同时启动 · 索引器开销几乎为零</text><rect x="15" y="180" width="340" height="132" rx="6" fill="#fff" stroke="#e8e8e8"/><text x="25" y="197" font-family="Inter,sans-serif" font-size="12" font-weight="700" fill="#1a3a8a"><tspan font-weight="800">3</tspan>  KVP · KV cache 横向切到多卡</text><text x="25" y="221" font-family="PingFang SC" font-size="10" fill="#c0392b" font-weight="700">naive</text><rect x="60" y="213" width="44" height="44" fill="#fff" stroke="#666" stroke-width="1"/><rect x="63" y="216" width="38" height="38" fill="#c0392b" opacity="0.85"/><text x="82" y="232" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#fff" font-weight="700">KV</text><text x="82" y="244" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#fff" font-weight="700">full</text><text x="82" y="270" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#666">GPU 0</text><text x="115" y="232" font-family="PingFang SC" font-size="9" fill="#c0392b" font-weight="700">单卡爆</text><text x="115" y="244" font-family="PingFang SC" font-size="8" fill="#c0392b">decode 瓶颈</text><line x1="178" y1="235" x2="200" y2="235" stroke="#1a3a8a" stroke-width="1.5" marker-end="url(#ml-arr)"/><text x="216" y="221" font-family="PingFang SC" font-size="10" fill="#2a8a4a" font-weight="700">KVP split</text><g transform="translate(210,213)"><rect x="0" y="0" width="26" height="44" fill="#fff" stroke="#2a8a4a" stroke-width="1.2"/><rect x="3" y="3" width="20" height="11" fill="#2a8a4a" opacity="0.85"/><text x="13" y="11" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#fff" font-weight="700">KV/4</text><text x="13" y="57" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#666">G0</text></g><g transform="translate(240,213)"><rect x="0" y="0" width="26" height="44" fill="#fff" stroke="#2a8a4a" stroke-width="1.2"/><rect x="3" y="3" width="20" height="11" fill="#2a8a4a" opacity="0.85"/><text x="13" y="11" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#fff" font-weight="700">KV/4</text><text x="13" y="57" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#666">G1</text></g><g transform="translate(270,213)"><rect x="0" y="0" width="26" height="44" fill="#fff" stroke="#2a8a4a" stroke-width="1.2"/><rect x="3" y="3" width="20" height="11" fill="#2a8a4a" opacity="0.85"/><text x="13" y="11" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#fff" font-weight="700">KV/4</text><text x="13" y="57" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#666">G2</text></g><g transform="translate(300,213)"><rect x="0" y="0" width="26" height="44" fill="#fff" stroke="#2a8a4a" stroke-width="1.2"/><rect x="3" y="3" width="20" height="11" fill="#2a8a4a" opacity="0.85"/><text x="13" y="11" text-anchor="middle" font-family="Inter,sans-serif" font-size="7" fill="#fff" font-weight="700">KV/4</text><text x="13" y="57" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#666">G3</text></g><line x1="223" y1="285" x2="313" y2="285" stroke="#2a8a4a" stroke-width="0.8" stroke-dasharray="2,2"/><text x="268" y="297" text-anchor="middle" font-family="PingFang SC" font-size="8" fill="#2a8a4a" font-weight="700">协同读写</text><text x="25" y="307" font-family="PingFang SC" font-size="10" fill="#666">decode 显存压力第一次被横向摊开 · 长序列不再爆</text><rect x="365" y="180" width="340" height="132" rx="6" fill="#fff" stroke="#e8e8e8"/><text x="375" y="197" font-family="Inter,sans-serif" font-size="12" font-weight="700" fill="#1a3a8a"><tspan font-weight="800">4</tspan>  ScMoE · 双流真并行（不是算-通轮流占用）</text><text x="375" y="221" font-family="PingFang SC" font-size="9" fill="#c0392b" font-weight="700">naive</text><text x="375" y="232" font-family="Inter,sans-serif" font-size="7" fill="#666">all SMs</text><rect x="420" y="213" width="60" height="14" fill="#1a3a8a"/><text x="450" y="223" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#fff" font-weight="700">Dense</text><rect x="480" y="213" width="80" height="14" fill="#b8860b"/><text x="520" y="223" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#fff" font-weight="700">MoE expt</text><rect x="560" y="213" width="60" height="14" fill="#1a3a8a"/><text x="590" y="223" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#fff" font-weight="700">Dense</text><text x="625" y="223" font-family="PingFang SC" font-size="9" fill="#c0392b" font-weight="700">轮流</text><text x="375" y="257" font-family="PingFang SC" font-size="9" fill="#2a8a4a" font-weight="700">ScMoE</text><text x="375" y="268" font-family="Inter,sans-serif" font-size="7" fill="#666">SMs split</text><text x="418" y="263" text-anchor="end" font-family="Inter,sans-serif" font-size="7" fill="#666">A▸</text><rect x="420" y="253" width="180" height="14" fill="#1a3a8a"/><text x="510" y="263" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#fff" font-weight="700">Dense stream</text><text x="418" y="281" text-anchor="end" font-family="Inter,sans-serif" font-size="7" fill="#666">B▸</text><rect x="420" y="271" width="180" height="14" fill="#b8860b"/><text x="510" y="281" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#fff" font-weight="700">MoE stream</text><line x1="605" y1="260" x2="605" y2="285" stroke="#2a8a4a" stroke-width="1.2"/><text x="612" y="278" font-family="PingFang SC" font-size="9" fill="#2a8a4a" font-weight="700">同时跑</text><text x="375" y="307" font-family="PingFang SC" font-size="10" fill="#666">国产卡核心切两堆 · Dense / MoE 各占一份，不是计算-通信交替</text><text x="360" y="345" text-anchor="middle" font-family="PingFang SC" font-size="13" font-weight="800" fill="#1a3a8a">4 招都在压同一个东西 — 单次 forward 里的「等待时间」</text></svg></div>
+  </div>
+
+  <div class="mg-section">
+    <span class="mg-section-tag">② 设备层：给国产 ASIC 量身打的三招</span>
+    <table class="mg-table">
+      <thead><tr><th style="width:22%">招式</th><th>机制</th></tr></thead>
+      <tbody>
+        <tr><td><b>Super Kernel</b></td><td>图模式已经消掉算子之间的空隙，但算子内部还有"启动开销"。<b>把多个小算子合并成一个大核</b>，总启动次数直接砍掉</td></tr>
+        <tr><td><b>Weight Prefetch</b></td><td>国产卡<b>显存带宽吃紧但 L2 cache 大</b>。提前一拍把下一个算子要用的权重塞进 L2，I/O 藏进前一个算子的计算里</td></tr>
+        <tr><td><b>Scale Up &amp; Out</b></td><td>200 Gbps 网卡按 layer-wise 在 Prefill/Decode 节点之间传 KV cache；KV cache store 建在主机 RDMA 上；TP/SP/KVP 全留在<b>高速 scale-up 域</b>内</td></tr>
+      </tbody>
+    </table>
+<div data-cut-protect style="background:#fafafa;border:1px solid #e0e0e0;border-radius:10px;padding:18px 14px;margin:14px 0">
+<div style="text-align:center;font-size:13px;color:#888;letter-spacing:.1em;font-weight:700;margin-bottom:14px">THREE TRICKS FOR DOMESTIC ASIC · 针对国产卡的瓶颈定制算法</div>
+<svg viewBox="0 0 720 360" style="width:100%;height:auto;display:block" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="arrA" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1a3a5c"/>
+    </marker>
+    <marker id="arrG" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#2a8a4a"/>
+    </marker>
+    <marker id="arrR" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c0392b"/>
+    </marker>
+  </defs>
+
+  <!-- ===== Panel 1: Super Kernel timeline ===== -->
+  <rect x="10" y="6" width="232" height="304" fill="#fff" stroke="#e0e0e0" stroke-width="1" rx="6"/>
+  <text x="126" y="24" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" font-weight="800" fill="#1a3a5c">① Super Kernel</text>
+  <text x="126" y="40" text-anchor="middle" font-family="PingFang SC" font-size="11" fill="#888">融合小算子 · 砍启动开销</text>
+
+  <!-- Naive row -->
+  <text x="22" y="62" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#c0392b">naive</text>
+  <text x="22" y="76" font-family="PingFang SC" font-size="10" fill="#888">每个算子各自启动</text>
+  <!-- launch gaps + kernels -->
+  <g>
+    <rect x="22" y="84" width="6" height="14" fill="#c0392b" opacity="0.5"/>
+    <rect x="28" y="84" width="22" height="14" fill="#1a3a5c"/>
+    <rect x="50" y="84" width="6" height="14" fill="#c0392b" opacity="0.5"/>
+    <rect x="56" y="84" width="20" height="14" fill="#1a3a5c"/>
+    <rect x="76" y="84" width="6" height="14" fill="#c0392b" opacity="0.5"/>
+    <rect x="82" y="84" width="18" height="14" fill="#1a3a5c"/>
+    <rect x="100" y="84" width="6" height="14" fill="#c0392b" opacity="0.5"/>
+    <rect x="106" y="84" width="24" height="14" fill="#1a3a5c"/>
+    <rect x="130" y="84" width="6" height="14" fill="#c0392b" opacity="0.5"/>
+    <rect x="136" y="84" width="20" height="14" fill="#1a3a5c"/>
+    <rect x="156" y="84" width="6" height="14" fill="#c0392b" opacity="0.5"/>
+    <rect x="162" y="84" width="22" height="14" fill="#1a3a5c"/>
+    <rect x="184" y="84" width="6" height="14" fill="#c0392b" opacity="0.5"/>
+    <rect x="190" y="84" width="20" height="14" fill="#1a3a5c"/>
+  </g>
+  <!-- legend marks -->
+  <rect x="22" y="106" width="8" height="8" fill="#c0392b" opacity="0.5"/>
+  <text x="33" y="113" font-family="Inter,sans-serif" font-size="9" fill="#555">launch</text>
+  <rect x="70" y="106" width="8" height="8" fill="#1a3a5c"/>
+  <text x="81" y="113" font-family="Inter,sans-serif" font-size="9" fill="#555">compute</text>
+
+  <!-- Fused row -->
+  <text x="22" y="148" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#2a8a4a">fused</text>
+  <text x="22" y="162" font-family="PingFang SC" font-size="10" fill="#888">合成一个大核 · 一次启动</text>
+  <g>
+    <rect x="22" y="170" width="6" height="14" fill="#c0392b" opacity="0.5"/>
+    <rect x="28" y="170" width="180" height="14" fill="#2a8a4a"/>
+    <text x="118" y="181" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="700" fill="#fff">one Super Kernel</text>
+  </g>
+
+  <!-- saved arrow -->
+  <line x1="210" y1="91" x2="210" y2="170" stroke="#2a8a4a" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#arrG)"/>
+  <text x="216" y="135" font-family="Inter,sans-serif" font-size="10" font-weight="700" fill="#2a8a4a">−6× launch</text>
+
+  <!-- example -->
+  <rect x="22" y="208" width="208" height="68" fill="#f3f3f3" stroke="#e8e8e8" rx="4"/>
+  <text x="30" y="222" font-family="PingFang SC" font-size="10" font-weight="700" fill="#1a3a5c">示例: MLA decode 路径</text>
+  <text x="30" y="238" font-family="SF Mono,monospace" font-size="9.5" fill="#444">RMSNorm <tspan font-weight="700">+</tspan> Q/K/V proj</text>
+  <text x="30" y="252" font-family="SF Mono,monospace" font-size="9.5" fill="#444"><tspan font-weight="700">+</tspan> RoPE <tspan font-weight="700">+</tspan> Indexer <tspan font-weight="700">+</tspan> MLA head</text>
+  <text x="30" y="268" font-family="PingFang SC" font-size="10" font-weight="700" fill="#2a8a4a">→ 一个 kernel 全搞定</text>
+
+  <text x="126" y="296" text-anchor="middle" font-family="PingFang SC" font-size="10.5" fill="#1a3a5c">图模式消算子<tspan font-weight="700">间</tspan>空隙，</text>
+  <text x="126" y="308" text-anchor="middle" font-family="PingFang SC" font-size="10.5" fill="#1a3a5c">融合消算子<tspan font-weight="700">内</tspan>启动开销</text>
+
+  <!-- ===== Panel 2: Weight Prefetch ===== -->
+  <rect x="248" y="6" width="224" height="304" fill="#fff" stroke="#e0e0e0" stroke-width="1" rx="6"/>
+  <text x="360" y="24" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" font-weight="800" fill="#1a3a5c">② Weight Prefetch</text>
+  <text x="360" y="40" text-anchor="middle" font-family="PingFang SC" font-size="11" fill="#888">提前一拍 · I/O 藏进计算</text>
+
+  <!-- memory hierarchy -->
+  <rect x="262" y="56" width="92" height="34" fill="#fff" stroke="#b8860b" stroke-width="1.5" rx="3"/>
+  <text x="308" y="71" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="700" fill="#b8860b">HBM</text>
+  <text x="308" y="84" text-anchor="middle" font-family="PingFang SC" font-size="9" fill="#888">带宽吃紧</text>
+
+  <rect x="366" y="56" width="92" height="34" fill="#fff" stroke="#2a8a4a" stroke-width="1.5" rx="3"/>
+  <text x="412" y="71" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="700" fill="#2a8a4a">L2 cache</text>
+  <text x="412" y="84" text-anchor="middle" font-family="PingFang SC" font-size="9" fill="#888">国产卡很大</text>
+
+  <line x1="354" y1="73" x2="366" y2="73" stroke="#444" stroke-width="1" marker-end="url(#arrA)"/>
+
+  <!-- pipeline timeline -->
+  <text x="262" y="108" font-family="Inter,sans-serif" font-size="10" font-weight="700" fill="#444">compute lane</text>
+  <rect x="262" y="114" width="56" height="18" fill="#1a3a5c" rx="2"/>
+  <text x="290" y="127" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="700" fill="#fff">op N</text>
+  <rect x="320" y="114" width="56" height="18" fill="#1a3a5c" rx="2"/>
+  <text x="348" y="127" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="700" fill="#fff">op N+1</text>
+  <rect x="378" y="114" width="56" height="18" fill="#1a3a5c" rx="2"/>
+  <text x="406" y="127" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="700" fill="#fff">op N+2</text>
+
+  <text x="262" y="150" font-family="Inter,sans-serif" font-size="10" font-weight="700" fill="#444">I/O lane</text>
+  <rect x="262" y="156" width="56" height="14" fill="#b8860b" opacity="0.85" rx="2"/>
+  <text x="290" y="166" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#fff">load W(N+1)</text>
+  <rect x="320" y="156" width="56" height="14" fill="#b8860b" opacity="0.85" rx="2"/>
+  <text x="348" y="166" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#fff">load W(N+2)</text>
+  <rect x="378" y="156" width="56" height="14" fill="#b8860b" opacity="0.5" rx="2"/>
+  <text x="406" y="166" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" font-weight="700" fill="#fff">...</text>
+
+  <!-- overlap arrows -->
+  <line x1="290" y1="156" x2="348" y2="135" stroke="#2a8a4a" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#arrG)"/>
+  <text x="436" y="146" font-family="Inter,sans-serif" font-size="10" font-weight="700" fill="#2a8a4a">overlap</text>
+  <text x="436" y="158" font-family="PingFang SC" font-size="9" fill="#2a8a4a">藏起来</text>
+
+  <!-- timeline axis -->
+  <line x1="262" y1="184" x2="458" y2="184" stroke="#888" stroke-width="0.8"/>
+  <text x="262" y="195" font-family="Inter,sans-serif" font-size="9" fill="#888">t</text>
+  <text x="450" y="195" font-family="Inter,sans-serif" font-size="9" fill="#888">→</text>
+
+  <!-- box: trick -->
+  <rect x="262" y="208" width="196" height="68" fill="#f3f3f3" stroke="#e8e8e8" rx="4"/>
+  <text x="270" y="222" font-family="PingFang SC" font-size="10" font-weight="700" fill="#1a3a5c">关键 trick</text>
+  <text x="270" y="238" font-family="PingFang SC" font-size="10" fill="#444">用大 L2 当 staging buffer，</text>
+  <text x="270" y="252" font-family="PingFang SC" font-size="10" fill="#444">下一算子权重在本算子算时</text>
+  <text x="270" y="266" font-family="PingFang SC" font-size="10" font-weight="700" fill="#2a8a4a">从 HBM → L2，下一拍直接命中</text>
+
+  <text x="360" y="296" text-anchor="middle" font-family="PingFang SC" font-size="10.5" fill="#1a3a5c">把"HBM 带宽不够"</text>
+  <text x="360" y="308" text-anchor="middle" font-family="PingFang SC" font-size="10.5" fill="#1a3a5c">换成"L2 容量够用"</text>
+
+  <!-- ===== Panel 3: Scale Up & Out topology ===== -->
+  <rect x="478" y="6" width="232" height="304" fill="#fff" stroke="#e0e0e0" stroke-width="1" rx="6"/>
+  <text x="594" y="24" text-anchor="middle" font-family="Inter,sans-serif" font-size="14" font-weight="800" fill="#1a3a5c">③ Scale Up &amp; Out</text>
+  <text x="594" y="40" text-anchor="middle" font-family="PingFang SC" font-size="11" fill="#888">按通信量分域 · 各走各的路</text>
+
+  <!-- scale-up domain box -->
+  <rect x="492" y="54" width="204" height="86" fill="#fff" stroke="#1a3a5c" stroke-width="1.5" stroke-dasharray="4 3" rx="6"/>
+  <text x="500" y="68" font-family="Inter,sans-serif" font-size="10" font-weight="700" fill="#1a3a5c">scale-up domain</text>
+  <text x="500" y="80" font-family="PingFang SC" font-size="9" fill="#888">高带宽 · 低延迟</text>
+
+  <!-- Prefill node -->
+  <rect x="500" y="90" width="86" height="44" fill="#fafafa" stroke="#1a3a5c" stroke-width="1.2" rx="3"/>
+  <text x="543" y="104" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="700" fill="#1a3a5c">Prefill node</text>
+  <text x="543" y="118" text-anchor="middle" font-family="SF Mono,monospace" font-size="9" fill="#555">TP · SP · KVP</text>
+  <text x="543" y="129" text-anchor="middle" font-family="PingFang SC" font-size="9" fill="#888">域内通信</text>
+
+  <!-- Decode node -->
+  <rect x="600" y="90" width="86" height="44" fill="#fafafa" stroke="#1a3a5c" stroke-width="1.2" rx="3"/>
+  <text x="643" y="104" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="700" fill="#1a3a5c">Decode node</text>
+  <text x="643" y="118" text-anchor="middle" font-family="SF Mono,monospace" font-size="9" fill="#555">TP · SP · KVP</text>
+  <text x="643" y="129" text-anchor="middle" font-family="PingFang SC" font-size="9" fill="#888">域内通信</text>
+
+  <!-- scale-out link between P↔D -->
+  <line x1="586" y1="112" x2="600" y2="112" stroke="#b8860b" stroke-width="2" marker-end="url(#arrA)"/>
+
+  <!-- 200Gbps label -->
+  <text x="594" y="156" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="700" fill="#b8860b">200 Gbps · layer-wise KV</text>
+
+  <!-- KV cache store -->
+  <rect x="520" y="170" width="148" height="36" fill="#fff" stroke="#b8860b" stroke-width="1.5" rx="4"/>
+  <text x="594" y="184" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="700" fill="#b8860b">KV cache store</text>
+  <text x="594" y="198" text-anchor="middle" font-family="PingFang SC" font-size="9" fill="#888">host RDMA · 共享池</text>
+
+  <!-- arrows from nodes to KV store -->
+  <line x1="543" y1="134" x2="560" y2="170" stroke="#b8860b" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#arrA)"/>
+  <line x1="643" y1="134" x2="628" y2="170" stroke="#b8860b" stroke-width="1" stroke-dasharray="3 2" marker-end="url(#arrA)"/>
+
+  <!-- partition rule -->
+  <rect x="492" y="218" width="204" height="58" fill="#f3f3f3" stroke="#e8e8e8" rx="4"/>
+  <text x="500" y="232" font-family="PingFang SC" font-size="10" font-weight="700" fill="#1a3a5c">分配规则</text>
+  <text x="500" y="246" font-family="PingFang SC" font-size="9.5" fill="#444"><tspan font-weight="700" fill="#1a3a5c">scale-up</tspan>: TP / SP / KVP（高频小包）</text>
+  <text x="500" y="260" font-family="PingFang SC" font-size="9.5" fill="#444"><tspan font-weight="700" fill="#b8860b">scale-out</tspan>: KV cache 跨节点搬运</text>
+  <text x="500" y="272" font-family="PingFang SC" font-size="9.5" fill="#444"><tspan font-weight="700" fill="#b8860b">host RDMA</tspan>: KV store 持久化</text>
+
+  <text x="594" y="296" text-anchor="middle" font-family="PingFang SC" font-size="10.5" fill="#1a3a5c">高频通信留<tspan font-weight="700">域内</tspan>,</text>
+  <text x="594" y="308" text-anchor="middle" font-family="PingFang SC" font-size="10.5" fill="#1a3a5c">KV 大块过<tspan font-weight="700">200G 网卡</tspan></text>
+
+  <!-- ===== Bottom takeaway ===== -->
+  <line x1="20" y1="324" x2="700" y2="324" stroke="#e0e0e0" stroke-width="1"/>
+  <text x="360" y="346" text-anchor="middle" font-family="PingFang SC" font-size="13" font-weight="700" fill="#1a3a5c">▸ 不是把通用 GPU kernel 移植过来，而是针对国产卡的<tspan fill="#c0392b">启动开销 / 显存带宽 / 互联拓扑</tspan>专门改算法</text>
+</svg>
+</div>
+  </div>
+
+  <div class="mg-section">
+    <span class="mg-section-tag">③ 部署层：EPLB 让 EP128 真正跑满</span>
+    <div style="background:#fff;border:2px dashed #b8860b;border-radius:10px;padding:14px 16px;margin:6px 0">
+      <div style="font-weight:800;color:#7a4a00;font-size:16px;margin-bottom:6px">EPLB · Expert-Parallel Load Balancing 专家并行负载均衡</div>
+      <div style="font-size:14.5px;color:#333;line-height:1.6">EP 越大越容易负载不均：<b>热门专家把单卡打满，整批请求被它一个人拖住</b>。EPLB 把<b>统计采集</b>和<b>分布计算</b>异步化——一边在线收专家命中频率，一边离线算新的专家放置策略，再热更新到推理节点，<b>不阻塞主路径</b>。这是 EP128 能真正跑满的最后一块拼图。</div>
+    </div>
+<div data-cut-protect style="background:#fafafa;border:1px solid #e0e0e0;border-radius:10px;padding:18px 14px;margin:14px 0">
+<div style="text-align:center;font-size:13px;color:#888;letter-spacing:.1em;font-weight:700;margin-bottom:14px">EPLB · ASYNC EXPERT LOAD BALANCING · EP128 不让单卡热点拖整批</div>
+<svg viewBox="0 0 720 370" style="width:100%;height:auto;display:block" xmlns="http://www.w3.org/2000/svg">
+  <defs>
+    <marker id="eplb-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#c0392b"/>
+    </marker>
+    <marker id="eplb-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1e6b1e"/>
+    </marker>
+    <marker id="eplb-gold" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#b8860b"/>
+    </marker>
+    <marker id="eplb-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto">
+      <path d="M0,0 L10,5 L0,10 z" fill="#1a3a5c"/>
+    </marker>
+  </defs>
+
+  <!-- Title -->
+  <text x="360" y="20" text-anchor="middle" font-family="PingFang SC" font-size="14" font-weight="800" fill="#1a3a5c">EP128 部署：从「单卡热点」到「全局均衡」</text>
+
+  <!-- ============ LEFT PANEL: Naive EP128 ============ -->
+  <rect x="18" y="36" width="335" height="180" rx="6" fill="#fff" stroke="#c0392b" stroke-width="2.5"/>
+  <text x="185" y="55" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" font-weight="700" fill="#c0392b">NAIVE EP128 · static placement</text>
+  <text x="185" y="71" text-anchor="middle" font-family="PingFang SC" font-size="11" fill="#555">128 张卡静态切，热门专家把单卡打满</text>
+
+  <!-- y-axis -->
+  <line x1="42" y1="100" x2="42" y2="190" stroke="#888" stroke-width="0.8"/>
+  <line x1="42" y1="190" x2="338" y2="190" stroke="#888" stroke-width="0.8"/>
+  <text x="38" y="194" text-anchor="end" font-family="SF Mono,monospace" font-size="8" fill="#888">0</text>
+  <text x="38" y="104" text-anchor="end" font-family="SF Mono,monospace" font-size="8" fill="#888">100%</text>
+
+  <!-- cold bars -->
+  <g fill="#c0392b" opacity="0.45">
+    <rect x="48"  y="168" width="14" height="22"/>
+    <rect x="66"  y="172" width="14" height="18"/>
+    <rect x="84"  y="165" width="14" height="25"/>
+    <rect x="102" y="170" width="14" height="20"/>
+    <rect x="120" y="166" width="14" height="24"/>
+  </g>
+  <!-- HOT expert bar -->
+  <rect x="138" y="105" width="14" height="85" fill="#c0392b"/>
+  <g fill="#c0392b" opacity="0.45">
+    <rect x="156" y="171" width="14" height="19"/>
+    <rect x="174" y="167" width="14" height="23"/>
+    <rect x="192" y="169" width="14" height="21"/>
+    <rect x="210" y="170" width="14" height="20"/>
+    <rect x="228" y="164" width="14" height="26"/>
+    <rect x="246" y="172" width="14" height="18"/>
+    <rect x="264" y="168" width="14" height="22"/>
+    <rect x="282" y="166" width="14" height="24"/>
+    <rect x="300" y="169" width="14" height="21"/>
+    <rect x="318" y="170" width="14" height="20"/>
+  </g>
+
+  <!-- hot annotation -->
+  <line x1="145" y1="100" x2="200" y2="80" stroke="#c0392b" stroke-width="1.2" marker-end="url(#eplb-red)"/>
+  <rect x="195" y="65" width="140" height="30" rx="3" fill="#fff" stroke="#c0392b" stroke-width="1"/>
+  <text x="265" y="78" text-anchor="middle" font-family="SF Mono,monospace" font-size="10" font-weight="700" fill="#c0392b">Expert 17 · GPU#42</text>
+  <text x="265" y="89" text-anchor="middle" font-family="PingFang SC" font-size="9" fill="#c0392b">单卡 100% · 整批被它拖住</text>
+
+  <text x="185" y="206" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#888">per-GPU expert load · sample of 128 cards</text>
+
+  <!-- ============ RIGHT PANEL: EPLB balanced ============ -->
+  <rect x="367" y="36" width="335" height="180" rx="6" fill="#fff" stroke="#1e6b1e" stroke-width="2.5"/>
+  <text x="534" y="55" text-anchor="middle" font-family="Inter,sans-serif" font-size="12" font-weight="700" fill="#1e6b1e">EPLB · async rebalanced</text>
+  <text x="534" y="71" text-anchor="middle" font-family="PingFang SC" font-size="11" fill="#555">热门专家被复制 / 重排，全局均衡</text>
+
+  <!-- y-axis -->
+  <line x1="391" y1="100" x2="391" y2="190" stroke="#888" stroke-width="0.8"/>
+  <line x1="391" y1="190" x2="687" y2="190" stroke="#888" stroke-width="0.8"/>
+  <text x="387" y="194" text-anchor="end" font-family="SF Mono,monospace" font-size="8" fill="#888">0</text>
+  <text x="387" y="104" text-anchor="end" font-family="SF Mono,monospace" font-size="8" fill="#888">100%</text>
+
+  <!-- balanced green bars around 55-65% -->
+  <g fill="#2a8a4a">
+    <rect x="397" y="138" width="14" height="52"/>
+    <rect x="415" y="134" width="14" height="56"/>
+    <rect x="433" y="140" width="14" height="50"/>
+    <rect x="451" y="136" width="14" height="54"/>
+    <rect x="469" y="142" width="14" height="48"/>
+    <rect x="487" y="135" width="14" height="55"/>
+    <rect x="505" y="139" width="14" height="51"/>
+    <rect x="523" y="137" width="14" height="53"/>
+    <rect x="541" y="141" width="14" height="49"/>
+    <rect x="559" y="136" width="14" height="54"/>
+    <rect x="577" y="140" width="14" height="50"/>
+    <rect x="595" y="138" width="14" height="52"/>
+    <rect x="613" y="134" width="14" height="56"/>
+    <rect x="631" y="142" width="14" height="48"/>
+    <rect x="649" y="137" width="14" height="53"/>
+    <rect x="667" y="139" width="14" height="51"/>
+  </g>
+
+  <!-- target band -->
+  <line x1="391" y1="130" x2="687" y2="130" stroke="#1e6b1e" stroke-width="0.8" stroke-dasharray="3,2" opacity="0.5"/>
+  <text x="694" y="133" font-family="SF Mono,monospace" font-size="8" fill="#1e6b1e">~60%</text>
+
+  <!-- check annotation -->
+  <rect x="430" y="65" width="208" height="30" rx="3" fill="#fff" stroke="#1e6b1e" stroke-width="1"/>
+  <text x="534" y="78" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="700" fill="#1e6b1e">✓ no straggler · throughput unblocked</text>
+  <text x="534" y="89" text-anchor="middle" font-family="PingFang SC" font-size="9" fill="#1e6b1e">Expert 17 复制到多卡 · 流量分摊</text>
+
+  <text x="534" y="206" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#888">per-GPU expert load · same 128 cards after rebalance</text>
+
+  <!-- ============ BOTTOM PIPELINE ============ -->
+  <text x="40" y="248" font-family="Inter,sans-serif" font-size="11" font-weight="700" fill="#1a3a5c">HOW · async rebalance loop · 主推理路径零阻塞</text>
+
+  <!-- Stage 1: ONLINE inference (collect) -->
+  <rect x="40" y="260" width="170" height="56" rx="5" fill="#fff" stroke="#1a3a5c" stroke-width="1.5"/>
+  <text x="125" y="276" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="700" fill="#1a3a5c">① ONLINE · inference nodes</text>
+  <text x="125" y="291" text-anchor="middle" font-family="PingFang SC" font-size="9" fill="#444">在线收专家命中频率</text>
+  <text x="125" y="305" text-anchor="middle" font-family="SF Mono,monospace" font-size="9" fill="#666">hit_count[expert_id] ++</text>
+
+  <!-- arrow 1 -->
+  <line x1="212" y1="288" x2="248" y2="288" stroke="#b8860b" stroke-width="1.5" marker-end="url(#eplb-gold)"/>
+  <text x="230" y="282" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#b8860b">stats</text>
+
+  <!-- Stage 2: OFFLINE plan -->
+  <rect x="250" y="260" width="170" height="56" rx="5" fill="#fff" stroke="#b8860b" stroke-width="1.5"/>
+  <text x="335" y="276" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="700" fill="#b8860b">② OFFLINE · planner</text>
+  <text x="335" y="291" text-anchor="middle" font-family="PingFang SC" font-size="9" fill="#444">异步算新的专家放置策略</text>
+  <text x="335" y="305" text-anchor="middle" font-family="SF Mono,monospace" font-size="9" fill="#666">solve placement · 128 GPUs</text>
+
+  <!-- arrow 2 -->
+  <line x1="422" y1="288" x2="458" y2="288" stroke="#b8860b" stroke-width="1.5" marker-end="url(#eplb-gold)"/>
+  <text x="440" y="282" text-anchor="middle" font-family="Inter,sans-serif" font-size="8" fill="#b8860b">plan</text>
+
+  <!-- Stage 3: HOT update -->
+  <rect x="460" y="260" width="220" height="56" rx="5" fill="#fff" stroke="#1e6b1e" stroke-width="1.5"/>
+  <text x="570" y="276" text-anchor="middle" font-family="Inter,sans-serif" font-size="10" font-weight="700" fill="#1e6b1e">③ HOT UPDATE · 不阻塞主路径</text>
+  <text x="570" y="291" text-anchor="middle" font-family="PingFang SC" font-size="9" fill="#444">推理节点边跑边切专家映射表</text>
+  <text x="570" y="305" text-anchor="middle" font-family="SF Mono,monospace" font-size="9" fill="#666">swap routing table · no stall</text>
+
+  <!-- Feedback arrow back to stage 1 -->
+  <path d="M 570 320 Q 570 340 360 340 Q 125 340 125 320" fill="none" stroke="#1a3a5c" stroke-width="1" stroke-dasharray="4,3" marker-end="url(#eplb-blue)"/>
+  <text x="360" y="355" text-anchor="middle" font-family="Inter,sans-serif" font-size="9" fill="#1a3a5c">continuous loop · 边收数据 边算策略 边热更新</text>
+
+  <!-- Bottom takeaway -->
+  <text x="360" y="368" text-anchor="middle" font-family="PingFang SC" font-size="13" font-weight="700" fill="#1a3a5c">不是等高峰过了再均衡 — 而是 collect / plan / hot-swap 三件事并行跑，主推理零阻塞</text>
+</svg>
+</div>
+  </div>
+
+  <div class="punchline">节首那张 Prefill vs Decode 大图就是 §5 的骨架，后面所有招式都是在给这两段补血——<b>模型层动算法、设备层榨硬件、部署层调拓扑</b>。</div>
+</div>
+
+  <div style="margin-top:36px;text-align:center;color:#999;font-size:14px;border-top:1px solid #e6e6e6;padding-top:20px">
+    Source · <a href="https://longcat.ai/blog/longcat-2.0/" target="_blank" style="color:#666">https://longcat.ai/blog/longcat-2.0/</a>
+  </div>
+</div></body></html>
