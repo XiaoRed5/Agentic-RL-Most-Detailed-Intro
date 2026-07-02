@@ -3,7 +3,7 @@
   "viewportWidth": 1080,
   "totalCssHeight": 13144.0,
   "fullImage": {
-    "path": "/Users/hongbo/Documents/Codex/2026-06-30/jian/outputs/longcat-2.0_xhs_export_2x_v2/full_2x.png",
+    "path": "full_2x.png",
     "width": 2160,
     "height": 26288
   },
@@ -198,62 +198,62 @@
   "figureCutViolations": [],
   "pages": [
     {
-      "file": "/Users/hongbo/Documents/Codex/2026-06-30/jian/outputs/longcat-2.0_xhs_export_2x_v2/pages/01.png",
+      "file": "pages/01.png",
       "width": 2160,
       "height": 2340
     },
     {
-      "file": "/Users/hongbo/Documents/Codex/2026-06-30/jian/outputs/longcat-2.0_xhs_export_2x_v2/pages/02.png",
+      "file": "pages/02.png",
       "width": 2160,
       "height": 2340
     },
     {
-      "file": "/Users/hongbo/Documents/Codex/2026-06-30/jian/outputs/longcat-2.0_xhs_export_2x_v2/pages/03.png",
+      "file": "pages/03.png",
       "width": 2160,
       "height": 2340
     },
     {
-      "file": "/Users/hongbo/Documents/Codex/2026-06-30/jian/outputs/longcat-2.0_xhs_export_2x_v2/pages/04.png",
+      "file": "pages/04.png",
       "width": 2160,
       "height": 2925
     },
     {
-      "file": "/Users/hongbo/Documents/Codex/2026-06-30/jian/outputs/longcat-2.0_xhs_export_2x_v2/pages/05.png",
+      "file": "pages/05.png",
       "width": 2160,
       "height": 2340
     },
     {
-      "file": "/Users/hongbo/Documents/Codex/2026-06-30/jian/outputs/longcat-2.0_xhs_export_2x_v2/pages/06.png",
+      "file": "pages/06.png",
       "width": 2160,
       "height": 2340
     },
     {
-      "file": "/Users/hongbo/Documents/Codex/2026-06-30/jian/outputs/longcat-2.0_xhs_export_2x_v2/pages/07.png",
+      "file": "pages/07.png",
       "width": 2160,
       "height": 2710
     },
     {
-      "file": "/Users/hongbo/Documents/Codex/2026-06-30/jian/outputs/longcat-2.0_xhs_export_2x_v2/pages/08.png",
+      "file": "pages/08.png",
       "width": 2160,
       "height": 2340
     },
     {
-      "file": "/Users/hongbo/Documents/Codex/2026-06-30/jian/outputs/longcat-2.0_xhs_export_2x_v2/pages/09.png",
+      "file": "pages/09.png",
       "width": 2160,
       "height": 1883
     },
     {
-      "file": "/Users/hongbo/Documents/Codex/2026-06-30/jian/outputs/longcat-2.0_xhs_export_2x_v2/pages/10.png",
+      "file": "pages/10.png",
       "width": 2160,
       "height": 1730
     },
     {
-      "file": "/Users/hongbo/Documents/Codex/2026-06-30/jian/outputs/longcat-2.0_xhs_export_2x_v2/pages/11.png",
+      "file": "pages/11.png",
       "width": 2160,
       "height": 2774
     },
     {
-      "file": "/Users/hongbo/Documents/Codex/2026-06-30/jian/outputs/longcat-2.0_xhs_export_2x_v2/pages/12.png",
+      "file": "pages/12.png",
       "width": 2160,
       "height": 500
     }
