@@ -1,0 +1,864 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>GLM-5.2 长程任务的 RL 怎么做？</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:#f3f3f3}
+body{font-family:'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC',sans-serif;color:#222;font-size:21px;line-height:1.65}
+.xhs-canvas{width:1080px;margin:0 auto;background:#fff;padding:40px 44px 72px}
+code{font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:.9em;background:#f3f4f6;padding:1px 6px;border-radius:4px;color:#d04040}
+
+/* KaTeX */
+.katex-display{margin:14px 0!important;padding:14px 18px;background:#faf9ff;border-left:4px solid #8b5cf6;border-radius:0 8px 8px 0;overflow-x:auto;font-size:20px}
+.katex-display>.katex{font-size:1.0em}
+.katex{font-size:1.0em;white-space:nowrap;display:inline-block}
+.katex-mathml{position:absolute!important;clip:rect(1px,1px,1px,1px)!important;padding:0!important;border:0!important;height:1px!important;width:1px!important;overflow:hidden!important}
+
+/* Headings */
+h1{font-size:42px;font-weight:800;letter-spacing:-0.5px;line-height:1.3;color:#111;margin:0 0 14px}
+h1 .hl{color:#c0392b}
+.lede{color:#444;font-size:22px;line-height:1.62;margin:6px 0 10px}
+.lede b{color:#1a3a8a;font-weight:800}
+.src{color:#777;font-size:17px;margin:14px 0 8px;border-top:1px solid #e6e6e6;padding-top:12px}
+.src b{color:#1a3a8a}
+p{margin:6px 0;text-align:left;overflow-wrap:break-word}
+strong{font-weight:800;color:#1a3a8a}
+
+/* section 分节标签 */
+.mg-section{margin:22px 0 18px}
+.mg-section-tag{display:inline-block;background:#1a3a8a;color:#fff;font-size:16px;font-weight:800;padding:6px 16px;border-radius:6px;margin-bottom:12px;letter-spacing:.03em}
+
+/* Paper card */
+.paper{background:#fff;border:1px solid #e6e6e6;border-radius:16px;padding:26px 28px;margin:26px 0;box-shadow:0 2px 14px rgba(0,0,0,.05)}
+.paper h4{font-size:30px;font-weight:800;color:#000;line-height:1.32;margin-bottom:6px;letter-spacing:-0.3px}
+.paper .subtitle{color:#666;font-size:20px;margin:2px 0 14px;font-weight:500}
+.paper p{font-size:20px;color:#333;line-height:1.66;margin:8px 0}
+.tag{display:inline-block;font-size:16px;background:#f1fbef;border:1px solid #bfe8b8;color:#1e6b1e;padding:2px 10px;border-radius:6px;margin:2px 4px 2px 0;font-weight:700;vertical-align:middle}
+.tag-star{background:#ffe9b8;border-color:#e0a040;color:#7a4a00}
+
+/* punchline 橙条 */
+.punchline{background:#fffaf0;border-left:4px solid #e0a040;color:#5a4a18;font-size:21px;font-weight:700;padding:14px 18px;border-radius:0 10px 10px 0;display:block;margin:10px 0 16px;line-height:1.55}
+.punchline em{font-style:normal;color:#c0392b;background:linear-gradient(180deg,transparent 62%,#ffe082 62%);padding:0 3px}
+
+/* note 比方块 */
+.note{background:#fff5e8;border:1px solid #efd5ac;border-radius:12px;padding:16px 20px;margin:16px 0;font-size:20px;line-height:1.62;color:#5a3a18}
+.note strong{font-weight:800;color:#7a4a00}
+.note b{color:#7a4a00;font-weight:800}
+
+/* 痛点对比卡 */
+.mg-pain{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:12px 0 14px}
+.mg-pain-box{background:#fff;border:1.5px solid #1a3a8a;border-radius:10px;padding:16px 18px;font-size:17px;color:#2c2c2c;line-height:1.6}
+.mg-pain-box.bad{background:#fff5f5;border-color:#c0392b;color:#7a2727}
+.mg-pain-box .ph{font-size:20px;font-weight:800;color:#1a3a8a;margin-bottom:6px}
+.mg-pain-box.bad .ph{color:#c0392b}
+.mg-pain-box .pdata{margin-top:10px;padding-top:9px;border-top:1px dashed #c9b98a;font-size:16px;font-weight:800;color:#1a3a8a}
+.mg-pain-box.bad .pdata{color:#c0392b}
+.mg-pain-box .pdata span{font-size:14px;font-weight:500;color:#777;margin-left:5px}
+
+/* bullet 要点 */
+ul.pts{margin:10px 0 10px 2px;list-style:none}
+ul.pts li{font-size:19px;color:#2c2c2c;line-height:1.62;padding-left:26px;position:relative;margin-bottom:10px}
+ul.pts li::before{content:"▸";position:absolute;left:4px;color:#1a3a8a;font-weight:800;font-size:20px}
+ul.pts li b{color:#1a3a8a;font-weight:800}
+ul.pts li em{font-style:normal;color:#c0392b;background:linear-gradient(180deg,transparent 62%,#ffe082 62%);padding:0 3px}
+
+/* SVG viz 容器 */
+.viz{margin:16px 0 8px;background:#fff;border:1.5px dashed #1a3a8a;border-radius:12px;padding:16px 14px;overflow-x:auto}
+.viz svg{width:100%;height:auto;display:block;min-width:700px}
+.viz-cap{font-size:16px;color:#5a6b7a;line-height:1.6;margin-top:10px;font-style:italic}
+
+/* 结果大数字卡 */
+.stat-grid{display:grid;grid-template-columns:1fr 1fr;gap:14px;margin:14px 0}
+.stat-card{background:#fff;border:1.5px solid #1a3a8a;border-radius:10px;padding:16px 18px}
+.stat-card.win{border-color:#1e6b1e}
+.stat-card .sh{font-size:14px;letter-spacing:.1em;color:#8A8A8A;font-weight:800;margin-bottom:8px;text-transform:uppercase}
+.stat-card .sn{font-size:30px;font-weight:800;color:#1a3a8a;line-height:1;letter-spacing:-.5px}
+.stat-card.win .sn{color:#1e6b1e}
+.stat-card .ss{font-size:16px;color:#444;margin-top:8px;line-height:1.5}
+.stat-card .ss b{color:#1e6b1e}
+
+/* 折叠公式 */
+details{margin-top:18px;background:#f7f7f9;border:1px solid #d8d8d8;border-radius:10px;padding:14px 18px;font-size:18px}
+details summary{cursor:pointer;color:#1a3a8a;font-weight:800;font-size:18px}
+details p{margin:10px 0;line-height:1.66;font-size:18px}
+details b{color:#1a3a8a}
+
+/* 收尾深蓝块 */
+.closing{background:#1a3a8a;border-radius:16px;padding:28px 30px;color:#f4f7fc;margin-top:26px}
+.closing h3{font-size:24px;font-weight:800;margin-bottom:14px;color:#fff}
+.closing p{font-size:20px;color:#dbe4f2;line-height:1.68;margin-bottom:12px}
+.closing p b{color:#ffe082;font-weight:800}
+.foot{margin-top:22px;text-align:center;font-size:15px;color:#9a9a9a}
+
+@media (max-width:1120px){.xhs-canvas{width:100%;padding:24px 18px 60px}}
+@media (max-width:780px){
+  .mg-pain,.stat-grid{grid-template-columns:1fr}
+  h1{font-size:30px}
+  .paper h4{font-size:24px}
+}
+</style></head><body><div class="xhs-canvas">
+
+<h1>GLM-5.2 的长程 agentic RL<br>是怎么把一条<span class="hl">超长轨迹</span>训起来的</h1>
+<div class="src">拆解基于两篇技术报告：CompactionRL（<b>arXiv:2607.05378</b>）· SAO / Single-Rollout Async Optimization（<b>arXiv:2607.07508</b>）· 清华 &amp; Z.AI · 两篇均声明已落地 GLM-5.2 训练产线</div>
+
+<!-- ================= 首屏：困境 + 全局解法 ================= -->
+<div class="paper summary-first-page">
+  <h4>先看全局：难在哪，又是怎么解的</h4>
+
+  <p style="font-size:18px;color:#c0392b;font-weight:800;margin:14px 2px 2px">一、困境：四难连锁</p>
+  <p style="font-size:19px;color:#333;line-height:1.6;margin:4px 2px 6px">改代码、跑终端这类<b>长程 agentic 任务</b>，一条轨迹动辄几万 token、生成又慢。要在这种任务上做 RL，会撞上四个难处，<b>一环扣一环、层层放大</b>，把 GRPO 的地基掀翻：</p>
+    <div class="viz">
+      <svg viewBox="0 0 760 232" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="fn-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c0392b"/></marker></defs>
+        <g font-family="'PingFang SC',sans-serif">
+          <text x="20" y="22" font-size="13" font-weight="800" fill="#1a3a8a">四难连锁：不是四个并列的坑，而是一环扣一环、层层放大</text>
+          <rect x="20" y="38" width="150" height="52" rx="8" fill="#fdecec" stroke="#c0392b" stroke-width="1.4"/>
+          <text x="95" y="60" font-size="13" text-anchor="middle" font-weight="800" fill="#c0392b">① 长</text>
+          <text x="95" y="78" font-size="9.5" text-anchor="middle" fill="#9f2e2e">上下文放不下，得压缩</text>
+          <line x1="170" y1="64" x2="202" y2="64" stroke="#c0392b" stroke-width="1.6" marker-end="url(#fn-arr)"/>
+          <rect x="204" y="38" width="150" height="52" rx="8" fill="#fdecec" stroke="#c0392b" stroke-width="1.4"/>
+          <text x="279" y="60" font-size="13" text-anchor="middle" font-weight="800" fill="#c0392b">② 慢</text>
+          <text x="279" y="78" font-size="9.5" text-anchor="middle" fill="#9f2e2e">完成久、方差大，得异步</text>
+          <line x1="354" y1="64" x2="386" y2="64" stroke="#c0392b" stroke-width="1.6" marker-end="url(#fn-arr)"/>
+          <rect x="388" y="38" width="150" height="52" rx="8" fill="#fdecec" stroke="#c0392b" stroke-width="1.4"/>
+          <text x="463" y="60" font-size="13" text-anchor="middle" font-weight="800" fill="#c0392b">③ 异步</text>
+          <text x="463" y="78" font-size="9.5" text-anchor="middle" fill="#9f2e2e">跨多个策略版本 policy lag</text>
+          <line x1="538" y1="64" x2="570" y2="64" stroke="#c0392b" stroke-width="1.6" marker-end="url(#fn-arr)"/>
+          <rect x="572" y="38" width="150" height="52" rx="8" fill="#fdecec" stroke="#c0392b" stroke-width="1.4"/>
+          <text x="647" y="60" font-size="13" text-anchor="middle" font-weight="800" fill="#c0392b">④ 稀疏</text>
+          <text x="647" y="78" font-size="9.5" text-anchor="middle" fill="#9f2e2e">通常只有终局一个奖励</text>
+          <text x="95" y="108" font-size="9" text-anchor="middle" fill="#8a6a2a">压缩→切成变长多段</text>
+          <text x="463" y="108" font-size="9" text-anchor="middle" fill="#8a6a2a">异步生成期模型还在更新</text>
+          <path d="M95,92 L95,126 L380,126" fill="none" stroke="#c9d4df" stroke-width="1"/>
+          <path d="M279,92 L279,126" fill="none" stroke="#c9d4df" stroke-width="1"/>
+          <path d="M463,92 L463,126" fill="none" stroke="#c9d4df" stroke-width="1"/>
+          <path d="M647,92 L647,126 L380,126" fill="none" stroke="#c9d4df" stroke-width="1"/>
+          <line x1="380" y1="126" x2="380" y2="140" stroke="#1a3a8a" stroke-width="1.6" marker-end="url(#fn-arr)"/>
+          <rect x="130" y="142" width="500" height="34" rx="7" fill="#fff5f5" stroke="#c0392b" stroke-width="1.4"/>
+          <text x="380" y="163" font-size="12" text-anchor="middle" font-weight="800" fill="#c0392b">四条叠加 → GRPO「每题一组等长完整轨迹」前提全线崩塌</text>
+          <line x1="380" y1="176" x2="380" y2="192" stroke="#1a3a8a" stroke-width="1.6" marker-end="url(#fn-arr)"/>
+          <rect x="130" y="194" width="500" height="32" rx="7" fill="#1a3a8a"/>
+          <text x="380" y="214" font-size="12.5" text-anchor="middle" font-weight="800" fill="#fff">只能退回 single-rollout 的 critic PPO 当骨架</text>
+        </g>
+      </svg>
+      <div class="viz-cap">四条难处叠在一起，逼得只能<b>退回 single-rollout 的 critic PPO</b> 当骨架。那这套骨架整体长什么样？看下半张图。</div>
+    </div>
+
+  <p style="font-size:18px;color:#c0392b;font-weight:800;margin:16px 2px 2px">二、全局解法：一条轨迹的完整训练循环</p>
+  <p style="font-size:19px;color:#333;line-height:1.6;margin:4px 2px 8px">具体怎么做：一条超长交互撞到上限时，让模型<strong>自己写摘要、压成一条分段的逻辑轨迹</strong>继续跑（<span style="color:#1a3a8a;font-weight:700">CompactionRL</span>，同时修好分段带来的信用分配错乱）；这条轨迹<strong>不凑组、单条就异步送进 learner 训练</strong>（<span style="color:#1e6b1e;font-weight:700">SAO</span>，同时修好异步带来的策略滞后与价值估计不稳）。两步接在同一条轨迹上，前一步的输出正是后一步的输入。</p>
+  <div class="viz">
+    <svg viewBox="0 0 760 430" xmlns="http://www.w3.org/2000/svg">
+      <defs>
+        <marker id="sd-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a3a8a"/></marker>
+        <marker id="sd-g" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1e6b1e"/></marker>
+        <marker id="sd-o" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#ea580c"/></marker>
+        <marker id="sd-gray" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#888"/></marker>
+      </defs>
+      <g font-family="'PingFang SC',sans-serif">
+        <rect x="8" y="40" width="330" height="300" rx="10" fill="#f2f6fc"/>
+        <rect x="348" y="40" width="86" height="300" rx="10" fill="#f6f4ef"/>
+        <rect x="444" y="40" width="308" height="300" rx="10" fill="#f1f8f1"/>
+        <text x="20" y="30" font-size="13" font-weight="800" fill="#1a3a8a">Rollout 侧 · 线上边采边压缩</text>
+        <text x="391" y="30" font-size="11.5" font-weight="800" fill="#8a6a2a" text-anchor="middle">接口</text>
+        <text x="456" y="30" font-size="13" font-weight="800" fill="#1e6b1e">Learner 侧 · 异步消化</text>
+        <rect x="22" y="60" width="92" height="40" rx="6" fill="#eef0f2" stroke="#9aa3ad"/><text x="68" y="85" font-size="12" text-anchor="middle" fill="#555" font-weight="700">任务入队</text>
+        <rect x="130" y="60" width="100" height="40" rx="6" fill="#fff" stroke="#475569" stroke-width="1.4"/><text x="180" y="79" font-size="12" text-anchor="middle" fill="#334155" font-weight="800">Agent×环境</text><text x="180" y="93" font-size="9" text-anchor="middle" fill="#64748b">交互产 token</text>
+        <line x1="114" y1="80" x2="128" y2="80" stroke="#888" stroke-width="1.3" marker-end="url(#sd-gray)"/>
+        <rect x="246" y="60" width="84" height="40" rx="6" fill="#e8edf8" stroke="#1a3a8a" stroke-width="1.3"/><text x="288" y="79" font-size="11.5" text-anchor="middle" fill="#1a3a8a" font-weight="800">上下文撞顶</text><text x="288" y="93" font-size="9" text-anchor="middle" fill="#42607e">T_comp</text>
+        <line x1="230" y1="80" x2="244" y2="80" stroke="#1a3a8a" stroke-width="1.3" marker-end="url(#sd-b)"/>
+        <rect x="246" y="122" width="84" height="40" rx="6" fill="#e8edf8" stroke="#1a3a8a" stroke-width="1.3"/><text x="288" y="141" font-size="11" text-anchor="middle" fill="#1a3a8a" font-weight="800">压缩→摘要</text><text x="288" y="155" font-size="9" text-anchor="middle" fill="#42607e">summary 段</text>
+        <line x1="288" y1="100" x2="288" y2="120" stroke="#1a3a8a" stroke-width="1.3" marker-end="url(#sd-b)"/>
+        <rect x="130" y="122" width="100" height="40" rx="6" fill="#e8edf8" stroke="#1a3a8a" stroke-width="1.3"/><text x="180" y="141" font-size="11" text-anchor="middle" fill="#1a3a8a" font-weight="800">摘要重建窗口</text><text x="180" y="155" font-size="9" text-anchor="middle" fill="#42607e">继续执行</text>
+        <line x1="246" y1="142" x2="232" y2="142" stroke="#1a3a8a" stroke-width="1.3" marker-end="url(#sd-b)"/>
+        <path d="M180,122 Q180,110 180,102" fill="none" stroke="#1a3a8a" stroke-width="1.3" stroke-dasharray="3,2" marker-end="url(#sd-b)"/>
+        <text x="120" y="116" font-size="8.5" fill="#1a3a8a" text-anchor="end">切多段·循环</text>
+        <rect x="22" y="122" width="92" height="40" rx="6" fill="#dcfce7" stroke="#14532d" stroke-width="1.3"/><text x="68" y="141" font-size="12" text-anchor="middle" fill="#14532d" font-weight="800">终局奖励 R</text><text x="68" y="155" font-size="9" text-anchor="middle" fill="#256b25">★ 任务成败</text>
+        <line x1="130" y1="142" x2="116" y2="142" stroke="#14532d" stroke-width="1.3" marker-end="url(#sd-g)"/>
+        <rect x="22" y="196" width="308" height="66" rx="7" fill="#fff" stroke="#1a3a8a" stroke-width="1.4" stroke-dasharray="5,3"/>
+        <text x="30" y="211" font-size="11" fill="#1a3a8a" font-weight="800">一条逻辑轨迹：切成变长多段</text>
+        <rect x="30" y="218" width="70" height="15" fill="#dbe7f3" stroke="#1a3a8a" stroke-width="0.8"/><text x="65" y="229" font-size="7.5" text-anchor="middle" fill="#42607e">exec 1000</text>
+        <rect x="101" y="218" width="26" height="15" fill="#f7d9a8" stroke="#a5761c" stroke-width="0.8"/><text x="114" y="229" font-size="7" text-anchor="middle" fill="#6e4c0f">sum</text>
+        <rect x="128" y="218" width="56" height="15" fill="#dbe7f3" stroke="#1a3a8a" stroke-width="0.8"/><text x="156" y="229" font-size="7.5" text-anchor="middle" fill="#42607e">exec 800</text>
+        <rect x="185" y="218" width="26" height="15" fill="#f7d9a8" stroke="#a5761c" stroke-width="0.8"/><text x="198" y="229" font-size="7" text-anchor="middle" fill="#6e4c0f">sum</text>
+        <rect x="212" y="218" width="40" height="15" fill="#dbe7f3" stroke="#1a3a8a" stroke-width="0.8"/><text x="232" y="229" font-size="7.5" text-anchor="middle" fill="#42607e">exec…</text>
+        <text x="30" y="248" font-size="8.5" fill="#42607e">每 token 带 π_rollout log-prob（DIS 用）</text>
+        <text x="30" y="258" font-size="8.5" fill="#c0392b" font-weight="700">段数/段长乱 → 埋两个坑，靠 learner 侧跨段 GAE + token loss 兜 ↘</text>
+        <line x1="68" y1="162" x2="68" y2="194" stroke="#1a3a8a" stroke-width="1" stroke-dasharray="3,2"/>
+        <line x1="180" y1="162" x2="180" y2="194" stroke="#1a3a8a" stroke-width="1" stroke-dasharray="3,2"/>
+        <line x1="288" y1="162" x2="288" y2="194" stroke="#1a3a8a" stroke-width="1" stroke-dasharray="3,2"/>
+        <rect x="356" y="200" width="70" height="54" rx="7" fill="#fbf3e6" stroke="#a5761c" stroke-width="1.4"/>
+        <text x="391" y="222" font-size="11.5" text-anchor="middle" fill="#8a6a2a" font-weight="800">异步</text>
+        <text x="391" y="238" font-size="11.5" text-anchor="middle" fill="#8a6a2a" font-weight="800">Buffer</text>
+        <line x1="330" y1="227" x2="354" y2="227" stroke="#a5761c" stroke-width="1.4" marker-end="url(#sd-o)"/>
+        <text x="343" y="196" font-size="8.5" fill="#8a6a2a" text-anchor="middle">不凑组</text>
+        <rect x="452" y="58" width="292" height="34" rx="6" fill="#e6f2e6" stroke="#1e6b1e" stroke-width="1.3"/><text x="598" y="80" font-size="12" text-anchor="middle" fill="#1e6b1e" font-weight="800">送入 Learner · 单轨迹就训、不等 GRPO 组</text>
+        <line x1="426" y1="227" x2="440" y2="227" stroke="#1e6b1e" stroke-width="1.4"/>
+        <path d="M440,227 Q448,227 448,140 Q448,90 460,80" fill="none" stroke="#1e6b1e" stroke-width="1.4" marker-end="url(#sd-g)"/>
+        <!-- 三个并列组件：联合算 loss，非串行 -->
+        <rect x="450" y="104" width="296" height="98" rx="8" fill="none" stroke="#1e6b1e" stroke-width="1" stroke-dasharray="4,3"/>
+        <text x="598" y="119" font-size="9.5" text-anchor="middle" fill="#256b25" font-weight="700">这三件联合构成 loss（并用，非先后）</text>
+        <rect x="460" y="126" width="130" height="34" rx="6" fill="#e6f2e6" stroke="#1e6b1e" stroke-width="1.3"/><text x="525" y="141" font-size="10.5" text-anchor="middle" fill="#1e6b1e" font-weight="800">Critic 三件套</text><text x="525" y="154" font-size="8.5" text-anchor="middle" fill="#256b25">+Skip-Obs · 出 V</text>
+        <rect x="606" y="126" width="130" height="34" rx="6" fill="#e8edf8" stroke="#1a3a8a" stroke-width="1.3"/><text x="671" y="139" font-size="10.5" text-anchor="middle" fill="#1a3a8a" font-weight="800">跨段 GAE</text><text x="671" y="152" font-size="7.5" text-anchor="middle" fill="#42607e">修分段信用·CompactionRL</text>
+        <rect x="533" y="166" width="130" height="30" rx="6" fill="#e6f2e6" stroke="#1e6b1e" stroke-width="1.3"/><text x="598" y="185" font-size="10.5" text-anchor="middle" fill="#1e6b1e" font-weight="800">DIS 双侧 IS · 修 lag</text>
+        <line x1="598" y1="92" x2="598" y2="102" stroke="#1e6b1e" stroke-width="1.3" marker-end="url(#sd-g)"/>
+        <rect x="452" y="210" width="292" height="30" rx="6" fill="#e8edf8" stroke="#1a3a8a" stroke-width="1.4"/><text x="598" y="225" font-size="10.5" text-anchor="middle" fill="#1a3a8a" font-weight="800">token 级 PPO 更新 · 分母=全 batch |M|</text><text x="598" y="236" font-size="7.5" text-anchor="middle" fill="#42607e">抹平段长差·CompactionRL</text>
+        <line x1="598" y1="202" x2="598" y2="208" stroke="#1a3a8a" stroke-width="1.3" marker-end="url(#sd-b)"/>
+        <rect x="452" y="250" width="292" height="30" rx="6" fill="#1e6b1e"/><text x="598" y="270" font-size="11.5" text-anchor="middle" fill="#fff" font-weight="800">更新 policy + value → 得到新权重</text>
+        <line x1="598" y1="240" x2="598" y2="248" stroke="#1a3a8a" stroke-width="1.3" marker-end="url(#sd-b)"/>
+        <path d="M452,265 L410,265 L410,300 L180,300 L180,102" fill="none" stroke="#ea580c" stroke-width="2" stroke-dasharray="6,3" marker-end="url(#sd-o)"/>
+        <rect x="238" y="289" width="150" height="22" rx="4" fill="#fff7ed" stroke="#ea580c"/>
+        <text x="313" y="304" font-size="10.5" text-anchor="middle" fill="#ea580c" font-weight="800">新权重异步推回 rollout</text>
+        <rect x="14" y="352" width="14" height="12" rx="2" fill="#e8edf8" stroke="#1a3a8a"/><text x="34" y="362" font-size="10" fill="#333">CompactionRL（压缩·信用）</text>
+        <rect x="230" y="352" width="14" height="12" rx="2" fill="#e6f2e6" stroke="#1e6b1e"/><text x="250" y="362" font-size="10" fill="#333">SAO（异步·稳定）</text>
+        <line x1="410" y1="358" x2="440" y2="358" stroke="#ea580c" stroke-width="2" stroke-dasharray="6,3"/><text x="446" y="362" font-size="10" fill="#333">异步回环：边采边训、不互等</text>
+      </g>
+    </svg>
+  </div>
+</div>
+
+
+<!-- ================= 第①章：为什么难训 ================= -->
+<div class="paper">
+  <h4>跟着一条轨迹，走完它的训练生命周期</h4>
+  <div class="subtitle"><b>①</b> 为什么难训 → <b>②</b> 压缩自己继续跑 → <b>③</b> 多段当成一条逻辑轨迹做信用分配 → <b>④</b> 异步送去训练 → <b>⑤</b> 异步滞后下稳定更新 → <b>⑥</b> 证据与边界。</div>
+
+  <div class="mg-section">
+    <span class="mg-section-tag">① 为什么 GRPO 在这里不成立</span>
+    <p>四难里"<strong>长</strong>"这一环最先发作，先把它放大看——轨迹撑爆窗口只能压缩续写，而压缩一进训练就切出段数段长全乱的多段，GRPO"每题一组等长轨迹"的前提就塌了：</p>
+    <div class="viz">
+      <svg viewBox="0 0 760 476" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="bg-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a3a8a"/></marker></defs>
+        <g font-family="'PingFang SC',sans-serif">
+          <!-- 上联：无压缩 vs 有压缩 -->
+          <text x="14" y="22" font-size="14" font-weight="800" fill="#1a3a8a">推理时：轨迹太长怎么办</text>
+          <!-- 无压缩 -->
+          <text x="14" y="46" font-size="12" font-weight="700" fill="#c0392b">✗ 无压缩</text>
+          <rect x="90" y="34" width="80" height="20" fill="#dbe7f3" stroke="#1a3a8a"/><rect x="172" y="34" width="80" height="20" fill="#dbe7f3" stroke="#1a3a8a"/><rect x="254" y="34" width="80" height="20" fill="#dbe7f3" stroke="#1a3a8a"/>
+          <text x="212" y="49" font-size="10.5" text-anchor="middle" fill="#42607e">step 1 · 2 · ⋯ · N</text>
+          <line x1="336" y1="44" x2="372" y2="44" stroke="#c0392b" stroke-width="2" stroke-dasharray="4,3"/>
+          <rect x="374" y="32" width="24" height="24" fill="#c0392b"/><text x="386" y="49" font-size="14" text-anchor="middle" fill="#fff" font-weight="800">✕</text>
+          <text x="410" y="42" font-size="11.5" fill="#c0392b" font-weight="800">撞墙即停</text>
+          <text x="410" y="56" font-size="10" fill="#9f2e2e">任务没做完就 GG</text>
+          <!-- 有压缩 -->
+          <text x="14" y="86" font-size="12" font-weight="700" fill="#1e6b1e">✓ 压缩续写</text>
+          <rect x="90" y="74" width="70" height="20" fill="#dbe7f3" stroke="#1a3a8a"/><rect x="162" y="74" width="70" height="20" fill="#dbe7f3" stroke="#1a3a8a"/>
+          <text x="196" y="89" font-size="10" text-anchor="middle" fill="#42607e">step 1 · 2 ⋯</text>
+          <rect x="240" y="74" width="60" height="20" fill="#f7d9a8" stroke="#a5761c"/><text x="270" y="89" font-size="10" text-anchor="middle" fill="#6e4c0f" font-weight="700">压成摘要</text>
+          <line x1="302" y1="84" x2="322" y2="84" stroke="#1a3a8a" stroke-width="1.4" marker-end="url(#bg-arr)"/>
+          <rect x="326" y="74" width="128" height="20" fill="#eaf5ea" stroke="#1e6b1e"/><text x="390" y="89" font-size="10" text-anchor="middle" fill="#256b25">摘要+最近几步→新窗口</text>
+          <line x1="456" y1="84" x2="476" y2="84" stroke="#1a3a8a" stroke-width="1.4" marker-end="url(#bg-arr)"/>
+          <rect x="480" y="74" width="70" height="20" fill="#dbe7f3" stroke="#1a3a8a"/><text x="515" y="89" font-size="10" text-anchor="middle" fill="#42607e">接着跑…</text>
+          <rect x="560" y="72" width="24" height="24" fill="#1e6b1e"/><text x="572" y="89" font-size="13" text-anchor="middle" fill="#fff" font-weight="800">✓</text>
+          <text x="596" y="82" font-size="11" fill="#1e6b1e" font-weight="800">固定预算</text>
+          <text x="596" y="96" font-size="10" fill="#256b25">下能一直跑</text>
+
+          <line x1="14" y1="116" x2="746" y2="116" stroke="#e0e0e0" stroke-width="1"/>
+          <!-- 下联：进训练后 GRPO想要 vs 压缩给的 -->
+          <text x="14" y="142" font-size="14" font-weight="800" fill="#1a3a8a">但进 RL 训练后：压缩把 GRPO 的地基掀了</text>
+          <!-- GRPO 想要的 -->
+          <rect x="14" y="156" width="356" height="256" rx="8" fill="#f4f7fb" stroke="#1a3a8a" stroke-width="1.4"/>
+          <text x="30" y="180" font-size="13" font-weight="800" fill="#1a3a8a">GRPO 想要的 · 结构整齐</text>
+          <text x="30" y="200" font-size="11" fill="#42607e">每题 G 条完整、等价轨迹凑一组</text>
+          <!-- 4 equal bars -->
+          <g>
+            <rect x="30" y="212" width="300" height="22" fill="#dbe7f3" stroke="#1a3a8a"/><text x="38" y="228" font-size="10.5" fill="#1a3a8a">rollout 1 · 完整一条</text>
+            <rect x="30" y="240" width="300" height="22" fill="#dbe7f3" stroke="#1a3a8a"/><text x="38" y="256" font-size="10.5" fill="#1a3a8a">rollout 2 · 完整一条</text>
+            <rect x="30" y="268" width="300" height="22" fill="#dbe7f3" stroke="#1a3a8a"/><text x="38" y="284" font-size="10.5" fill="#1a3a8a">rollout 3 · 完整一条</text>
+            <rect x="30" y="296" width="300" height="22" fill="#dbe7f3" stroke="#1a3a8a"/><text x="38" y="312" font-size="10.5" fill="#1a3a8a">rollout 4 · 完整一条</text>
+          </g>
+          <rect x="30" y="330" width="300" height="30" rx="4" fill="#e7eef7" stroke="#1a3a8a"/>
+          <text x="180" y="349" font-size="11.5" text-anchor="middle" font-weight="800" fill="#1a3a8a">G 条 = G 个样本，组内均值当 baseline</text>
+          <text x="30" y="384" font-size="11" fill="#256b25" font-weight="700">✓ 长度一致 → advantage 好算</text>
+          <!-- 压缩给的 -->
+          <rect x="390" y="156" width="356" height="256" rx="8" fill="#fff5f5" stroke="#c0392b" stroke-width="1.4"/>
+          <text x="406" y="180" font-size="13" font-weight="800" fill="#c0392b">压缩给的 · 数量/长度都乱</text>
+          <text x="406" y="200" font-size="11" fill="#9f2e2e">同题不同 rollout 触发时机不同</text>
+          <!-- ragged bars split into segments -->
+          <g>
+            <!-- rollout1: 3 seg -->
+            <rect x="406" y="212" width="150" height="22" fill="#dbe7f3" stroke="#1a3a8a"/><rect x="558" y="212" width="60" height="22" fill="#f7d9a8" stroke="#a5761c"/><rect x="620" y="212" width="100" height="22" fill="#dbe7f3" stroke="#1a3a8a"/>
+            <text x="406" y="228" font-size="9.5" fill="#42607e" dx="4">r1 → 3 段</text>
+            <!-- rollout2: 1 seg -->
+            <rect x="406" y="240" width="130" height="22" fill="#dbe7f3" stroke="#1a3a8a"/>
+            <text x="542" y="256" font-size="9.5" fill="#9f2e2e">r2 → 1 段（没触发）</text>
+            <!-- rollout3: 2 seg -->
+            <rect x="406" y="268" width="180" height="22" fill="#dbe7f3" stroke="#1a3a8a"/><rect x="588" y="268" width="55" height="22" fill="#f7d9a8" stroke="#a5761c"/>
+            <text x="649" y="284" font-size="9.5" fill="#9f2e2e">r3 → 2 段</text>
+            <!-- rollout4: 4 seg -->
+            <rect x="406" y="296" width="90" height="22" fill="#dbe7f3" stroke="#1a3a8a"/><rect x="498" y="296" width="45" height="22" fill="#f7d9a8" stroke="#a5761c"/><rect x="545" y="296" width="80" height="22" fill="#dbe7f3" stroke="#1a3a8a"/><rect x="627" y="296" width="40" height="22" fill="#f7d9a8" stroke="#a5761c"/>
+            <text x="672" y="311" font-size="9" fill="#9f2e2e">r4→4段</text>
+          </g>
+          <rect x="406" y="330" width="324" height="30" rx="4" fill="#fdecec" stroke="#c0392b"/>
+          <text x="568" y="349" font-size="11.5" text-anchor="middle" font-weight="800" fill="#c0392b">G 条 → ΣKg 段，段数/段长全不一样</text>
+          <text x="406" y="384" font-size="11" fill="#c0392b" font-weight="700">✗ 凑不成整齐的一组 → 组内归一化失效</text>
+          <rect x="558" y="200" width="30" height="16" fill="#f7d9a8" stroke="#a5761c"/><text x="574" y="212" font-size="8.5" text-anchor="middle" fill="#6e4c0f">摘要</text>
+          <!-- 收口：退回 critic PPO -->
+          <rect x="14" y="428" width="732" height="38" rx="8" fill="#1a3a8a"/>
+          <text x="30" y="446" font-size="12.5" fill="#fff" font-weight="800">解法 → 丢掉组采样，退回 critic PPO 单轨迹训练</text>
+          <text x="30" y="461" font-size="10.5" fill="#bcd3ea">靠 critic 给每个 token 估 advantage，不需要"凑一组横向比较"——对"一题切几段、各多长"零约束，天然适配压缩</text>
+        </g>
+      </svg>
+    </div>
+  </div>
+
+  <div class="mg-section" data-page-break-before>
+    <span class="mg-section-tag">② 轨迹太长：让 agent 压缩记忆、继续跑</span>
+    <p>第一步落到 rollout 侧。关键一点：<em style="font-style:normal;color:#c0392b;font-weight:700">摘要不是被动预处理，而是模型自己生成的 token，和执行动作一样进 RL、共享同一个奖励 R</em>——所以它是可训练的。压缩怎么重建窗口、把有效 horizon 撑到约 4×，看下图：</p>
+    <div class="viz">
+      <svg viewBox="0 0 760 118" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="rebuild-arr" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a3a8a"/></marker></defs>
+        <g font-family="'PingFang SC',sans-serif">
+          <!-- 旧窗口：满 -->
+          <rect x="20" y="24" width="200" height="40" rx="5" fill="#f3b6b6" stroke="#c0392b" stroke-width="1.4"/>
+          <text x="120" y="41" font-size="11.5" text-anchor="middle" font-weight="800" fill="#c0392b">旧窗口 · 几万 token</text>
+          <text x="120" y="57" font-size="10" text-anchor="middle" fill="#9f2e2e">快撞预算上限</text>
+          <line x1="222" y1="44" x2="262" y2="44" stroke="#1a3a8a" stroke-width="1.6" marker-end="url(#rebuild-arr)"/>
+          <text x="242" y="18" font-size="10" text-anchor="middle" fill="#8a6a2a">压缩</text>
+          <!-- 新窗口：系统提示+Summary+最近2步 -->
+          <rect x="268" y="24" width="72" height="40" rx="4" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.1"/>
+          <text x="304" y="48" font-size="9.5" text-anchor="middle" fill="#42607e">系统提示</text>
+          <rect x="344" y="24" width="72" height="40" rx="4" fill="#f7d9a8" stroke="#a5761c" stroke-width="1.3"/>
+          <text x="380" y="48" font-size="9.5" text-anchor="middle" font-weight="700" fill="#6e4c0f">Summary</text>
+          <rect x="420" y="24" width="72" height="40" rx="4" fill="#dbe7f3" stroke="#1a3a8a" stroke-width="1.1"/>
+          <text x="456" y="48" font-size="9.5" text-anchor="middle" fill="#42607e">最近 2 步</text>
+          <text x="380" y="80" font-size="9.5" text-anchor="middle" fill="#8a6a2a">≈ 几千 token · 摘要保长程 · 最近 2 步保即时状态</text>
+          <line x1="494" y1="44" x2="534" y2="44" stroke="#1a3a8a" stroke-width="1.6" marker-end="url(#rebuild-arr)"/>
+          <rect x="540" y="24" width="200" height="40" rx="5" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.4"/>
+          <text x="640" y="41" font-size="11.5" text-anchor="middle" font-weight="800" fill="#1e6b1e">新窗口继续跑</text>
+          <text x="640" y="57" font-size="10" text-anchor="middle" fill="#256b25">有效 horizon ≈ 4×</text>
+          <rect x="20" y="94" width="720" height="20" rx="4" fill="#1a3a8a"/>
+          <text x="380" y="108" font-size="10.5" text-anchor="middle" fill="#fff" font-weight="700">每段（Exec + Summary）全进训练 · 共享同一奖励 R · 不单独评摘要质量</text>
+        </g>
+      </svg>
+      <div class="viz-cap">消融佐证：只换摘要器（执行策略不动）SWE 就差 6.5 分（49.0→55.5）——摘要决定后续动作能看到什么，是性能关键的决策，所以非训不可。</div>
+    </div>
+  </div>
+
+  <div class="mg-section">
+    <span class="mg-section-tag">③ 把切开的多段，重新当成一条逻辑轨迹</span>
+    <p>rollout 侧吐出的不再是一条完整轨迹，而是<strong>被压缩切开的变长多段（exec + summary）</strong>。训练时要把它们重新看成<strong>同一条逻辑轨迹</strong>——否则段数、段长的乱结构会在两个地方作妖，各配一个修正：</p>
+    <ul class="pts">
+      <li><b>长度不均 → token-level loss。</b>若按"段"平均 loss，题A 被切 3 段就在统计里算 3 份，压缩多的题被<em>凭空放大权重</em>。改成所有段的 token 倒进一个大池子、除以 token 总数 $|M|$，切几段都不影响权重。</li>
+    </ul>
+    <div class="viz" data-cut-allow>
+      <svg viewBox="0 0 720 752" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="crl25-arr" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="7" markerHeight="7" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a3a8a"/></marker>
+          <marker id="crl25-thin" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#8aa0bd"/></marker>
+        </defs>
+        <g font-family="'PingFang SC',sans-serif">
+          <!-- ① 切段 -->
+          <text x="14" y="24" font-size="15" font-weight="800" fill="#1a3a8a">① 一条 rollout 被压缩切成 3 段（任务成功，R = 1）</text>
+          <rect x="14" y="40" width="70" height="44" rx="4" fill="#fff" stroke="#9fb0c4" stroke-width="1.2"/>
+          <text x="49" y="67" font-size="12.5" text-anchor="middle" fill="#42607e">Prompt</text>
+          <rect x="104" y="40" width="150" height="44" rx="4" fill="#dbe7f3" stroke="#1a3a8a" stroke-width="1.3"/>
+          <text x="179" y="61" font-size="12.5" text-anchor="middle" font-weight="800" fill="#1a3a8a">Exec 段1</text>
+          <text x="179" y="77" font-size="11" text-anchor="middle" fill="#42607e">1000 tok（真输出）</text>
+          <rect x="274" y="40" width="120" height="44" rx="4" fill="#f7d9a8" stroke="#a5761c" stroke-width="1.3"/>
+          <text x="334" y="61" font-size="12.5" text-anchor="middle" font-weight="800" fill="#6e4c0f">Summary</text>
+          <text x="334" y="77" font-size="11" text-anchor="middle" fill="#6e4c0f">200 tok（真输出）</text>
+          <rect x="414" y="40" width="150" height="44" rx="4" fill="#dbe7f3" stroke="#1a3a8a" stroke-width="1.3"/>
+          <text x="489" y="61" font-size="12.5" text-anchor="middle" font-weight="800" fill="#1a3a8a">Exec 段2</text>
+          <text x="489" y="77" font-size="11" text-anchor="middle" fill="#42607e">800 tok（真输出）</text>
+          <rect x="600" y="40" width="106" height="44" rx="4" fill="#1e6b1e" stroke="#0f3d0f" stroke-width="1.3"/>
+          <text x="653" y="61" font-size="13" text-anchor="middle" fill="#fff" font-weight="800">R = 1</text>
+          <text x="653" y="77" font-size="10.5" text-anchor="middle" fill="#d6f0d6">任务级奖励</text>
+          <line x1="84" y1="62" x2="102" y2="62" stroke="#1a3a8a" stroke-width="1.3" marker-end="url(#crl25-arr)"/>
+          <line x1="254" y1="62" x2="272" y2="62" stroke="#1a3a8a" stroke-width="1.3" marker-end="url(#crl25-arr)"/>
+          <line x1="394" y1="62" x2="412" y2="62" stroke="#1a3a8a" stroke-width="1.3" marker-end="url(#crl25-arr)"/>
+          <line x1="564" y1="62" x2="598" y2="62" stroke="#1a3a8a" stroke-width="1.3" marker-end="url(#crl25-arr)"/>
+          <text x="264" y="104" font-size="10.5" fill="#c0392b">↑ 撞到 T_comp，压缩触发点（早晚只是位置巧合）</text>
+          <text x="14" y="130" font-size="12" fill="#333">总生成 token：1000 + 200 + 800 = <tspan font-weight="800" fill="#1a3a8a">2000 个</tspan>，全部进 loss（含 summary token）。</text>
+
+          <line x1="14" y1="148" x2="706" y2="148" stroke="#e0e0e0" stroke-width="1"/>
+          <!-- ② R 扇出 -->
+          <text x="14" y="172" font-size="15" font-weight="800" fill="#1a3a8a">② R 摊到每一个 token → 每 token 一个 advantage Â</text>
+          <rect x="315" y="186" width="90" height="32" rx="4" fill="#1e6b1e"/>
+          <text x="360" y="207" font-size="12.5" text-anchor="middle" fill="#fff" font-weight="800">R = 1</text>
+          <text x="14" y="248" font-size="11.5" fill="#42607e">段1 · 1000 个 token</text>
+          <text x="290" y="248" font-size="11.5" fill="#6e4c0f">Summary · 200</text>
+          <text x="470" y="248" font-size="11.5" fill="#42607e">段2 · 800 个 token</text>
+          <g stroke="#1a3a8a" stroke-width="0.8" fill="#dbe7f3">
+            <rect x="14" y="258" width="10" height="13"/><rect x="27" y="258" width="10" height="13"/><rect x="40" y="258" width="10" height="13"/><rect x="53" y="258" width="10" height="13"/><rect x="66" y="258" width="10" height="13"/><rect x="79" y="258" width="10" height="13"/><rect x="92" y="258" width="10" height="13"/><rect x="105" y="258" width="10" height="13"/><rect x="118" y="258" width="10" height="13"/><rect x="131" y="258" width="10" height="13"/>
+          </g>
+          <g stroke="#a5761c" stroke-width="0.8" fill="#f7d9a8">
+            <rect x="290" y="258" width="10" height="13"/><rect x="303" y="258" width="10" height="13"/><rect x="316" y="258" width="10" height="13"/><rect x="329" y="258" width="10" height="13"/><rect x="342" y="258" width="10" height="13"/>
+          </g>
+          <g stroke="#1a3a8a" stroke-width="0.8" fill="#dbe7f3">
+            <rect x="470" y="258" width="10" height="13"/><rect x="483" y="258" width="10" height="13"/><rect x="496" y="258" width="10" height="13"/><rect x="509" y="258" width="10" height="13"/><rect x="522" y="258" width="10" height="13"/><rect x="535" y="258" width="10" height="13"/><rect x="548" y="258" width="10" height="13"/><rect x="561" y="258" width="10" height="13"/>
+          </g>
+          <text x="148" y="269" font-size="11" fill="#9fb0c4">···</text>
+          <text x="358" y="269" font-size="11" fill="#c8a86a">···</text>
+          <text x="578" y="269" font-size="11" fill="#9fb0c4">···</text>
+          <line x1="345" y1="218" x2="75" y2="256" stroke="#8aa0bd" stroke-width="0.9" marker-end="url(#crl25-thin)"/>
+          <line x1="360" y1="218" x2="316" y2="256" stroke="#8aa0bd" stroke-width="0.9" marker-end="url(#crl25-thin)"/>
+          <line x1="375" y1="218" x2="515" y2="256" stroke="#8aa0bd" stroke-width="0.9" marker-end="url(#crl25-thin)"/>
+          <rect x="14" y="288" width="692" height="50" rx="4" fill="#f4f7fb" stroke="#c4d3e6" stroke-width="1"/>
+          <text x="24" y="308" font-size="11.5" fill="#1a3a8a">每 token 一个 Â：先段内 GAE，再按"后面还剩多少 token"打折 <tspan font-style="italic">(γλ)^(N&gt;s)</tspan></text>
+          <text x="24" y="327" font-size="10.5" fill="#42607e">段2 后剩 0 → 不打折 ｜ Summary 后剩 800 → ×(γλ)^800 ｜ 段1 后剩 1000 → 打折最狠</text>
+          <text x="14" y="362" font-size="12" fill="#1a3a8a" font-weight="800">关键：R 变成 2000 个 Â。切几段完全不影响 token 总数——还没有任何"重复"。</text>
+
+          <line x1="14" y1="382" x2="706" y2="382" stroke="#e0e0e0" stroke-width="1"/>
+          <!-- ③ 归一化左右对比 -->
+          <text data-page-break-before x="14" y="406" font-size="15" font-weight="800" fill="#1a3a8a">③ 归一化：分母用"段"还是"token"，差别就在这</text>
+          <!-- 左：段级 错 -->
+          <rect x="14" y="422" width="336" height="330" rx="6" fill="#fff" stroke="#c0392b" stroke-width="1.3"/>
+          <rect x="14" y="422" width="336" height="28" fill="#fdecec" stroke="#c0392b" stroke-width="1.3"/>
+          <text x="182" y="441" font-size="13" text-anchor="middle" font-weight="800" fill="#c0392b">段级平均　✗ 错</text>
+          <text x="30" y="472" font-size="11" fill="#333">第一步：段内先平均（÷ n_s）</text>
+          <rect x="30" y="482" width="90" height="24" rx="3" fill="#dbe7f3" stroke="#1a3a8a" stroke-width="1"/>
+          <text x="75" y="498" font-size="10" text-anchor="middle" fill="#1a3a8a">段1→<tspan font-weight="800">1份</tspan></text>
+          <rect x="128" y="482" width="90" height="24" rx="3" fill="#f7d9a8" stroke="#a5761c" stroke-width="1"/>
+          <text x="173" y="498" font-size="10" text-anchor="middle" fill="#6e4c0f">Sum→<tspan font-weight="800">1份</tspan></text>
+          <rect x="226" y="482" width="90" height="24" rx="3" fill="#dbe7f3" stroke="#1a3a8a" stroke-width="1"/>
+          <text x="271" y="498" font-size="10" text-anchor="middle" fill="#1a3a8a">段2→<tspan font-weight="800">1份</tspan></text>
+          <text x="30" y="534" font-size="11" fill="#333">第二步：段间再平均（÷ K = 3）</text>
+          <rect x="30" y="546" width="286" height="66" rx="4" fill="#fff5f5" stroke="#c0392b" stroke-width="1.2"/>
+          <text x="42" y="567" font-size="11.5" font-weight="800" fill="#c0392b">同一个 R 被折算成 3 份进 batch</text>
+          <text x="42" y="585" font-size="10.5" fill="#9f2e2e">÷n_s 把每段压成"1 份"，</text>
+          <text x="42" y="601" font-size="10.5" fill="#9f2e2e">段数 K 直接变成 R 的份数。</text>
+          <text x="30" y="636" font-size="11" fill="#333">没压缩的 rollout 只占 <tspan font-weight="800">1 份</tspan>。</text>
+          <text x="30" y="656" font-size="11" fill="#c0392b" font-weight="800">→ 压缩越多，R 灌进梯度越多次</text>
+          <text x="30" y="674" font-size="11" fill="#c0392b" font-weight="800">　（这就是"重复计入"）</text>
+          <rect x="30" y="690" width="286" height="42" rx="4" fill="#fff" stroke="#e0b8b8" stroke-width="1"/>
+          <text x="42" y="707" font-size="10.5" fill="#9f2e2e">某 token 权重 = 1 /（K · n_s）</text>
+          <text x="42" y="723" font-size="10.5" fill="#9f2e2e">短段 token 还被 1/n_s 额外放大</text>
+          <!-- 右：token级 对 -->
+          <rect x="370" y="422" width="336" height="330" rx="6" fill="#fff" stroke="#1e6b1e" stroke-width="1.5"/>
+          <rect x="370" y="422" width="336" height="28" fill="#1e6b1e" stroke="#1e6b1e"/>
+          <text x="538" y="441" font-size="13" text-anchor="middle" font-weight="800" fill="#fff">token 级平均　✓ 对</text>
+          <text x="386" y="472" font-size="11" fill="#333">没有"段内平均"，没有"÷K"。</text>
+          <text x="386" y="490" font-size="11" fill="#333">2000 个 token 直接进同一个池子 M：</text>
+          <rect x="386" y="502" width="304" height="38" rx="4" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1"/>
+          <g fill="#7fae7f">
+            <rect x="394" y="510" width="7" height="9"/><rect x="404" y="510" width="7" height="9"/><rect x="414" y="510" width="7" height="9"/><rect x="424" y="510" width="7" height="9"/><rect x="434" y="510" width="7" height="9"/><rect x="444" y="510" width="7" height="9"/><rect x="454" y="510" width="7" height="9" fill="#d0a860"/><rect x="464" y="510" width="7" height="9" fill="#d0a860"/><rect x="474" y="510" width="7" height="9"/><rect x="484" y="510" width="7" height="9"/><rect x="494" y="510" width="7" height="9"/><rect x="504" y="510" width="7" height="9"/><rect x="514" y="510" width="7" height="9"/><rect x="524" y="510" width="7" height="9"/>
+            <rect x="394" y="524" width="7" height="9"/><rect x="404" y="524" width="7" height="9"/><rect x="414" y="524" width="7" height="9" fill="#d0a860"/><rect x="424" y="524" width="7" height="9"/><rect x="434" y="524" width="7" height="9"/><rect x="444" y="524" width="7" height="9"/><rect x="454" y="524" width="7" height="9"/><rect x="464" y="524" width="7" height="9"/><rect x="474" y="524" width="7" height="9"/>
+          </g>
+          <text x="600" y="524" font-size="10.5" fill="#256b25">全 batch 混一起</text>
+          <text x="386" y="564" font-size="11" fill="#333">求和后除以 token 总数 |M|：</text>
+          <rect x="386" y="576" width="304" height="32" rx="4" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.2"/>
+          <text x="538" y="597" font-size="12.5" text-anchor="middle" font-weight="800" fill="#1e6b1e">每 token 权重 = 1 / |M|（全一样）</text>
+          <rect x="386" y="622" width="304" height="82" rx="4" fill="#fff" stroke="#bcd8bc" stroke-width="1"/>
+          <text x="398" y="642" font-size="11" fill="#1e6b1e" font-weight="800">段数 K 根本不出现在公式里</text>
+          <text x="398" y="660" font-size="10.5" fill="#256b25">切成 3 段还是不切，都是那 2000 个</text>
+          <text x="398" y="676" font-size="10.5" fill="#256b25">token，R 传导 2000 份、再 ÷|M|。</text>
+          <text x="398" y="696" font-size="11" fill="#1e6b1e" font-weight="800">→ "重复"没被减掉，是被拿掉了</text>
+          <text x="386" y="724" font-size="10.5" fill="#5a7a5a" font-style="italic">长任务 token 多、占份多是真实输出量，</text>
+          <text x="386" y="739" font-size="10.5" fill="#5a7a5a" font-style="italic">本来就该多占，不是偏差。</text>
+        </g>
+      </svg>
+      <p style="font-size:19px;color:#1a3a8a;font-weight:700;margin:10px 2px 2px">换分母 = 把"按被切几刀计费"改成"按实际写了多少字计费"。消融去掉它掉分最狠：<span style="color:#c0392b">66.8 → 60.0</span>。</p>
+    </div>
+    <ul class="pts">
+      <li><b>跨段信用错乱 → cross-trajectory GAE。</b>每段末尾都挂着同一个终局奖励，靠前的段会被误以为"马上到终点"。按"这段后面还剩多少 token"打个折扣，把它到真正终点的<em>时间距离</em>恢复回来。</li>
+    </ul>
+    <div class="viz" data-page-break-before>
+      <svg viewBox="0 0 760 624" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="ctg-dist" viewBox="0 0 10 10" refX="8" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,1 L9,5 L0,9 z" fill="#c0392b"/></marker>
+          <marker id="ctg-fix" viewBox="0 0 10 10" refX="6" refY="9" markerWidth="7" markerHeight="7" orient="auto"><path d="M1,1 L11,1 L6,10 z" fill="#1a5fb4"/></marker>
+        </defs>
+        <g font-family="'PingFang SC',sans-serif">
+          <!-- 顶部核心句 -->
+          <text x="20" y="22" font-size="13" font-weight="800" fill="#111">分段单独算 GAE 的问题：前两段会误以为"自己已经快到终点了"。</text>
+
+          <!-- ===== 块1 错误世界：3个独立局部视角卡片 ===== -->
+          <rect x="20" y="34" width="720" height="150" rx="8" fill="#fdf4f4" stroke="#c0392b" stroke-width="1.4"/>
+          <text x="34" y="55" font-size="13.5" font-weight="800" fill="#c0392b">✗ 错误世界：每段各自算时，把自己的段尾当成"终点"（3 段各看各的）</text>
+
+          <!-- 卡片1 σ1（伪终点·错） -->
+          <rect x="40" y="66" width="196" height="42" rx="4" fill="#fdecec" stroke="#c0392b" stroke-width="1.3"/>
+          <text x="138" y="84" font-size="12" text-anchor="middle" font-weight="700" fill="#1a3a8a">σ₁ Exec · 1000 tok</text>
+          <text x="138" y="100" font-size="9.5" text-anchor="middle" fill="#9f2e2e">本段视角：到这就当结束</text>
+          <g><line x1="222" y1="60" x2="222" y2="72" stroke="#c0392b" stroke-width="1.6"/><path d="M222,60 L238,64 L222,68 Z" fill="#c0392b"/></g>
+          <text x="230" y="58" font-size="10.5" text-anchor="middle" fill="#c0392b" font-weight="800">R′₁</text>
+          <text x="138" y="122" font-size="10" text-anchor="middle" fill="#c0392b" font-weight="700">段尾折扣＝×1（假装到终点·伪）</text>
+          <!-- 卡片2 σ2（伪终点·错） -->
+          <rect x="248" y="66" width="120" height="42" rx="4" fill="#fdecec" stroke="#c0392b" stroke-width="1.3"/>
+          <text x="308" y="84" font-size="11.5" text-anchor="middle" font-weight="700" fill="#6e4c0f">σ₂ Sum · 200</text>
+          <text x="308" y="100" font-size="9" text-anchor="middle" fill="#9f2e2e">到这就当结束</text>
+          <g><line x1="354" y1="60" x2="354" y2="72" stroke="#c0392b" stroke-width="1.6"/><path d="M354,60 L370,64 L354,68 Z" fill="#c0392b"/></g>
+          <text x="362" y="58" font-size="10.5" text-anchor="middle" fill="#c0392b" font-weight="800">R′₂</text>
+          <text x="308" y="122" font-size="10" text-anchor="middle" fill="#c0392b" font-weight="700">×1（伪终点）</text>
+          <!-- 卡片3 σ3（真终点·对，绿色切开） -->
+          <rect x="380" y="66" width="300" height="42" rx="4" fill="#eef7ee" stroke="#1e6b1e" stroke-width="1.3" stroke-dasharray="5,3"/>
+          <text x="530" y="84" font-size="12" text-anchor="middle" font-weight="700" fill="#1a3a8a">σ₃ Exec · 800 tok</text>
+          <text x="530" y="100" font-size="9.5" text-anchor="middle" fill="#256b25">✓ 本段正确：段尾就是真终点</text>
+          <g><line x1="666" y1="60" x2="666" y2="72" stroke="#1e6b1e" stroke-width="1.8"/><path d="M666,60 L688,64 L666,68 Z" fill="#1e6b1e"/></g>
+          <text x="676" y="58" font-size="10.5" text-anchor="middle" fill="#1e6b1e" font-weight="800">R</text>
+          <text x="530" y="122" font-size="10" text-anchor="middle" fill="#1e6b1e" font-weight="700">×1（真终点·N&gt;₃=0，本就正确）</text>
+
+          <text x="40" y="146" font-size="11.5" fill="#c0392b" font-weight="700">问题：前两段并没真结束，只是"局部看来像结束"——段尾被当成 ×1（假装到终点），local GAE 以此为锚点算。</text>
+          <text x="40" y="166" font-size="11" fill="#9f2e2e">于是 σ₁、σ₂ 段的 advantage 幅度被夸大（|A| 虚高，以为"马上拿到奖励"）。</text>
+
+          <!-- ===== 块2 丢失的信息：完整长轨迹 + 真实距离 ===== -->
+          <text x="20" y="212" font-size="13.5" font-weight="800" fill="#1a3a8a">真正丢掉的信息：把三段拼回一整条，这些段尾离真终点其实还很远——</text>
+          <rect x="40" y="226" width="300" height="28" rx="3" fill="#dbe7f3" stroke="#1a3a8a" stroke-width="1.1"/>
+          <text x="190" y="245" font-size="11.5" text-anchor="middle" font-weight="700" fill="#1a3a8a">σ₁ · 1000</text>
+          <rect x="340" y="226" width="80" height="28" rx="3" fill="#f7d9a8" stroke="#a5761c" stroke-width="1.1"/>
+          <text x="380" y="245" font-size="10" text-anchor="middle" font-weight="700" fill="#6e4c0f">σ₂ · 200</text>
+          <rect x="420" y="226" width="240" height="28" rx="3" fill="#dbe7f3" stroke="#1a3a8a" stroke-width="1.1"/>
+          <text x="540" y="245" font-size="11.5" text-anchor="middle" font-weight="700" fill="#1a3a8a">σ₃ · 800</text>
+          <g><line x1="660" y1="220" x2="660" y2="254" stroke="#1e6b1e" stroke-width="1.8"/><path d="M660,220 L682,225 L660,230 Z" fill="#1e6b1e"/><text x="686" y="245" font-size="11" fill="#1e6b1e" font-weight="800">R</text></g>
+          <!-- 距离双向箭头 -->
+          <line x1="340" y1="272" x2="660" y2="272" stroke="#c0392b" stroke-width="1.4" marker-start="url(#ctg-dist)" marker-end="url(#ctg-dist)"/>
+          <text x="500" y="267" font-size="11" text-anchor="middle" fill="#c0392b" font-weight="800">σ₁ 段尾 → 真终点：还差 1000 token</text>
+          <line x1="420" y1="292" x2="660" y2="292" stroke="#c0392b" stroke-width="1.4" marker-start="url(#ctg-dist)" marker-end="url(#ctg-dist)"/>
+          <text x="540" y="287" font-size="11" text-anchor="middle" fill="#c0392b" font-weight="800">σ₂ 段尾 → 还差 800</text>
+          <circle cx="660" cy="292" r="3" fill="#1e6b1e"/><text x="668" y="296" font-size="10.5" fill="#1e6b1e" font-weight="800">σ₃ 段尾＝0</text>
+
+          <!-- 修正桥 -->
+          <text x="380" y="330" font-size="13.5" text-anchor="middle" font-weight="800" fill="#1a5fb4">↓ 修正：把"还差多少 token 才到真终点"补回来 — 给每段整体乘 (γλ)^N&gt;s ↓</text>
+
+          <!-- ===== 块3 修正世界：完整长轨迹 + 折扣 ===== -->
+          <rect x="20" y="346" width="720" height="150" rx="8" fill="#f2f8f2" stroke="#1e6b1e" stroke-width="1.4"/>
+          <text x="34" y="367" font-size="13.5" font-weight="800" fill="#1e6b1e">✓ 修正世界：按"离真终点还多远"把每段压回正确位置（只有一个真终点 R）</text>
+          <rect x="40" y="382" width="300" height="30" rx="3" fill="#dbe7f3" stroke="#1a3a8a" stroke-width="1.1"/>
+          <text x="190" y="402" font-size="12" text-anchor="middle" font-weight="700" fill="#1a3a8a">σ₁ Exec · 1000</text>
+          <rect x="340" y="382" width="80" height="30" rx="3" fill="#f7d9a8" stroke="#a5761c" stroke-width="1.1"/>
+          <text x="380" y="402" font-size="10" text-anchor="middle" font-weight="700" fill="#6e4c0f">σ₂ · 200</text>
+          <rect x="420" y="382" width="240" height="30" rx="3" fill="#dbe7f3" stroke="#1a3a8a" stroke-width="1.1"/>
+          <text x="540" y="402" font-size="12" text-anchor="middle" font-weight="700" fill="#1a3a8a">σ₃ Exec · 800</text>
+          <g><line x1="660" y1="374" x2="660" y2="412" stroke="#1e6b1e" stroke-width="1.8"/><path d="M660,374 L682,379 L660,384 Z" fill="#1e6b1e"/><text x="686" y="401" font-size="11" fill="#1e6b1e" font-weight="800">R</text></g>
+          <!-- 每段折扣（统一格式：中文一行+公式一行） -->
+          <line x1="190" y1="412" x2="190" y2="432" stroke="#1a5fb4" stroke-width="1.6" marker-end="url(#ctg-fix)"/>
+          <text x="190" y="450" font-size="10.5" text-anchor="middle" fill="#1a5fb4">整段补乘"剩余 1000"</text>
+          <text x="190" y="465" font-size="11.5" text-anchor="middle" fill="#1a5fb4" font-weight="800">×(γλ)^1000</text>
+          <line x1="380" y1="412" x2="380" y2="432" stroke="#1a5fb4" stroke-width="1.6" marker-end="url(#ctg-fix)"/>
+          <text x="380" y="450" font-size="10.5" text-anchor="middle" fill="#1a5fb4">整段补乘"剩余 800"</text>
+          <text x="380" y="465" font-size="11.5" text-anchor="middle" fill="#1a5fb4" font-weight="800">×(γλ)^800</text>
+          <line x1="540" y1="412" x2="540" y2="432" stroke="#1e6b1e" stroke-width="1.6" marker-end="url(#ctg-fix)"/>
+          <text x="540" y="450" font-size="10.5" text-anchor="middle" fill="#256b25">剩余 0，不修正</text>
+          <text x="540" y="465" font-size="11.5" text-anchor="middle" fill="#1e6b1e" font-weight="800">×(γλ)⁰=×1</text>
+          <text x="40" y="488" font-size="11.5" fill="#256b25" font-weight="700">离真终点越远的段，额外折扣越狠（(γλ)^1000 趋近 0）→ 前段 advantage 的幅度被收缩回真实大小，不再虚高。</text>
+
+          <!-- 公式条 -->
+          <rect x="20" y="510" width="720" height="58" rx="6" fill="#1a3a8a"/>
+          <text x="36" y="533" font-size="14" fill="#fff" font-weight="700">Â<tspan font-size="10" dy="4">s,i</tspan><tspan dy="-4"> = (γλ)</tspan><tspan font-size="10" dy="-6">N&gt;s</tspan><tspan dy="6"> · A</tspan><tspan font-size="10" dy="4">loc</tspan><tspan dy="-4"> </tspan><tspan font-size="10" dy="4">s,i</tspan><tspan dy="-4"></tspan></text>
+          <text x="36" y="555" font-size="11.5" fill="#bcd3ea">一句话：段内先照常算 local GAE，段外再按"这段后面还剩多少 token 才到真终点"整体压一遍。N&gt;s = 后续所有段的 token 数。</text>
+        </g>
+      </svg>
+      <div class="viz-cap"><b style="color:#c0392b">错误世界</b>拆成三张独立卡片——分段各自算 GAE 时，每段都把自己的段尾当成"终点"（前两段插伪终点旗 R′₁、R′₂、锚点×1），只有 σ₃ 尾才是真终点。<b style="color:#c0392b">丢失的信息</b>：把三段拼回一整条，σ₁ 尾离真终点还差 1000 token、σ₂ 尾还差 800——这段距离感没了，前段被高估。<b style="color:#1e6b1e">修正世界</b>：给每段整体乘 (γλ)^N&gt;s 把"还差多远"补回来，前段 advantage 被压回真实大小。</div>
+    </div>
+    <details>
+      <summary>想看两个修正的公式？点开 ↓（PPO 裁剪项标配不重复）</summary>
+      <p><b>token-level loss</b>（只改归一化分母）：</p>
+      $$ L_\pi = -\frac{1}{|M|} \sum_{(s,i)\in M} \min\!\big( \rho_{s,i}\hat{A}_{s,i},\ \mathrm{clip}(\rho_{s,i},1-\epsilon,1+\epsilon)\hat{A}_{s,i} \big) $$
+      <p>怎么读：$M$ 是这一 batch 里<b>所有段的所有可训练 token</b>，分母用它的数量 $|M|$ 而非样本/段数。所以"题A 切 3 段"不会被算 3 份，只占 2000 个 token 的份量。$\rho_{s,i}$、$\epsilon$ 是 PPO 原样裁剪项，没动。</p>
+      <p style="margin-top:12px"><b>cross-trajectory GAE</b>（把终局奖励正确折扣回每段）：</p>
+      $$ \hat{A}_{s,i} = (\gamma\lambda)^{N_{&gt;s}}\, A^{\text{loc}}_{s,i},\qquad N_{&gt;s}=\sum_{j&gt;s} n_j $$
+      <p>怎么读：先在每段内部照常算局部 GAE 得 $A^{\text{loc}}$，再乘折扣因子 $(\gamma\lambda)^{N_{&gt;s}}$，$N_{&gt;s}$ 是"这段之后还剩多少可训练 token"。因为每段末尾都挂同一终局奖励，靠前的段会被误以为"马上到终点"；折扣按真实剩余距离把它推远。合起来 token 的总折扣正好是 $(\gamma\lambda)^{N_{&gt;s}+n_s-i}$ = 它在拼接后完整轨迹里到终点的真实距离。</p>
+    </details>
+  </div>
+
+  <div class="mg-section">
+    <span class="mg-section-tag">④ 生成完一条，就异步送进 learner</span>
+    <p>轨迹在 rollout 侧压缩、切段、拿到终局奖励后，就该送去训练了。但"怎么送"又踩中"慢 / 异步"这条线：要高吞吐就得<strong>异步</strong>，而异步和 GRPO 的组采样天生打架——下图三条时间线对比：</p>
+    <div class="viz">
+      <svg viewBox="0 0 760 306" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <pattern id="idle-hatch" patternUnits="userSpaceOnUse" width="7" height="7" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="7" stroke="#c96" stroke-width="1.4"/></pattern>
+        </defs>
+        <g font-family="'PingFang SC',sans-serif">
+          <!-- 图例 -->
+          <rect x="20" y="12" width="16" height="12" fill="#4a86c8"/><text x="42" y="22" font-size="10" fill="#333">rollout 生成中</text>
+          <rect x="150" y="12" width="16" height="12" fill="url(#idle-hatch)" stroke="#c96" stroke-width="0.8"/><text x="172" y="22" font-size="10" fill="#333">GPU 空转干等</text>
+          <rect x="290" y="12" width="16" height="12" fill="#1e6b1e"/><text x="312" y="22" font-size="10" fill="#333">开训</text>
+          <text x="360" y="22" font-size="10" fill="#888">横轴＝时间 →</text>
+
+          <!-- 行1：同步 RL -->
+          <text x="20" y="52" font-size="11.5" font-weight="800" fill="#c0392b">✗ 同步 RL：采完整批才训</text>
+          <text x="20" y="67" font-size="9" fill="#9f2e2e">短轨迹早跑完，干等最慢那条</text>
+          <rect x="200" y="44" width="90" height="16" rx="2" fill="#4a86c8"/><rect x="290" y="44" width="230" height="16" fill="url(#idle-hatch)" stroke="#c96" stroke-width="0.6"/>
+          <rect x="200" y="64" width="150" height="16" rx="2" fill="#4a86c8"/><rect x="350" y="64" width="170" height="16" fill="url(#idle-hatch)" stroke="#c96" stroke-width="0.6"/>
+          <rect x="200" y="84" width="320" height="16" rx="2" fill="#4a86c8"/>
+          <line x1="520" y1="40" x2="520" y2="104" stroke="#333" stroke-width="1.2" stroke-dasharray="3,2"/>
+          <rect x="524" y="70" width="60" height="16" rx="2" fill="#1e6b1e"/><text x="554" y="82" font-size="9.5" text-anchor="middle" fill="#fff" font-weight="700">开训</text>
+          <text x="590" y="82" font-size="9.5" fill="#c0392b" font-weight="700">← 大片 GPU 空转</text>
+
+          <line x1="20" y1="116" x2="740" y2="116" stroke="#eee" stroke-width="1"/>
+          <!-- 行2：异步 RL（想要的） -->
+          <text x="20" y="140" font-size="11.5" font-weight="800" fill="#1e6b1e">✓ 异步 + 单轨迹：谁跑完先训谁</text>
+          <text x="20" y="155" font-size="9" fill="#256b25">一到就消费，无同步屏障，GPU 不空闲</text>
+          <rect x="200" y="132" width="90" height="16" rx="2" fill="#4a86c8"/><rect x="292" y="132" width="40" height="16" rx="2" fill="#1e6b1e"/>
+          <rect x="200" y="152" width="150" height="16" rx="2" fill="#4a86c8"/><rect x="352" y="152" width="40" height="16" rx="2" fill="#1e6b1e"/>
+          <rect x="200" y="172" width="320" height="16" rx="2" fill="#4a86c8"/><rect x="522" y="172" width="40" height="16" rx="2" fill="#1e6b1e"/>
+          <text x="600" y="163" font-size="9.5" fill="#256b25" font-weight="700">吞吐拉满 ✓</text>
+
+          <line x1="20" y1="200" x2="740" y2="200" stroke="#eee" stroke-width="1"/>
+          <!-- 行3：GRPO 异步（拖后腿） -->
+          <text x="20" y="224" font-size="11.5" font-weight="800" fill="#c0392b">✗ GRPO 拖后腿：G 条凑齐才能训</text>
+          <text x="20" y="239" font-size="9" fill="#9f2e2e">组同步屏障 = 又回到等最慢那条</text>
+          <rect x="200" y="216" width="90" height="16" rx="2" fill="#4a86c8"/><rect x="290" y="216" width="230" height="16" fill="url(#idle-hatch)" stroke="#c96" stroke-width="0.6"/>
+          <rect x="200" y="236" width="150" height="16" rx="2" fill="#4a86c8"/><rect x="350" y="236" width="170" height="16" fill="url(#idle-hatch)" stroke="#c96" stroke-width="0.6"/>
+          <rect x="200" y="256" width="320" height="16" rx="2" fill="#4a86c8"/>
+          <text x="635" y="228" font-size="9" fill="#c0392b" text-anchor="middle" font-weight="700">G 条凑不齐就等 → 屏障</text>
+          <line x1="520" y1="212" x2="520" y2="276" stroke="#333" stroke-width="1.2" stroke-dasharray="3,2"/>
+          <rect x="524" y="242" width="60" height="16" rx="2" fill="#1e6b1e"/><text x="554" y="254" font-size="9.5" text-anchor="middle" fill="#fff" font-weight="700">开训</text>
+          <text x="590" y="254" font-size="9" fill="#c0392b" font-weight="700">空转又回来了</text>
+
+          <!-- 底部：另加一坑 -->
+          <rect x="20" y="286" width="720" height="18" rx="4" fill="#fdf4f4" stroke="#c0392b" stroke-width="0.8"/>
+          <text x="30" y="299" font-size="9.5" fill="#c0392b" font-weight="700">另一坑：真实 online 环境常常每题只给 1 条反馈 → 根本凑不出一组，GRPO 直接失效</text>
+        </g>
+      </svg>
+      <div class="viz-cap">异步本想"谁跑完先训谁"，但 GRPO 的组同步屏障（一组 G 条凑齐才算一个样本）又把它拖回"等最慢那条"。再叠加长轨迹生成期间模型还在更新带来的 <b style="color:#c0392b">policy lag</b>（off-policy 偏差不可预测），SAO 干脆退回 single-rollout：<strong>一条就训、不用凑组</strong>，从根上绕开组屏障 + online 单反馈两个死结。</div>
+    </div>
+    <div class="note">
+      <strong>🔗 两者最可能的接口在这里。</strong>rollout 侧交出的，是一条<b>被压成若干 exec/summary 段的逻辑轨迹</b>，每个 token 还带着当时生成它的 <b>π<sub>rollout</sub> log-prob</b>（后面 DIS 要用）。SAO 接住的正是这样一条"带日志概率的单轨迹"：不凑 GRPO 组、直接异步丢进 buffer 送去更新。<b>前一步（CompactionRL）负责把长任务压成一条可训练轨迹，后一步（SAO）负责让这条单轨迹在异步滞后下稳定地学</b>——两者都建在 single-rollout critic PPO 主干上，机制天然对得上。<b style="color:#8a6a2a">注意：这个"咬合"是基于两篇机制兼容的合理重构，论文并未同框描述二者如何拼接（详见 ⑥）。</b>
+    </div>
+  </div>
+
+  <div class="mg-section">
+    <span class="mg-section-tag">⑤ 在异步滞后下，稳定地更新 policy</span>
+    <p>轨迹进了 learner，接下来这三招（DIS / 价值三件套 / Skip-Obs）都是为了<strong>让这条异步来的单轨迹能稳定地学</strong>。<b>DIS · 先解决"重要性采样怎么算"这一环。</b>标准做法要拿旧策略 $\pi_{old}$ 当基准，可异步下一条轨迹是好几个版本接力采出来的、$\pi_{old}$ 根本说不清。</p>
+    <div class="viz">
+      <svg viewBox="0 0 760 240" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="sao-arr-a" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a3a8a"/></marker></defs>
+        <g font-family="'PingFang SC',sans-serif">
+          <text x="20" y="18" font-size="12.5" font-weight="800" fill="#1a3a8a">① Direct：丢掉 π_old，直接用 π_rollout 日志当基准</text>
+          <text x="20" y="40" font-size="10.5" fill="#8a6a2a">trainer 生成途中不断把新权重推给 rollout 引擎，一条轨迹就这样被接力采出来 ↓</text>
+          <rect x="20" y="48" width="180" height="30" fill="#dce6f0" stroke="#1a3a8a"/><text x="110" y="67" font-size="11.5" text-anchor="middle" font-weight="700" fill="#1a3a8a">token 1–1000 · v5 采</text>
+          <rect x="202" y="48" width="170" height="30" fill="#c2d4e8" stroke="#1a3a8a"/><text x="287" y="67" font-size="11.5" text-anchor="middle" font-weight="700" fill="#1a3a8a">1001–2500 · v6</text>
+          <rect x="374" y="48" width="160" height="30" fill="#9fbcdd" stroke="#1a3a8a"/><text x="454" y="67" font-size="11.5" text-anchor="middle" font-weight="700" fill="#1a3a8a">2501–4000 · v7</text>
+          <rect x="536" y="48" width="150" height="30" fill="#6f9ccb" stroke="#1a3a8a"/><text x="611" y="67" font-size="11.5" text-anchor="middle" font-weight="700" fill="#fff">4001–5000 · v8</text>
+          <text x="230" y="98" font-size="11.5" fill="#c0392b" font-weight="700">→ π_old 碎成一串，要还原它得逐版本重跑推理（≈4× 推理成本，昂贵）</text>
+          <line x1="20" y1="112" x2="740" y2="112" stroke="#ddd" stroke-width="1"/>
+          <text x="20" y="134" font-size="12.5" font-weight="800" fill="#1e6b1e">DIS 的解法：π_rollout 是每个 token 生成当下就记进日志的</text>
+          <rect x="20" y="146" width="180" height="34" fill="#eaf5ea" stroke="#1e6b1e"/><text x="110" y="167" font-size="11" text-anchor="middle" fill="#256b25">v5 吐 · logπ✔</text>
+          <rect x="202" y="146" width="170" height="34" fill="#eaf5ea" stroke="#1e6b1e"/><text x="287" y="167" font-size="11" text-anchor="middle" fill="#256b25">v6 吐 · logπ✔</text>
+          <rect x="374" y="146" width="160" height="34" fill="#eaf5ea" stroke="#1e6b1e"/><text x="454" y="167" font-size="11" text-anchor="middle" fill="#256b25">v7 吐 · logπ✔</text>
+          <rect x="536" y="146" width="150" height="34" fill="#eaf5ea" stroke="#1e6b1e"/><text x="611" y="167" font-size="11" text-anchor="middle" fill="#256b25">v8 吐 · logπ✔</text>
+          <rect x="20" y="196" width="720" height="30" rx="5" fill="#1a3a8a"/>
+          <text x="34" y="215" font-size="11.5" fill="#fff" font-weight="700">比率 r = exp(logπθ − logπ_rollout)，天然逐 token 对齐 · 白嫖日志，省掉旧策略推理</text>
+        </g>
+      </svg>
+    </div>
+    <p>光换基准还不够：用 $\pi_{rollout}$ 近似会引入一点可控的 off-policy 偏差，DIS 的另一半用<strong>双侧硬掩码</strong>兜住。它跟标准 PPO 的 clip 看着像、干的却相反，下图对着比一遍。</p>
+    <div class="viz">
+      <svg viewBox="0 0 760 280" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="sao-arr-clip" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a3a8a"/></marker><marker id="sao-arr-red" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#c0392b"/></marker></defs>
+        <g font-family="'PingFang SC',sans-serif">
+          <text x="20" y="18" font-size="12.5" font-weight="800" fill="#1a3a8a">DIS 的另一半：越界处理 mask（归零）vs PPO clip（夹边界）</text>
+          <text x="20" y="36" font-size="10.5" fill="#666">这张图画的是<tspan font-weight="700" fill="#333">校准函数 f(x)</tspan>：把每个 token 的原始比率 x 映射成它<tspan font-weight="700" fill="#333">实际生效的比率</tspan>——灰底=越界区（下界 0.7、上界 6.0）</text>
+          <!-- LEFT: PPO clip -->
+          <text x="60" y="62" font-size="11.5" font-weight="800" fill="#c0392b">标准 PPO — clip（夹边界，留堂限分）</text>
+          <rect x="45" y="72" width="42" height="150" fill="#efefef"/><rect x="250" y="72" width="55" height="150" fill="#efefef"/>
+          <line x1="45" y1="222" x2="315" y2="222" stroke="#333" stroke-width="1.2" marker-end="url(#sao-arr-clip)"/>
+          <line x1="45" y1="222" x2="45" y2="66" stroke="#333" stroke-width="1.2" marker-end="url(#sao-arr-clip)"/>
+          <text x="52" y="72" font-size="9" fill="#333" font-weight="700">↑ f(x) 有效比率</text>
+          <text x="300" y="214" font-size="9" fill="#333" font-weight="700" text-anchor="end">原始比率 x</text>
+          <line x1="87" y1="72" x2="87" y2="226" stroke="#999" stroke-width="0.8" stroke-dasharray="3,2"/>
+          <line x1="250" y1="72" x2="250" y2="226" stroke="#999" stroke-width="0.8" stroke-dasharray="3,2"/>
+          <text x="168" y="238" font-size="9.5" fill="#000" text-anchor="middle" font-weight="700">窄窗(≈0.2)</text>
+          <polyline points="55,198 250,90 305,90" fill="none" stroke="#c0392b" stroke-width="2.4"/>
+          <text x="278" y="82" font-size="9" fill="#c0392b" text-anchor="middle">压平到上界</text>
+          <text x="278" y="106" font-size="8.5" fill="#9f2e2e" text-anchor="middle">梯度=0 ✗</text>
+          <text x="60" y="264" font-size="10" fill="#9f2e2e" font-weight="700">单侧生效 · 未夹的大比率原样带偏</text>
+          <line x1="355" y1="55" x2="355" y2="270" stroke="#ddd" stroke-width="1"/>
+          <!-- RIGHT: SAO mask -->
+          <text x="410" y="62" font-size="11.5" font-weight="800" fill="#1e6b1e">SAO — mask（归零，越界除名）</text>
+          <rect x="400" y="72" width="30" height="150" fill="#efefef"/><rect x="650" y="72" width="30" height="150" fill="#efefef"/>
+          <line x1="400" y1="222" x2="685" y2="222" stroke="#333" stroke-width="1.2" marker-end="url(#sao-arr-clip)"/>
+          <line x1="400" y1="222" x2="400" y2="66" stroke="#333" stroke-width="1.2" marker-end="url(#sao-arr-clip)"/>
+          <text x="407" y="72" font-size="9" fill="#333" font-weight="700">↑ f(x) 有效比率</text>
+          <text x="470" y="214" font-size="9" fill="#333" font-weight="700" text-anchor="end">原始比率 x</text>
+          <line x1="430" y1="72" x2="430" y2="226" stroke="#999" stroke-width="0.8" stroke-dasharray="3,2"/>
+          <line x1="650" y1="72" x2="650" y2="226" stroke="#999" stroke-width="0.8" stroke-dasharray="3,2"/>
+          <text x="430" y="238" font-size="9" fill="#666" text-anchor="middle">0.7</text>
+          <text x="650" y="238" font-size="9" fill="#666" text-anchor="middle">6.0</text>
+          <text x="540" y="238" font-size="9.5" fill="#000" text-anchor="middle" font-weight="700">宽窗(ε_h=5.0)</text>
+          <line x1="405" y1="222" x2="430" y2="222" stroke="#1e6b1e" stroke-width="2.4"/>
+          <line x1="430" y1="212" x2="650" y2="82" fill="none" stroke="#1e6b1e" stroke-width="2.4"/>
+          <line x1="650" y1="222" x2="678" y2="222" stroke="#1e6b1e" stroke-width="2.4"/>
+          <line x1="430" y1="212" x2="430" y2="222" stroke="#1e6b1e" stroke-width="1" stroke-dasharray="2,2"/>
+          <line x1="650" y1="82" x2="650" y2="222" stroke="#1e6b1e" stroke-width="1" stroke-dasharray="2,2"/>
+          <text x="540" y="145" font-size="9" fill="#1e6b1e" text-anchor="middle" transform="rotate(-30 540 145)">窗内原样 f(x)=x</text>
+          <text x="612" y="112" font-size="9" fill="#1e6b1e" text-anchor="end">断崖归零 ↘</text>
+          <!-- 越界区：删前=乱飞红点(原始比率大且参差)，虚线箭头打到 x 轴=删后 f(x)=0 -->
+          <circle cx="658" cy="120" r="3" fill="#c0392b"/><circle cx="668" cy="98" r="3" fill="#c0392b"/><circle cx="663" cy="140" r="3" fill="#c0392b"/><circle cx="673" cy="110" r="3" fill="#c0392b"/><circle cx="656" cy="158" r="3" fill="#c0392b"/>
+          <text x="682" y="110" font-size="11" fill="#c0392b" font-weight="700">这些红点＝</text>
+          <text x="682" y="126" font-size="11" fill="#c0392b" font-weight="700">旧引擎采的</text>
+          <text x="682" y="142" font-size="11" fill="#c0392b" font-weight="700">发散 token</text>
+          <line x1="658" y1="128" x2="658" y2="216" stroke="#c0392b" stroke-width="0.8" stroke-dasharray="2,2" marker-end="url(#sao-arr-red)"/>
+          <line x1="668" y1="106" x2="668" y2="216" stroke="#c0392b" stroke-width="0.8" stroke-dasharray="2,2" marker-end="url(#sao-arr-red)"/>
+          <line x1="663" y1="148" x2="663" y2="216" stroke="#c0392b" stroke-width="0.8" stroke-dasharray="2,2" marker-end="url(#sao-arr-red)"/>
+          <circle cx="658" cy="222" r="2.4" fill="#c0392b" opacity="0.4"/><circle cx="663" cy="222" r="2.4" fill="#c0392b" opacity="0.4"/><circle cx="668" cy="222" r="2.4" fill="#c0392b" opacity="0.4"/>
+          <text x="682" y="200" font-size="11" fill="#c0392b" font-weight="700">越界→归零</text>
+          <text x="682" y="216" font-size="11" fill="#c0392b" font-weight="700">整条除名</text>
+        </g>
+      </svg>
+      <div class="viz-cap">信任域宽到离谱——比 PPO 的 ≈0.2 大一个量级，还随任务调（数学 0.3 / 5.0，SWE-Bench 0.8 / 3.0）。之所以敢开这么宽，全靠越界的极端值被归零删干净，留下的正常区间才放得开。</div>
+    </div>
+    <p style="font-size:21px;font-weight:800;color:#1a3a8a;margin:20px 2px 4px">价值三件套 · 把 critic 训好</p>
+    <p>单轨迹每题只有一条样本、没有组内比较来平均噪声，方差全靠一个<strong>估得准的 critic</strong> 压——三件套（<em style="font-style:normal;color:#c0392b;font-weight:700">地基→追赶→稳梯度</em>）就是"怎么把它训好"：</p>
+    <div class="viz">
+      <svg viewBox="0 0 760 272" xmlns="http://www.w3.org/2000/svg">
+        <defs>
+          <marker id="sao-arr-b" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a3a8a"/></marker>
+          <pattern id="frozen-hatch" patternUnits="userSpaceOnUse" width="6" height="6" patternTransform="rotate(45)"><line x1="0" y1="0" x2="0" y2="6" stroke="#9aa7b4" stroke-width="1.4"/></pattern>
+        </defs>
+        <g font-family="'PingFang SC',sans-serif">
+          <rect x="180" y="14" width="400" height="34" rx="7" fill="#1e6b1e"/>
+          <text x="380" y="30" font-size="12.5" font-weight="800" text-anchor="middle" fill="#fff">目标：一个估得又快又准的 critic V_φ</text>
+          <text x="380" y="44" font-size="10.5" text-anchor="middle" fill="#d6f0d6">→ advantage 才可信 → 压住单轨迹高方差</text>
+          <line x1="300" y1="48" x2="210" y2="72" stroke="#1a3a8a" stroke-width="1.4" marker-end="url(#sao-arr-b)"/>
+          <line x1="460" y1="48" x2="550" y2="72" stroke="#1a3a8a" stroke-width="1.4" marker-end="url(#sao-arr-b)"/>
+
+          <!-- Trick 1 · K=2 快更（节奏可视化） -->
+          <rect x="26" y="76" width="330" height="120" rx="6" fill="#fff" stroke="#1a3a8a" stroke-width="1.4"/>
+          <text x="40" y="96" font-size="12" font-weight="800" fill="#1a3a8a">Trick 1 · K=2 快更（critic 追上 policy）</text>
+          <!-- policy 行：每步更 1 次 -->
+          <text x="40" y="126" font-size="10" fill="#42607e" font-weight="700">policy</text>
+          <line x1="86" y1="122" x2="340" y2="122" stroke="#c9d4df" stroke-width="1.4"/>
+          <rect x="150" y="115" width="16" height="14" rx="2" fill="#1a3a8a"/>
+          <rect x="300" y="115" width="16" height="14" rx="2" fill="#1a3a8a"/>
+          <text x="345" y="126" font-size="9.5" fill="#8a6a2a">×1</text>
+          <!-- critic 行：每步更 2 次 -->
+          <text x="40" y="152" font-size="10" fill="#256b25" font-weight="700">critic</text>
+          <line x1="86" y1="148" x2="340" y2="148" stroke="#c9e2c9" stroke-width="1.4"/>
+          <rect x="112" y="141" width="16" height="14" rx="2" fill="#1e6b1e"/><rect x="150" y="141" width="16" height="14" rx="2" fill="#1e6b1e"/>
+          <rect x="262" y="141" width="16" height="14" rx="2" fill="#1e6b1e"/><rect x="300" y="141" width="16" height="14" rx="2" fill="#1e6b1e"/>
+          <text x="345" y="152" font-size="9.5" fill="#256b25" font-weight="700">×2</text>
+          <text x="40" y="178" font-size="9.5" fill="#8a6a2a" font-weight="700">critic 追上 policy 再打分 → value 估准、advantage 基线可信</text>
+
+          <!-- Trick 2 · 冻结注意力（层堆叠可视化） -->
+          <rect x="404" y="76" width="330" height="120" rx="6" fill="#fff" stroke="#1a3a8a" stroke-width="1.4"/>
+          <text x="418" y="96" font-size="12" font-weight="800" fill="#1a3a8a">Trick 2 · 冻结注意力（稳梯度）</text>
+          <text x="418" y="118" font-size="9.5" fill="#42607e">value 模型 V_φ 分两部分，只训一半：</text>
+          <!-- Attention 层：冻结 -->
+          <rect x="418" y="126" width="200" height="24" rx="3" fill="#e4e9ee" stroke="#9aa7b4" stroke-width="1.2"/>
+          <rect x="418" y="126" width="200" height="24" rx="3" fill="url(#frozen-hatch)" opacity="0.5"/>
+          <text x="430" y="142" font-size="10" fill="#5a6a7a" font-weight="700">Attention 层</text>
+          <text x="610" y="142" font-size="9.5" fill="#5a6a7a" text-anchor="end" font-weight="700">🔒 冻结</text>
+          <text x="628" y="142" font-size="9" fill="#c0392b">梯度 norm 大</text>
+          <!-- MoE 层：训练 -->
+          <rect x="418" y="156" width="200" height="24" rx="3" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.4"/>
+          <text x="430" y="172" font-size="10" fill="#256b25" font-weight="700">MoE 投影层</text>
+          <text x="610" y="172" font-size="9.5" fill="#1e6b1e" text-anchor="end" font-weight="700">✓ 训练</text>
+          <text x="628" y="172" font-size="9" fill="#256b25">梯度稳</text>
+          <text x="418" y="192" font-size="9.5" fill="#8a6a2a" font-weight="700">管「稳」：把梯度 norm 大的注意力冻住，只更新稳的 MoE</text>
+
+          <!-- Trick 3 · 地基 -->
+          <rect x="26" y="210" width="708" height="52" rx="6" fill="#e8e8e8" stroke="#1a3a8a" stroke-width="1.4"/>
+          <text x="40" y="230" font-size="12" font-weight="800" fill="#1a3a8a">Trick 3 · Scaling Value Pretraining（地基）</text>
+          <text x="40" y="248" font-size="10.5" fill="#42607e">RL 开跑前用大规模语料把 V_φ 训到"心里有谱"，解决冷启动——不让第 0 步 critic 乱打分把策略带崩</text>
+          <line x1="150" y1="210" x2="150" y2="196" stroke="#1a3a8a" stroke-width="1.2" marker-end="url(#sao-arr-b)"/>
+          <line x1="610" y1="210" x2="610" y2="196" stroke="#1a3a8a" stroke-width="1.2" marker-end="url(#sao-arr-b)"/>
+          <text x="160" y="207" font-size="9" fill="#8a6a2a">才追得动</text>
+          <text x="620" y="207" font-size="9" fill="#8a6a2a">冻它才有意义</text>
+        </g>
+      </svg>
+      <div class="viz-cap">三招都只为一件事：把 critic 估准。单轨迹没有组内比较来平均噪声，advantage 可不可信全押在这个 critic 上——所以 SAO 把工程投入几乎全砸在它身上（值不值，看 ⑥ 的消融）。</div>
+    </div>
+    <p>还有第四招 <strong>Skip-Observation GAE</strong>——为什么光把环境反馈 token 挡出 loss 还不够，得连 GAE 递推也一起躲开它，下图拆开看：</p>
+    <div class="viz">
+      <svg viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg">
+        <defs><marker id="sao-arr-c" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="6" markerHeight="6" orient="auto-start-reverse"><path d="M0,0 L10,5 L0,10 z" fill="#1a3a8a"/></marker></defs>
+        <g font-family="'PingFang SC',sans-serif">
+          <text x="20" y="18" font-size="12.5" font-weight="800" fill="#1a3a8a">为什么"loss-mask 掉环境 token"还不够 · δ 里的 V(x_next) 到底指向谁</text>
+          <text x="20" y="38" font-size="10.5" fill="#666">一条 agentic 轨迹铺开：我的动作 → 环境反馈 → 我的下一个动作</text>
+          <rect x="126" y="48" width="52" height="26" fill="#c2d4e8" stroke="#1a3a8a" stroke-width="1.6"/><text x="152" y="65" font-size="10" text-anchor="middle" font-weight="700" fill="#1a3a8a">a(i,N)</text>
+          <rect x="182" y="48" width="44" height="26" fill="#555" stroke="#333"/><text x="204" y="65" font-size="10" text-anchor="middle" fill="#fff" font-weight="700">o(i,0)</text>
+          <rect x="228" y="48" width="44" height="26" fill="#666" stroke="#333"/><rect x="274" y="48" width="44" height="26" fill="#666" stroke="#333"/><text x="272" y="65" font-size="9.5" text-anchor="middle" fill="#fff">环境 o_i</text>
+          <rect x="322" y="48" width="52" height="26" fill="#9fbcdd" stroke="#1a3a8a" stroke-width="1.6"/><text x="348" y="65" font-size="9.5" text-anchor="middle" fill="#fff" font-weight="700">a(i+1,0)</text>
+          <text x="100" y="90" font-size="9.5" fill="#666" text-anchor="middle">我生成的</text>
+          <text x="248" y="90" font-size="9.5" fill="#666" text-anchor="middle">环境吐的（我不生成）</text>
+          <text x="460" y="62" font-size="10.5" font-weight="700" fill="#1a3a8a">loss-mask 只把环境 token</text>
+          <text x="460" y="78" font-size="10.5" fill="#c0392b" font-weight="700">挡出 policy 梯度，管不到下面的 GAE</text>
+          <line x1="20" y1="104" x2="740" y2="104" stroke="#ddd" stroke-width="1"/>
+          <text x="20" y="126" font-size="12" font-weight="800" fill="#c0392b">✗ 标准 GAE：δ 的 V(x_next) 落到紧邻的 o(i,0)（递推还会继续穿过 o(i,1)…整段 observation）</text>
+          <text x="20" y="144" font-size="10.5" fill="#9f2e2e">δ(a(i,N)) = r + γ·V(o(i,0)) − V(a(i,N))</text>
+          <rect x="126" y="156" width="52" height="24" fill="#c2d4e8" stroke="#1a3a8a" stroke-width="1.4"/><text x="152" y="172" font-size="9.5" text-anchor="middle" font-weight="700" fill="#1a3a8a">a(i,N)</text>
+          <rect x="182" y="156" width="44" height="24" fill="#555" stroke="#333"/><text x="204" y="172" font-size="9.5" text-anchor="middle" fill="#fff" font-weight="700">o(i,0)</text>
+          <path d="M155,180 Q178,196 201,182" fill="none" stroke="#c0392b" stroke-width="1.8" marker-end="url(#sao-arr-c)"/>
+          <text x="250" y="164" font-size="10.5" fill="#c0392b" font-weight="700">→ critic 被迫给环境 token 估值＝瞎猜外部状态、灌噪声</text>
+          <line x1="20" y1="196" x2="740" y2="196" stroke="#ddd" stroke-width="1"/>
+          <text x="20" y="218" font-size="12" font-weight="800" fill="#1e6b1e">✓ Skip-Obs：V(x_next) 越过整段 observation，指向 a(i+1,0)</text>
+          <text x="20" y="238" font-size="10.5" fill="#256b25">δ(a(i,N)) = r + γ·V(a(i+1,0)) − V(a(i,N))　→ GAE 递推不碰任何环境 token</text>
+          <rect x="126" y="248" width="52" height="24" fill="#c2d4e8" stroke="#1a3a8a" stroke-width="1.4"/><text x="152" y="264" font-size="9.5" text-anchor="middle" font-weight="700" fill="#1a3a8a">a(i,N)</text>
+          <rect x="182" y="248" width="44" height="24" fill="#666" stroke="#333"/><rect x="228" y="248" width="44" height="24" fill="#666" stroke="#333"/><rect x="274" y="248" width="44" height="24" fill="#666" stroke="#333"/><text x="250" y="264" font-size="9" text-anchor="middle" fill="#fff">环境 o_i（跳过）</text>
+          <rect x="322" y="248" width="52" height="24" fill="#9fbcdd" stroke="#1a3a8a" stroke-width="1.4"/><text x="348" y="264" font-size="9" text-anchor="middle" fill="#fff" font-weight="700">a(i+1,0)</text>
+          <path d="M152,248 Q245,214 344,246" fill="none" stroke="#1e6b1e" stroke-width="1.8" marker-end="url(#sao-arr-c)"/>
+          <text x="420" y="238" font-size="10.5" fill="#1e6b1e" font-weight="700">✓ 越过 o_i，只依赖模型自己生成的 token</text>
+        </g>
+      </svg>
+      <div class="viz-cap">关键区分：loss-mask（agentic RL 标准动作）挡的是 policy loss；Skip-Obs 动的是 GAE 递推里的 V(x_next)。前者挡不住后者——mask 掉 loss，V(o) 照样从 δ 的 V(x_next) 溜进 advantage。两条独立的路，这也是为什么"不训练环境 token"还不够。</div>
+    </div>
+  </div>
+
+  </div>
+
+  <details>
+    <summary>想看 DIS 与 Skip-Obs 的公式？点开 ↓</summary>
+    <p><b>DIS 比率 + 硬掩码</b>（丢掉 π_old，只留 π_rollout）：</p>
+    $$ r_t(\theta) = \exp\big(\log\pi_\theta(a_t|s_t) - \log\pi_{rollout}(a_t|s_t)\big) $$
+    $$ f(x;\epsilon_\ell,\epsilon_h) = \begin{cases} x, & 1-\epsilon_\ell &lt; x &lt; 1+\epsilon_h \\ 0, & \text{otherwise} \end{cases} $$
+    <p>怎么读：比率直接用 rollout 日志里的 log-prob 相减取指数，绕开旧策略追踪。校准函数 $f$ 是硬开关——窗内原样 $f(x)=x$，窗外<b>归零</b>（不是夹到边界值）。推理任务 $\epsilon_\ell{=}0.3,\epsilon_h{=}5.0$，比标准 PPO 宽一个量级。</p>
+    <p style="margin-top:12px"><b>Skip-Observation GAE</b>（跳过环境反馈 token）：</p>
+    $$ \delta = r_t + \gamma V(a_{i+1,0}) - V(a_{i,N}),\qquad \hat{A}(a_{i,N}) = \delta + \gamma\lambda\hat{A}(a_{i+1,0}) $$
+    <p>怎么读：$a_{i,N}$ 是动作 $i$ 的最后一个 token，$a_{i+1,0}$ 是下一个动作的第一个 token（不是紧邻的 observation）。$\delta$ 里的 $V(\cdot)$ 从"紧邻的环境 token"改指到"下一个动作 token"，GAE 递推从此不碰任何环境 token 的 value——把环境的随机性隔离在 advantage 之外。</p>
+  </details>
+</div>
+
+<!-- ================= 第⑦章：证据与边界 ================= -->
+<div class="paper">
+  <h4>⑥ 证据与边界：哪些被证明了，哪些是推断</h4>
+  <div class="subtitle">标题承诺 GLM-5.2，但两篇报告的实验其实来自不同模型、不同任务——诚实地分清楚</div>
+
+  <p style="font-size:20px;font-weight:800;color:#1a3a8a;margin:14px 2px 4px">证据一：压缩机制有效（CompactionRL）</p>
+  <p style="font-size:18px;color:#555;margin-bottom:6px">模型 GLM-4.5-Air / GLM-4.7-Flash，任务是编码/终端类：</p>
+  <div class="stat-grid">
+    <div class="stat-card win">
+      <div class="sh">SWE-BENCH VERIFIED</div>
+      <div class="sn">59.8 → 66.8</div>
+      <div class="ss"><b>+7.0</b> · GLM-4.5-Air 开压缩训练</div>
+    </div>
+    <div class="stat-card win">
+      <div class="sh">TERMINAL-BENCH 2.0</div>
+      <div class="sn">13.4 → 20.2</div>
+      <div class="ss"><b>+6.8</b> · GLM-4.7-Flash(30B)</div>
+    </div>
+  </div>
+  <p style="font-size:17px;color:#666;margin-top:6px">支撑"可训练压缩有效"这一环（第②③章）。<b style="color:#c0392b">前提</b>：增益只在"开压缩评测"下成立，关掉压缩单窗口反而掉分（train-test mismatch）；消融去掉 token-level loss 掉到 60.0。</p>
+
+  <p style="font-size:20px;font-weight:800;color:#1e6b1e;margin:18px 2px 4px">证据二：异步 single-rollout 稳定（SAO）</p>
+  <p style="font-size:18px;color:#555;margin-bottom:6px">模型是 <b>Qwen3-30B-A3B（注意：不是 GLM）</b>，任务是数学推理：</p>
+  <div class="stat-grid">
+    <div class="stat-card win">
+      <div class="sh">AIME 2025</div>
+      <div class="sn">84.2 → 97.3</div>
+      <div class="ss">30B 模型 · 反超 GPT-5 High(94.6)</div>
+    </div>
+    <div class="stat-card win">
+      <div class="sh">稳定训练步数</div>
+      <div class="sn">1000+ 步</div>
+      <div class="ss">SAO 稳训；vanilla GRPO ~160 步崩</div>
+    </div>
+  </div>
+  <p style="font-size:17px;color:#666;margin-top:6px">支撑"异步单轨迹能长稳训、参数化 critic 不可省"这一环（第④⑤章）。消融：换滑窗均值 baseline 掉 17.5 分（97.3→79.8），证明参数化 value 不能用简单统计量替代。</p>
+
+  <div class="note" style="margin-top:16px">
+    <strong>⚠ 关于"两者在 GLM-5.2 上组合使用"——分三级说清楚：</strong><br>
+    <b>论文明说的（事实）：</b>两篇各自在摘要里声明"已部署到训练 GLM-5.2(750B-A40B) 的 RL 产线"，且共享同一套底座（单轨迹 + critic PPO、同一团队）。<b>同样是事实的还有：两篇从头到尾没有同框描述过二者如何拼接</b>——这是可查证的缺失，不是推断。<br>
+    <b>本文的合理推断：</b>开头那张"端到端系统图"、以及"逻辑轨迹被 SAO 接住"的接口讲法，都是<b>基于两套机制兼容做的重构</b>，方便理解，但论文里并没有这张图、也没有这段接口描述。<br>
+    <b>无法证实的：</b>GLM-5.2(750B) 本身的<b>任何实验数字</b>（两篇合计零条 750B 结果）；SAO 在 GLM 系模型上的效果（其全部实验在 Qwen3-30B）。
+  </div>
+  <!-- 第⑦章结束 -->
+</div>
+
+<!-- ===== 收尾 ===== -->
+<div class="closing">
+  <h3>一句话记住这条主线</h3>
+  <p>GLM-5.2 的长程 agentic RL，<b>不是发明新目标函数，而是认清 GRPO 组采样在"要压缩 + 要异步"场景下的结构性不匹配，退回 single-rollout critic PPO，再把它工程化训好</b>。</p>
+  <p>压缩（CompactionRL）把一次超长交互变成<b>一条分段的逻辑轨迹</b>并修好分段信用；异步 single-rollout（SAO）接住这条轨迹、修好策略滞后与价值估计——<b>前一步的输出正是后一步的输入</b>，它们不是两篇并排的论文，而是同一条流水线的两段。</p>
+</div>
+
+<div class="foot">GLM-5.2 · RL for Long-Horizon Tasks · 教学拆解 · 数字来自 CompactionRL / SAO 两篇技术报告</div>
+
+</div>
+</body></html>
