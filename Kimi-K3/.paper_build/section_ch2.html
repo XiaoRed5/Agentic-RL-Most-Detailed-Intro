@@ -1,0 +1,189 @@
+<h2>2　系统架构与总览</h2>
+
+<p class="lead">本项目把一条 agentic RL 训练主线拆成六个可独立运行、可单测、且各挂一个验证锚点的层：<code>data → env → rollout → credit + shaping → algo → train</code>。这条竖向管线并非事后归纳的示意图，而是代码目录的真实骨架——<code>agentic_rl/</code> 下每一层对应一个子包，每个子包又对应 survey 技术脉络（τ-bench → UserRL → BAO + InfoPO/PPP）中的一层论文思想。全部实现共 <strong>2356 行</strong>，配 <strong>1489 行</strong>测试、<strong>115 个用例</strong>（113 passed + 2 skipped，CPU <strong>2.35s</strong> 跑完），因此"每一层都能被单独证伪"不是口号：任意一层坏了，对应测试文件立刻变红。</p>
+
+<p>分层的第一价值是<em>把握手契约钉死在中央</em>。<code>utils/types.py</code> 定义的 <code>Turn / Trajectory / Sample</code> 三个 dataclass 是所有层之间唯一的数据接口：<code>Turn</code> 是信用分配的最小单位（携带 <code>immediate_reward / shaped_reward / r2g / advantage</code>），<code>Trajectory</code> 拍平后即 slime 训练所需的 <code>(tokens, loss_mask, reward)</code>，而 <code>Sample</code> 的字段与 <code>slime.utils.types.Sample</code> 一一对齐——真机迁移时换掉这一个 dataclass 即可。契约稳定，则每一层的内部实现（脚本策略 vs 真实模型、mock env vs 真 tau2、ByteTokenizer vs Qwen3 tokenizer）都成了可替换的边界组件。Figure 1 给出这六层的全貌，右侧一条 Config 纵贯条贯穿始终，底部一条真机迁移横条说明"零算法改动"如何成立。</p>
+
+<figure><div class="figbox">
+<svg viewBox="0 0 720 520" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif">
+  <defs>
+    <marker id="ar1" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#444"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="720" height="520" fill="#ffffff"/>
+
+  <!-- ===== DATA ===== -->
+  <rect x="110" y="22" width="445" height="48" rx="4" fill="#f7f6f3" stroke="#333" stroke-width="1.2"/>
+  <text x="122" y="41" font-size="11.5" fill="#1a1a1a"><tspan fill="#2c5aa0" font-weight="700">DATA</tspan>  golden fixtures + config loader</text>
+  <text x="122" y="58" font-size="8.5" fill="#666" font-family="ui-monospace,Menlo,monospace">fixtures/*.json · utils/config.py</text>
+  <text x="315" y="41" font-size="9.5" font-style="italic" fill="#8b2635">τ²-sft-seed-v3</text>
+  <circle cx="319" cy="55" r="3" fill="#1f6b3f"/>
+  <text x="326" y="58" font-size="8.7" fill="#1f6b3f">5 条真实 gold reward_info fixture</text>
+
+  <!-- ===== ENV ===== -->
+  <rect x="110" y="84" width="445" height="56" rx="4" fill="#f7f6f3" stroke="#333" stroke-width="1.2"/>
+  <text x="122" y="104" font-size="11.5" fill="#1a1a1a"><tspan fill="#2c5aa0" font-weight="700">ENV</tspan>  tau2 reward + dual-control 环境</text>
+  <text x="122" y="122" font-size="8.5" fill="#666" font-family="ui-monospace,Menlo,monospace">env/reward.py · env/tau_env.py</text>
+  <text x="315" y="104" font-size="9.5" font-style="italic" fill="#8b2635">τ-bench / τ²-bench</text>
+  <circle cx="319" cy="119" r="3" fill="#1f6b3f"/>
+  <text x="326" y="122" font-size="8.7" fill="#1f6b3f">reward 聚合对拍 gold reward_info</text>
+
+  <!-- ===== ROLLOUT ===== -->
+  <rect x="110" y="154" width="445" height="56" rx="4" fill="#f7f6f3" stroke="#333" stroke-width="1.2"/>
+  <text x="122" y="174" font-size="11.5" fill="#1a1a1a"><tspan fill="#2c5aa0" font-weight="700">ROLLOUT</tspan>  多轮 loop + token masking</text>
+  <text x="122" y="192" font-size="8.5" fill="#666" font-family="ui-monospace,Menlo,monospace">rollout/rollout.py</text>
+  <text x="315" y="174" font-size="9.5" font-style="italic" fill="#8b2635">Slime example</text>
+  <circle cx="319" cy="189" r="3" fill="#1f6b3f"/>
+  <text x="326" y="192" font-size="8.7" fill="#1f6b3f">assistant=1 / obs=0 逐 token 断言</text>
+
+  <!-- ===== CREDIT + SHAPING (split) ===== -->
+  <rect x="110" y="224" width="216" height="64" rx="4" fill="#f7f6f3" stroke="#333" stroke-width="1.2"/>
+  <text x="120" y="243" font-size="10.5" fill="#1a1a1a"><tspan fill="#2c5aa0" font-weight="700">CREDIT</tspan> 信用分配</text>
+  <text x="120" y="258" font-size="8" fill="#666" font-family="ui-monospace,Menlo,monospace">credit/credit.py · infopo_runtime.py</text>
+  <text x="120" y="272" font-size="9" font-style="italic" fill="#8b2635">UserRL / InfoPO</text>
+  <circle cx="124" cy="282" r="3" fill="#1f6b3f"/>
+  <text x="131" y="285" font-size="8.5" fill="#1f6b3f">R2G 第 7 轮 =1.44</text>
+
+  <rect x="339" y="224" width="216" height="64" rx="4" fill="#f7f6f3" stroke="#333" stroke-width="1.2"/>
+  <text x="349" y="243" font-size="10.5" fill="#1a1a1a"><tspan fill="#2c5aa0" font-weight="700">SHAPING</tspan> 行为塑形</text>
+  <text x="349" y="258" font-size="8" fill="#666" font-family="ui-monospace,Menlo,monospace">shaping/shaping.py</text>
+  <text x="349" y="272" font-size="9" font-style="italic" fill="#8b2635">BAO / PPP</text>
+  <circle cx="353" cy="282" r="3" fill="#1f6b3f"/>
+  <text x="360" y="285" font-size="8.5" fill="#1f6b3f">BAO 对拍算例 =4.33</text>
+
+  <!-- ===== ALGO ===== -->
+  <rect x="110" y="302" width="445" height="56" rx="4" fill="#f7f6f3" stroke="#333" stroke-width="1.2"/>
+  <text x="122" y="322" font-size="11.5" fill="#1a1a1a"><tspan fill="#2c5aa0" font-weight="700">ALGO</tspan>  advantage + PPO loss + DAPO 四件套</text>
+  <text x="122" y="340" font-size="8.5" fill="#666" font-family="ui-monospace,Menlo,monospace">algo/advantage.py · algo/loss.py · algo/dapo.py</text>
+  <text x="360" y="322" font-size="9.5" font-style="italic" fill="#8b2635">GRPO / RLOO / DAPO</text>
+  <circle cx="364" cy="337" r="3" fill="#1f6b3f"/>
+  <text x="371" y="340" font-size="8.7" fill="#1f6b3f">ratio≠1 时 clip 真裁剪</text>
+
+  <!-- ===== TRAIN ===== -->
+  <rect x="110" y="372" width="445" height="56" rx="4" fill="#f7f6f3" stroke="#333" stroke-width="1.2"/>
+  <text x="122" y="392" font-size="11.5" fill="#1a1a1a"><tspan fill="#2c5aa0" font-weight="700">TRAIN</tspan>  端到端 GRPO 训练闭环</text>
+  <text x="122" y="410" font-size="8.5" fill="#666" font-family="ui-monospace,Menlo,monospace">train/trainer.py · train/model.py</text>
+  <text x="360" y="392" font-size="9.5" font-style="italic" fill="#8b2635">GRPO training loop</text>
+  <circle cx="364" cy="407" r="3" fill="#1f6b3f"/>
+  <text x="371" y="410" font-size="8.7" fill="#1f6b3f">success_logprob −6.32→−5.11</text>
+
+  <!-- ===== arrows ===== -->
+  <line x1="332" y1="70" x2="332" y2="82" stroke="#444" stroke-width="1.2" marker-end="url(#ar1)"/>
+  <line x1="332" y1="140" x2="332" y2="152" stroke="#444" stroke-width="1.2" marker-end="url(#ar1)"/>
+  <!-- rollout -> split -->
+  <line x1="332" y1="210" x2="332" y2="216" stroke="#444" stroke-width="1.2"/>
+  <line x1="218" y1="216" x2="447" y2="216" stroke="#444" stroke-width="1.2"/>
+  <line x1="218" y1="216" x2="218" y2="222" stroke="#444" stroke-width="1.2" marker-end="url(#ar1)"/>
+  <line x1="447" y1="216" x2="447" y2="222" stroke="#444" stroke-width="1.2" marker-end="url(#ar1)"/>
+  <!-- split -> algo merge -->
+  <line x1="218" y1="288" x2="218" y2="294" stroke="#444" stroke-width="1.2"/>
+  <line x1="447" y1="288" x2="447" y2="294" stroke="#444" stroke-width="1.2"/>
+  <line x1="218" y1="294" x2="447" y2="294" stroke="#444" stroke-width="1.2"/>
+  <line x1="332" y1="294" x2="332" y2="300" stroke="#444" stroke-width="1.2" marker-end="url(#ar1)"/>
+  <line x1="332" y1="358" x2="332" y2="370" stroke="#444" stroke-width="1.2" marker-end="url(#ar1)"/>
+
+  <!-- ===== Config 纵贯条 ===== -->
+  <rect x="578" y="22" width="118" height="406" rx="5" fill="#eef1f6" stroke="#2c5aa0" stroke-width="1.2"/>
+  <text x="637" y="46" font-size="11" font-weight="700" fill="#2c5aa0" text-anchor="middle">CONFIG</text>
+  <line x1="590" y1="56" x2="684" y2="56" stroke="#2c5aa0" stroke-width="0.6"/>
+  <text x="637" y="170" font-size="9" fill="#1a1a1a" text-anchor="middle" font-family="ui-monospace,Menlo,monospace">offline.yaml</text>
+  <text x="637" y="222" font-size="16" fill="#8b2635" text-anchor="middle">⇕</text>
+  <text x="637" y="276" font-size="8.5" fill="#1a1a1a" text-anchor="middle" font-family="ui-monospace,Menlo,monospace">real_qwen3_4b.yaml</text>
+  <text x="637" y="360" font-size="8.5" fill="#555" text-anchor="middle">同一份代码</text>
+  <text x="637" y="374" font-size="8.5" fill="#555" text-anchor="middle">切 YAML 即换后端</text>
+  <!-- dashed ties -->
+  <line x1="555" y1="112" x2="578" y2="112" stroke="#999" stroke-width="0.8" stroke-dasharray="3,2"/>
+  <line x1="555" y1="182" x2="578" y2="182" stroke="#999" stroke-width="0.8" stroke-dasharray="3,2"/>
+  <line x1="555" y1="330" x2="578" y2="330" stroke="#999" stroke-width="0.8" stroke-dasharray="3,2"/>
+  <line x1="555" y1="400" x2="578" y2="400" stroke="#999" stroke-width="0.8" stroke-dasharray="3,2"/>
+
+  <!-- ===== 真机迁移横条 ===== -->
+  <rect x="40" y="452" width="515" height="44" rx="5" fill="#f4eeee" stroke="#8b2635" stroke-width="1.2"/>
+  <text x="297" y="470" font-size="10.5" font-weight="700" fill="#8b2635" text-anchor="middle">真机迁移（免 SFT · 零算法改动）</text>
+  <text x="297" y="486" font-size="8.5" fill="#333" text-anchor="middle" font-family="ui-monospace,Menlo,monospace">TinyTransformer→Qwen3-4B · ScriptedPolicy→HFPolicy · TauEnv→RealTau2Env · ByteTokenizer→Qwen3 tokenizer</text>
+  <line x1="332" y1="428" x2="332" y2="450" stroke="#8b2635" stroke-width="1.2" marker-end="url(#ar1)"/>
+</svg>
+</div>
+<figcaption><span class="lbl">Figure 1:</span> 系统总架构。六层竖向管线（DATA→ENV→ROLLOUT→CREDIT+SHAPING→ALGO→TRAIN），每层标注对应源码文件（mono）、对齐论文（暗红斜体）与一个绿色验证锚点。右侧 Config 纵贯条贯穿全程（<code>offline.yaml ⇄ real_qwen3_4b.yaml</code>），底部横条给出真机迁移的四处组件替换——RL 算法逻辑本身一行不改。</figcaption></figure>
+
+<p>把镜头拉近到<em>一次训练 step</em>，六层退化成一条五阶段的横向数据流：<code>train/trainer.py</code> 的 <code>train_step</code> 依次执行 Rollout → Credit → Shaping → Advantage → PPO Loss。<code>rollout</code> 反复 [policy 生成 → 解析动作 → <code>env.step</code> → 观测] 产出一条 <code>Trajectory</code>，同时在 token 层面给 assistant 生成打 <code>loss_mask=1</code>、给环境/工具/用户返回打 <code>0</code>——这是 agentic RL 最隐蔽的一处易错点，masking 错了会让模型去"拟合"工具返回文本，训练直接跑偏。随后 <code>credit</code> 按 <code>config.credit.method</code> 在 <em>整个 group 层面</em>把每轮 R2G 统一归一化，<code>shaping</code>（可选）用 BAO/PPP 正则覆盖 <code>shaped_reward</code>，<code>advantage</code> 做 GRPO 组内标准化并展开到 token，最后 <code>loss</code> 计算 token-level clip 损失并 backward。</p>
+
+<p>贯穿这五个阶段的不变量是 <code>loss_mask</code>：它由 rollout 生成、被 credit/advantage 逐 token 尊重（obs token 的 advantage 恒补 0）、最终在 loss 处生效，确保"只有 policy 自己生成的 token 参与梯度"。Figure 2 给出这条管线，也解释了为什么单步 on-policy 时 <code>ratio≡1</code>、<code>loss=−mean(adv)</code>，而只有 <code>multi_step_ppo_update</code> 冻结 old_logprobs 后第二个 epoch 起 <code>ratio≠1</code>、clip 才真正裁剪。</p>
+
+<figure><div class="figbox">
+<svg viewBox="0 0 720 210" xmlns="http://www.w3.org/2000/svg" font-family="-apple-system,Segoe UI,Helvetica,Arial,sans-serif">
+  <defs>
+    <marker id="ar2" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#444"/>
+    </marker>
+  </defs>
+  <rect x="0" y="0" width="720" height="210" fill="#ffffff"/>
+
+  <!-- 1 Rollout -->
+  <rect x="18" y="48" width="118" height="92" rx="4" fill="#f7f6f3" stroke="#333" stroke-width="1.2"/>
+  <text x="77" y="68" font-size="11" font-weight="700" fill="#2c5aa0" text-anchor="middle">① Rollout</text>
+  <text x="77" y="88" font-size="8.8" fill="#1a1a1a" text-anchor="middle">多轮 loop 产出</text>
+  <text x="77" y="101" font-size="8.8" fill="#1a1a1a" text-anchor="middle">Trajectory；逐 token</text>
+  <text x="77" y="114" font-size="8.8" fill="#1a1a1a" text-anchor="middle">打 assistant/obs mask</text>
+  <text x="77" y="132" font-size="7.8" fill="#1f6b3f" text-anchor="middle" font-family="ui-monospace,Menlo,monospace">rollout.py</text>
+
+  <!-- 2 Credit -->
+  <rect x="158" y="48" width="118" height="92" rx="4" fill="#f7f6f3" stroke="#333" stroke-width="1.2"/>
+  <text x="217" y="68" font-size="11" font-weight="700" fill="#2c5aa0" text-anchor="middle">② Credit</text>
+  <text x="217" y="88" font-size="8.8" fill="#1a1a1a" text-anchor="middle">outcome / R2G /</text>
+  <text x="217" y="101" font-size="8.8" fill="#1a1a1a" text-anchor="middle">InfoPO 算每轮</text>
+  <text x="217" y="114" font-size="8.8" fill="#1a1a1a" text-anchor="middle">reward-to-go</text>
+  <text x="217" y="132" font-size="7.8" fill="#1f6b3f" text-anchor="middle" font-family="ui-monospace,Menlo,monospace">credit.py</text>
+
+  <!-- 3 Shaping -->
+  <rect x="298" y="48" width="118" height="92" rx="4" fill="#f7f6f3" stroke="#333" stroke-width="1.2"/>
+  <text x="357" y="68" font-size="11" font-weight="700" fill="#2c5aa0" text-anchor="middle">③ Shaping</text>
+  <text x="357" y="88" font-size="8.8" fill="#1a1a1a" text-anchor="middle">BAO 两正则 / PPP</text>
+  <text x="357" y="101" font-size="8.8" fill="#1a1a1a" text-anchor="middle">修正 shaped_reward</text>
+  <text x="357" y="114" font-size="8.8" fill="#666" text-anchor="middle">（可选）</text>
+  <text x="357" y="132" font-size="7.8" fill="#1f6b3f" text-anchor="middle" font-family="ui-monospace,Menlo,monospace">shaping.py</text>
+
+  <!-- 4 Advantage -->
+  <rect x="438" y="48" width="118" height="92" rx="4" fill="#f7f6f3" stroke="#333" stroke-width="1.2"/>
+  <text x="497" y="68" font-size="11" font-weight="700" fill="#2c5aa0" text-anchor="middle">④ Advantage</text>
+  <text x="497" y="88" font-size="8.8" fill="#1a1a1a" text-anchor="middle">GRPO 组内标准化</text>
+  <text x="497" y="101" font-size="8.8" fill="#1a1a1a" text-anchor="middle">(r−μ)/σ，展开</text>
+  <text x="497" y="114" font-size="8.8" fill="#1a1a1a" text-anchor="middle">到 token</text>
+  <text x="497" y="132" font-size="7.8" fill="#1f6b3f" text-anchor="middle" font-family="ui-monospace,Menlo,monospace">advantage.py</text>
+
+  <!-- 5 PPO Loss -->
+  <rect x="578" y="48" width="118" height="92" rx="4" fill="#f7f6f3" stroke="#333" stroke-width="1.2"/>
+  <text x="637" y="68" font-size="11" font-weight="700" fill="#8b2635" text-anchor="middle">⑤ PPO Loss</text>
+  <text x="637" y="88" font-size="8.8" fill="#1a1a1a" text-anchor="middle">token-level clip</text>
+  <text x="637" y="101" font-size="8.8" fill="#1a1a1a" text-anchor="middle">loss + backward</text>
+  <text x="637" y="114" font-size="8.8" fill="#1a1a1a" text-anchor="middle">ratio≠1 才裁剪</text>
+  <text x="637" y="132" font-size="7.8" fill="#1f6b3f" text-anchor="middle" font-family="ui-monospace,Menlo,monospace">loss.py</text>
+
+  <!-- arrows -->
+  <line x1="136" y1="94" x2="156" y2="94" stroke="#444" stroke-width="1.3" marker-end="url(#ar2)"/>
+  <line x1="276" y1="94" x2="296" y2="94" stroke="#444" stroke-width="1.3" marker-end="url(#ar2)"/>
+  <line x1="416" y1="94" x2="436" y2="94" stroke="#444" stroke-width="1.3" marker-end="url(#ar2)"/>
+  <line x1="556" y1="94" x2="576" y2="94" stroke="#444" stroke-width="1.3" marker-end="url(#ar2)"/>
+
+  <text x="360" y="180" font-size="9" fill="#555" text-anchor="middle">loss_mask 全程随行：整条管线只有 assistant token 参与 loss（obs / env token 恒为 0）。</text>
+</svg>
+</div>
+<figcaption><span class="lbl">Figure 2:</span> 一次训练 step 的数据流管线。<code>train_step</code> 依次经 Rollout→Credit→Shaping→Advantage→PPO Loss；<code>loss_mask</code> 由 rollout 生成并被后续每阶段逐 token 尊重。单步 on-policy 时 <code>ratio≡1</code>，多步 PPO 冻结 old_logprobs 后 clip 才真正生效。</figcaption></figure>
+
+<p>把 survey 的技术脉络、代码模块与验证锚点三者对齐，即得 Table 1。它是本报告的"导航图"：每一行既是一层论文思想，也是一个可运行的子包，还挂着一条"最硬的验证"——不是靠自然语言辩护，而是靠对拍手算值、逐 token 断言或训练曲线来证明该层确实做对了。</p>
+
+<div class="tabwrap"><table class="aca">
+<caption><span class="lbl">Table 1:</span> survey 各层 ↔ 代码模块 ↔ 验证锚点映射。"最硬的验证"列给出该层可被证伪的最强证据。</caption>
+<thead><tr><th>survey 层</th><th>对齐论文</th><th>代码模块</th><th>最硬的验证</th></tr></thead>
+<tbody>
+<tr><td>评测底座（dual-control 客服，用户是活的 LLM）</td><td>τ-bench / τ²-bench</td><td><code>env/reward.py</code>, <code>env/tau_env.py</code></td><td>reward 聚合对拍真实 gold reward_info；乘法门控 $\prod_c$ component 复刻官方 evaluator</td></tr>
+<tr><td>多轮 rollout + token-level loss masking</td><td>Slime example</td><td><code>rollout/rollout.py</code></td><td>assistant=1 / obs=0 逐 token 断言</td></tr>
+<tr><td>信用分配（R2G 折扣前传 / 反事实增益 / 方差门控）</td><td>UserRL / InfoPO</td><td><code>credit/credit.py</code>, <code>credit/infopo_runtime.py</code></td><td>R2G 对拍 survey 第 7 轮 =1.44；零方差组靠 info-gain 救活供梯度</td></tr>
+<tr><td>advantage + loss（GRPO→RLOO→PPO，DAPO 四件套）</td><td>GRPO / DAPO</td><td><code>algo/advantage.py</code>, <code>algo/loss.py</code>, <code>algo/dapo.py</code></td><td>全对拍手算；<code>ratio≠1</code> 时 clip 真裁剪</td></tr>
+<tr><td>行为塑形（BAO 两条正则 / PPP 三目标 + effort 解析）</td><td>BAO / PPP</td><td><code>shaping/shaping.py</code></td><td>BAO over-thinking 对拍算例 =4.33；PPP <code>[Cost N]</code>→effort</td></tr>
+<tr><td>端到端训练闭环 + 真机迁移</td><td>—</td><td><code>train/trainer.py</code>, <code>train/model.py</code>, <code>configs/</code></td><td>success_logprob −6.32→−5.11 单调上升；离线/真机同 Config</td></tr>
+</tbody>
+</table></div>
+
+<p>这套分层的核心价值在于<em>把稳定的东西和可变的东西分开</em>：<code>Sample / Trajectory / Turn</code> 三个契约钉死在中央，让 credit、advantage、loss 等算法层可以自由试验而不动握手接口；边界组件（模型、rollout 后端、环境、tokenizer）则被 Config 收拢，离线与真机跑的是同一份代码、同一套算法，只切一份 YAML。正因契约稳、边界活，我们才敢把研究深度集中堆到最难、最容易出问题的一层——信用分配。下一章（§3）即进入这个研究深水区：如何在稀疏、乘法门控、且用户会随时 STOP/TRANSFER 的多轮轨迹里，把奖励正确地前传到每一个真正起作用的决策轮。</p>
