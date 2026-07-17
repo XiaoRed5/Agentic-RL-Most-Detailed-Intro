@@ -1,0 +1,299 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="2400" height="1128" viewBox="0 0 2400 1128">
+  <defs>
+    <style>
+      .sans { font-family: Inter, Arial, "PingFang SC", "Noto Sans CJK SC", sans-serif; }
+      .title { font-size: 34px; font-weight: 800; }
+      .subtitle { font-size: 17px; font-weight: 600; fill: #666; letter-spacing: .4px; }
+      .section { font-size: 23px; font-weight: 760; }
+      .body { font-size: 19px; font-weight: 560; fill: #20242a; }
+      .small { font-size: 16px; font-weight: 520; fill: #333840; }
+      .tiny { font-size: 14px; font-weight: 520; fill: #4b525b; }
+      .formula { font-family: "Times New Roman", "STIX Two Math", serif; font-size: 21px; font-style: italic; fill: #171a1f; }
+      .panel { fill: #fff; stroke: #202327; stroke-width: 3; stroke-dasharray: 10 7; }
+      .box { fill: #fff; stroke: #30353b; stroke-width: 2.5; }
+      .soft-purple { fill: #f7f2fd; stroke: #7251b5; stroke-width: 3; }
+      .soft-blue { fill: #edf7fd; stroke: #56a2d9; stroke-width: 3; }
+      .soft-green { fill: #f1f8ee; stroke: #4b913b; stroke-width: 3; }
+      .soft-orange { fill: #fff5eb; stroke: #df7d35; stroke-width: 3; }
+      .soft-gray { fill: #f4f5f6; stroke: #878d94; stroke-width: 2.5; }
+      .chip { fill: #fff; stroke: #34393f; stroke-width: 2.2; }
+      .arrow { fill: none; stroke: #202327; stroke-width: 2.4; marker-end: url(#arrow); }
+      .arrow-blue { fill: none; stroke: #2476ad; stroke-width: 3; marker-end: url(#arrow-blue); }
+      .arrow-green { fill: none; stroke: #438c35; stroke-width: 3; marker-end: url(#arrow-green); }
+      .arrow-orange { fill: none; stroke: #df7d35; stroke-width: 3; marker-end: url(#arrow-orange); }
+      .arrow-purple { fill: none; stroke: #7251b5; stroke-width: 3; marker-end: url(#arrow-purple); }
+      .center { text-anchor: middle; dominant-baseline: middle; }
+    </style>
+    <marker id="arrow" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.2" markerHeight="5.2" orient="auto-start-reverse"><path d="M 0 0 L 10 5 L 0 10 z" fill="#202327"/></marker>
+    <marker id="arrow-blue" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.2" markerHeight="5.2" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#2476ad"/></marker>
+    <marker id="arrow-green" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.2" markerHeight="5.2" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#438c35"/></marker>
+    <marker id="arrow-orange" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.2" markerHeight="5.2" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#df7d35"/></marker>
+    <marker id="arrow-purple" viewBox="0 0 10 10" refX="9" refY="5" markerWidth="5.2" markerHeight="5.2" orient="auto"><path d="M 0 0 L 10 5 L 0 10 z" fill="#7251b5"/></marker>
+    <filter id="shadow" x="-10%" y="-10%" width="120%" height="130%"><feDropShadow dx="0" dy="3" stdDeviation="3" flood-color="#000" flood-opacity=".08"/></filter>
+  </defs>
+
+  <rect width="2400" height="1128" fill="#fff"/>
+
+  <!-- Three-panel publication layout -->
+  <rect class="panel" x="30" y="28" width="650" height="1085" rx="26"/>
+  <rect class="panel" x="700" y="28" width="870" height="1085" rx="26"/>
+  <rect class="panel" x="1590" y="28" width="780" height="1085" rx="26"/>
+
+  <!-- PANEL 1: a real tau2-bench trajectory -->
+  <text class="sans title center" x="355" y="72" fill="#7251b5">τ²-bench 真实多轮轨迹</text>
+  <line x1="160" y1="99" x2="550" y2="99" stroke="#7251b5" stroke-width="2.5"/>
+  <text class="sans subtitle center" x="355" y="116">用户 ↔ 智能体 ↔ 工具 / 数据库</text>
+
+  <!-- agent–environment interaction summary -->
+  <g filter="url(#shadow)">
+    <rect class="soft-blue" x="55" y="140" width="600" height="104" rx="16"/>
+    <circle cx="118" cy="192" r="31" fill="#d7edf9" stroke="#286c98" stroke-width="2.5"/>
+    <rect x="98" y="177" width="40" height="29" rx="10" fill="#fff" stroke="#286c98" stroke-width="2"/>
+    <circle cx="109" cy="190" r="4" fill="#286c98"/><circle cx="127" cy="190" r="4" fill="#286c98"/>
+    <path d="M110 199 Q118 206 126 199" fill="none" stroke="#286c98" stroke-width="2"/>
+    <line x1="118" y1="161" x2="118" y2="153" stroke="#286c98" stroke-width="2.5"/><circle cx="118" cy="150" r="3.5" fill="#286c98"/>
+    <text class="sans section center" x="210" y="192">智能体 / 策略</text>
+    <path d="M310 179 H390" fill="none" stroke="#2daac0" stroke-width="4.2" marker-end="url(#arrow-blue)"/>
+    <path d="M390 205 H310" fill="none" stroke="#2daac0" stroke-width="4.2" marker-end="url(#arrow-blue)"/>
+    <circle cx="438" cy="192" r="28" fill="#dff1d9" stroke="#438c35" stroke-width="2.5"/>
+    <path d="M420 189 Q438 172 456 189 M420 195 Q438 212 456 195 M438 165 V219 M412 192 H464" fill="none" stroke="#438c35" stroke-width="2"/>
+    <circle cx="501" cy="183" r="14" fill="#f0c9a9" stroke="#91643e" stroke-width="2"/>
+    <path d="M476 218 Q501 192 526 218" fill="#f7d5bb" stroke="#91643e" stroke-width="2"/>
+    <text class="sans body center" x="575" y="192">环境 &amp; 用户</text>
+  </g>
+  <path class="arrow" d="M355 244 V266"/>
+
+  <!-- concrete telecom trajectory -->
+  <g filter="url(#shadow)">
+    <rect x="55" y="270" width="600" height="800" rx="18" fill="#fcfbfe" stroke="#7251b5" stroke-width="3"/>
+    <text class="sans section" x="80" y="301" fill="#7251b5">电信客服域 · 漫游服务恢复</text>
+    <rect x="500" y="283" width="130" height="29" rx="10" fill="#eee7f9" stroke="#9c83c9" stroke-width="1.5"/>
+    <text class="sans tiny center" x="565" y="298" fill="#7251b5">真实成功轨迹</text>
+
+    <!-- user request -->
+    <circle cx="86" cy="354" r="22" fill="#f4c7c7" stroke="#b85b5b" stroke-width="2"/>
+    <text class="sans body center" x="86" y="355" fill="#8d3c3c">U</text>
+    <rect x="120" y="320" width="510" height="68" rx="22" fill="#f8dddd" stroke="#d88f8f" stroke-width="2"/>
+    <text class="sans body center" x="375" y="355">我的移动数据仍然无法使用。</text>
+    <path class="arrow" d="M375 388 V405"/>
+
+    <!-- first tool call -->
+    <circle cx="112" cy="441" r="21" fill="#ffd3a6" stroke="#c9782c" stroke-width="2"/>
+    <text class="sans body center" x="112" y="442" fill="#9a551e">T</text>
+    <rect x="145" y="410" width="485" height="62" rx="20" fill="#ffe0bd" stroke="#df9b56" stroke-width="2"/>
+    <text class="sans small center" x="387" y="442">get_details_by_id("L1002")</text>
+    <path class="arrow" d="M387 472 V484"/>
+
+    <!-- database observation -->
+    <circle cx="167" cy="517" r="21" fill="#dfe2e5" stroke="#737a82" stroke-width="2"/>
+    <text class="sans tiny center" x="167" y="518" fill="#515860">DB</text>
+    <rect x="200" y="488" width="430" height="58" rx="19" fill="#e8eaec" stroke="#9aa0a6" stroke-width="2"/>
+    <text class="sans small center" x="415" y="518">{..., "roaming_enabled": false, ...}</text>
+    <path class="arrow" d="M415 546 V562"/>
+
+    <!-- agent clarification -->
+    <circle cx="86" cy="618" r="22" fill="#caeafa" stroke="#3988ba" stroke-width="2"/>
+    <text class="sans body center" x="86" y="619" fill="#246a96">A</text>
+    <rect x="120" y="566" width="510" height="104" rx="22" fill="#dff2fc" stroke="#75b6dc" stroke-width="2"/>
+    <text class="sans body center" x="375" y="603">检测到漫游服务尚未开启。</text>
+    <text class="sans body center" x="375" y="635">您目前在境外吗？是否需要开启漫游？</text>
+    <path class="arrow" d="M375 670 V678"/>
+
+    <!-- user confirmation -->
+    <circle cx="86" cy="713" r="22" fill="#f4c7c7" stroke="#b85b5b" stroke-width="2"/>
+    <text class="sans body center" x="86" y="714" fill="#8d3c3c">U</text>
+    <rect x="120" y="682" width="510" height="62" rx="21" fill="#f8dddd" stroke="#d88f8f" stroke-width="2"/>
+    <text class="sans body center" x="375" y="714">是的，我在境外。请帮我开启漫游。</text>
+    <path class="arrow" d="M375 744 V758"/>
+
+    <!-- second tool call -->
+    <circle cx="112" cy="793" r="21" fill="#ffd3a6" stroke="#c9782c" stroke-width="2"/>
+    <text class="sans body center" x="112" y="794" fill="#9a551e">T</text>
+    <rect x="145" y="762" width="485" height="62" rx="20" fill="#ffe0bd" stroke="#df9b56" stroke-width="2"/>
+    <text class="sans small center" x="387" y="794">enable_roaming("C1001", "L1002")</text>
+    <path class="arrow" d="M387 824 V838"/>
+
+    <!-- success observation -->
+    <circle cx="167" cy="870" r="21" fill="#dfe2e5" stroke="#737a82" stroke-width="2"/>
+    <text class="sans tiny center" x="167" y="871" fill="#515860">DB</text>
+    <rect x="200" y="842" width="430" height="56" rx="19" fill="#e8eaec" stroke="#9aa0a6" stroke-width="2"/>
+    <text class="sans body center" x="415" y="871">漫游服务已成功开启。</text>
+    <path class="arrow" d="M415 898 V914"/>
+
+    <!-- terminal outcome -->
+    <rect x="90" y="918" width="540" height="82" rx="18" fill="#e8f6e4" stroke="#438c35" stroke-width="2.5"/>
+    <text class="sans section center" x="360" y="946" fill="#34742f">✓ 用户确认移动数据已恢复</text>
+    <text class="sans small center" x="360" y="978">终止奖励 R = 1 · 任务成功</text>
+  </g>
+
+  <!-- interaction produces the trajectory consumed by credit assignment -->
+  <path class="arrow-purple" d="M655 203 H735"/>
+
+  <!-- Imagen-generated trajectory overlay -->
+  <g>
+    <rect x="34" y="32" width="642" height="1077" rx="22" fill="#fff"/>
+    <text class="sans title center" x="355" y="72" fill="#7251b5">τ²-bench 真实多轮轨迹</text>
+    <line x1="160" y1="99" x2="550" y2="99" stroke="#7251b5" stroke-width="2.5"/>
+    <text class="sans subtitle center" x="355" y="116">用户在左 · 智能体 / 工具 / 数据库在右</text>
+    <image href="tau2_trajectory_imagen_dense.png" x="92" y="126" width="526" height="970" preserveAspectRatio="xMidYMid meet"/>
+    <path class="arrow-purple" d="M655 203 H735"/>
+  </g>
+
+  <!-- PANEL 2: credit assignment -->
+  <text class="sans title center" x="1135" y="72" fill="#34742f">轮次级信用分配</text>
+  <line x1="955" y1="99" x2="1315" y2="99" stroke="#34742f" stroke-width="2.5"/>
+  <text class="sans subtitle center" x="1135" y="116">稀疏结果奖励 → R2G → 反事实信息增益</text>
+
+  <g filter="url(#shadow)">
+    <rect class="soft-blue" x="735" y="140" width="800" height="104" rx="16"/>
+    <text class="sans small" x="758" y="166" fill="#2476ad">同一条多轮轨迹</text>
+    <rect class="chip" x="758" y="181" width="192" height="44" rx="11"/><text class="sans body center" x="854" y="203">第 1 轮 · a₁,o₁</text>
+    <path class="arrow-blue" d="M957 203 H1010"/>
+    <rect class="chip" x="1017" y="181" width="192" height="44" rx="11"/><text class="sans body center" x="1113" y="203">第 t 轮 · aₜ,oₜ</text>
+    <path class="arrow-blue" d="M1216 203 H1269"/>
+    <rect class="chip" x="1276" y="181" width="231" height="44" rx="11"/><text class="sans body center" x="1391" y="203">第 N 轮 · 终止奖励 R</text>
+  </g>
+
+  <!-- outcome / R2G -->
+  <g filter="url(#shadow)" transform="translate(0 40)">
+    <rect class="soft-orange" x="735" y="270" width="330" height="350" rx="18"/>
+    <text class="sans section center" x="900" y="300" fill="#b96228">外部奖励路径</text>
+
+    <rect class="chip" x="760" y="323" width="280" height="91" rx="13"/>
+    <text class="sans body" x="781" y="349">结果奖励</text>
+    <text class="sans small" x="781" y="375">终点标量 R 评价整条轨迹</text>
+    <circle cx="796" cy="395" r="8" fill="#d8dade"/><circle cx="839" cy="395" r="8" fill="#d8dade"/><circle cx="882" cy="395" r="8" fill="#df7d35"/>
+    <path d="M894 395 H1004" stroke="#df7d35" stroke-width="2.4" marker-end="url(#arrow-orange)"/>
+
+    <rect class="chip" x="760" y="432" width="280" height="160" rx="13"/>
+    <text class="sans body" x="781" y="458">累积回报 R2G（γ = 0.8）</text>
+    <text class="formula" x="781" y="490">Gₜ = rₜ + γ Gₜ₊₁</text>
+    <circle cx="803" cy="528" r="13" fill="#f8d6ba" stroke="#df7d35" stroke-width="2"/><text class="sans tiny center" x="803" y="529">.38</text>
+    <circle cx="867" cy="528" r="13" fill="#f8d6ba" stroke="#df7d35" stroke-width="2"/><text class="sans tiny center" x="867" y="529">.74</text>
+    <circle cx="931" cy="528" r="16" fill="#f5c29b" stroke="#df7d35" stroke-width="2"/><text class="sans tiny center" x="931" y="529">1.44</text>
+    <circle cx="999" cy="528" r="16" fill="#f0a96e" stroke="#c65f19" stroke-width="2"/><text class="sans tiny center" x="999" y="529">1.0</text>
+    <path class="arrow-orange" d="M983 553 C930 576 851 576 810 550"/>
+    <text class="sans tiny center" x="900" y="579" fill="#ad5d2a">沿时间反向折扣，前传终点功劳</text>
+  </g>
+
+  <!-- InfoPO -->
+  <g filter="url(#shadow)" transform="translate(0 40)">
+    <rect class="soft-green" x="1085" y="270" width="450" height="350" rx="18"/>
+    <text class="sans section center" x="1310" y="300" fill="#34742f">InfoPO 反事实信息增益</text>
+
+    <rect class="chip" x="1108" y="323" width="178" height="91" rx="13"/>
+    <text class="sans body center" x="1197" y="346">事实分支</text>
+    <text class="sans small center" x="1197" y="373">保留真实观测 oₜ</text>
+    <rect x="1138" y="389" width="118" height="18" rx="7" fill="#cfe9c7"/>
+    <text class="sans tiny center" x="1197" y="399">prompt + oₜ</text>
+
+    <rect class="chip" x="1334" y="323" width="178" height="91" rx="13"/>
+    <text class="sans body center" x="1423" y="346">遮蔽分支</text>
+    <text class="sans small center" x="1423" y="373">oₜ → [pad]…</text>
+    <rect x="1364" y="389" width="118" height="18" rx="7" fill="#e3e5e7"/>
+    <text class="sans tiny center" x="1423" y="399">prompt + [pad]</text>
+
+    <path class="arrow-green" d="M1197 414 V450"/>
+    <path class="arrow-green" d="M1423 414 V450"/>
+    <rect x="1120" y="454" width="154" height="48" rx="12" fill="#fff" stroke="#4b913b" stroke-width="2"/>
+    <text class="formula center" x="1197" y="479">P_fact(a)</text>
+    <rect x="1346" y="454" width="154" height="48" rx="12" fill="#fff" stroke="#4b913b" stroke-width="2"/>
+    <text class="formula center" x="1423" y="479">P_mask(a)</text>
+    <path class="arrow-green" d="M1260 504 C1272 524 1285 531 1305 536"/>
+    <path class="arrow-green" d="M1360 504 C1348 524 1335 531 1315 536"/>
+    <rect x="1162" y="535" width="296" height="58" rx="14" fill="#dff0da" stroke="#34742f" stroke-width="2.5"/>
+    <text class="formula center" x="1310" y="555">gainₜ = KL(P_fact ∥ P_mask)</text>
+    <text class="sans tiny center" x="1310" y="580">KL 越大，oₜ 的边际价值越高</text>
+  </g>
+
+  <!-- merge to variance gate -->
+  <path class="arrow-orange" d="M900 660 V753"/>
+  <path class="arrow-green" d="M1310 660 V753"/>
+  <g filter="url(#shadow)" transform="translate(0 100)">
+    <rect class="soft-green" x="785" y="657" width="700" height="106" rx="17"/>
+    <text class="sans section" x="813" y="688" fill="#34742f">方差门控</text>
+    <text class="sans small" x="813" y="714">Var(组内奖励) &lt; τ → 启用信息增益</text>
+    <text class="sans tiny" x="813" y="734">否则 w = 0，保持外部奖励不变</text>
+    <text class="formula" x="813" y="754">Aₜ = Aₜʳᵉʷᵃʳᵈ + w · Aₜᵍᵃⁱⁿ</text>
+    <rect x="1244" y="682" width="214" height="54" rx="12" fill="#fff" stroke="#34742f" stroke-width="2"/>
+    <text class="sans small center" x="1351" y="701">零方差组</text>
+    <text class="sans body center" x="1351" y="723" fill="#34742f">恢复非零梯度</text>
+  </g>
+  <path class="arrow-green" d="M1135 863 V955"/>
+
+  <g filter="url(#shadow)" transform="translate(0 165)">
+    <rect class="soft-purple" x="815" y="795" width="640" height="95" rx="16"/>
+    <text class="sans section center" x="1135" y="822" fill="#7251b5">组级归一化 → 轮次级信用</text>
+    <text class="formula center" x="1135" y="853">normalize_group(Gₜ or gainₜ) → Aₜᶜʳᵉᵈⁱᵗ</text>
+    <text class="sans tiny center" x="1135" y="878" fill="#a04444">在 rollout group 内统一归一化，而非单条轨迹内部</text>
+  </g>
+
+  <!-- flow from panel 2 to 3 -->
+  <path class="arrow-green" d="M1455 1009 H1580 V176 H1625"/>
+
+  <!-- PANEL 3: shaping and optimization -->
+  <text class="sans title center" x="1980" y="72" fill="#196ca5">行为正则化策略优化</text>
+  <line x1="1754" y1="99" x2="2206" y2="99" stroke="#196ca5" stroke-width="2.5"/>
+  <text class="sans subtitle center" x="1980" y="116">行为塑形 → 优势估计 → TOKEN 级 PPO 更新</text>
+
+  <g filter="url(#shadow)">
+    <rect class="soft-blue" x="1625" y="140" width="710" height="72" rx="16"/>
+    <circle cx="1667" cy="176" r="20" fill="#d8edf9" stroke="#2476ad" stroke-width="2"/>
+    <text class="sans body center" x="1667" y="177" fill="#2476ad">A</text>
+    <text class="sans section" x="1701" y="169">轮次级信用信号</text>
+    <text class="sans small" x="1701" y="195">输入：Aₜᶜʳᵉᵈⁱᵗ / 塑形奖励 / 损失掩码</text>
+  </g>
+  <path class="arrow-blue" d="M1980 212 V270"/>
+
+  <g filter="url(#shadow)" transform="translate(0 35)">
+    <rect class="soft-orange" x="1625" y="239" width="710" height="185" rx="17"/>
+    <text class="sans section center" x="1980" y="268" fill="#b96228">行为塑形</text>
+    <rect class="chip" x="1648" y="288" width="320" height="112" rx="13"/>
+    <text class="sans body" x="1669" y="314" fill="#b03a75">BAO · 减法正则</text>
+    <text class="sans small" x="1669" y="340">− 连续两轮询问用户</text>
+    <text class="sans small" x="1669" y="367">− 失败且过早终止</text>
+    <text class="sans tiny" x="1669" y="390">p_info + p_think → shaped_reward</text>
+    <rect class="chip" x="1991" y="288" width="320" height="112" rx="13"/>
+    <text class="sans body" x="2012" y="314" fill="#34742f">PPP · 加法目标</text>
+    <text class="sans small" x="2012" y="340">+ 任务完成度（Productivity）</text>
+    <text class="sans small" x="2012" y="367">+ 主动性 + 个性化</text>
+    <text class="sans tiny" x="2012" y="390">R = R_Prod + R_Proact + R_Pers</text>
+  </g>
+  <path class="arrow-blue" d="M1980 459 V527"/>
+
+  <g filter="url(#shadow)" transform="translate(0 80)">
+    <rect class="soft-green" x="1625" y="451" width="710" height="105" rx="17"/>
+    <text class="sans section" x="1649" y="480" fill="#34742f">优势估计器</text>
+    <rect class="chip" x="1649" y="496" width="207" height="41" rx="11"/><text class="sans small center" x="1752" y="517">GRPO · (r−μ)/(σ+ε)</text>
+    <rect class="chip" x="1876" y="496" width="207" height="41" rx="11"/><text class="sans small center" x="1979" y="517">RLOO · leave-one-out</text>
+    <rect class="chip" x="2103" y="496" width="208" height="41" rx="11"/><text class="sans small center" x="2207" y="517">PPO · GAE(γ,λ)</text>
+  </g>
+  <path class="arrow-blue" d="M1980 636 V704"/>
+
+  <g filter="url(#shadow)" transform="translate(0 125)">
+    <rect class="soft-blue" x="1625" y="583" width="710" height="145" rx="17"/>
+    <text class="sans section" x="1649" y="613" fill="#196ca5">Token 级 PPO 裁剪损失</text>
+    <text class="formula" x="1649" y="648">ρₜ = exp(log πθ − log πold)</text>
+    <text class="formula" x="1649" y="684">L = − E[min(ρₜAₜ, clip(ρₜ, 1−ε, 1+εhigh)Aₜ)]</text>
+    <rect x="2050" y="611" width="256" height="46" rx="11" fill="#fff" stroke="#2476ad" stroke-width="2"/>
+    <text class="sans small center" x="2178" y="635">仅 mask=1 的 token 计入损失</text>
+    <text class="sans tiny" x="1649" y="712">多轮 PPO 冻结旧 log-prob；当 ρ ≠ 1 后裁剪生效</text>
+  </g>
+  <path class="arrow-blue" d="M1980 853 V914"/>
+
+  <g filter="url(#shadow)" transform="translate(0 165)">
+    <rect class="soft-purple" x="1625" y="753" width="710" height="91" rx="16"/>
+    <text class="sans body" x="1649" y="779" fill="#7251b5">DAPO 四组件</text>
+    <rect x="1649" y="794" width="150" height="32" rx="9" fill="#fff" stroke="#7251b5"/><text class="sans tiny center" x="1724" y="811">Clip-Higher</text>
+    <rect x="1819" y="794" width="150" height="32" rx="9" fill="#fff" stroke="#7251b5"/><text class="sans tiny center" x="1894" y="811">动态采样</text>
+    <rect x="1989" y="794" width="150" height="32" rx="9" fill="#fff" stroke="#7251b5"/><text class="sans tiny center" x="2064" y="811">Token 级损失</text>
+    <rect x="2159" y="794" width="152" height="32" rx="9" fill="#fff" stroke="#7251b5"/><text class="sans tiny center" x="2235" y="811">超长响应塑形</text>
+  </g>
+  <path class="arrow-blue" d="M1980 1009 V1051"/>
+
+  <g filter="url(#shadow)" transform="translate(0 190)">
+    <rect x="1735" y="865" width="490" height="48" rx="14" fill="#dceef9" stroke="#196ca5" stroke-width="3"/>
+    <text class="sans section center" x="1980" y="890" fill="#196ca5">反向传播 → 梯度裁剪 → 参数更新</text>
+  </g>
+
+</svg>

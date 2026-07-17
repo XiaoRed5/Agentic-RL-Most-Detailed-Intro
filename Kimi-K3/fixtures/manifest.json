@@ -1,0 +1,59 @@
+[
+  {
+    "name": "retail_success",
+    "domain": "retail",
+    "reward": 1.0,
+    "n_messages": 11,
+    "tools": [
+      "find_user_id_by_name_zip",
+      "get_user_details",
+      "get_order_details"
+    ]
+  },
+  {
+    "name": "airline_success",
+    "domain": "airline",
+    "reward": 1.0,
+    "n_messages": 13,
+    "tools": [
+      "get_user_details",
+      "get_reservation_details",
+      "get_reservation_details"
+    ]
+  },
+  {
+    "name": "airline_fail",
+    "domain": "airline",
+    "reward": 0.0,
+    "n_messages": 15,
+    "tools": [
+      "get_user_details",
+      "get_reservation_details",
+      "cancel_reservation"
+    ]
+  },
+  {
+    "name": "telecom_success_dualctrl",
+    "domain": "telecom",
+    "reward": 1.0,
+    "n_messages": 15,
+    "tools": [
+      "get_customer_by_phone",
+      "get_details_by_id",
+      "get_details_by_id",
+      "get_data_usage"
+    ]
+  },
+  {
+    "name": "telecom_fail_dualctrl",
+    "domain": "telecom",
+    "reward": 0.0,
+    "n_messages": 17,
+    "tools": [
+      "get_customer_by_phone",
+      "get_details_by_id",
+      "get_details_by_id",
+      "transfer_to_human_agents"
+    ]
+  }
+]

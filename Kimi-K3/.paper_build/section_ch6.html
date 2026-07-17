@@ -1,0 +1,109 @@
+<h2>6　通往真机:免 SFT、零算法改动</h2>
+
+<p class="lead">前五章的所有 RL 机理——信用分配、advantage estimator、DAPO 四件套、BAO 正则、InfoPO 反事实增益——都在 CPU 上以 tiny model 与 mock env 跑通,<strong>2.35s</strong> 内 <strong>113 passed + 2 skipped</strong>。本章给出一个具体承诺:从 CPU 离线单测切换到 GPU 真机训练,<strong>RL 算法逻辑一字不改</strong>,只替换四个"接口边界"组件、再换一份 YAML 即可。这不是设计上的巧合:所有算法层模块(<code>algo/</code>、<code>credit/</code>、<code>shaping/</code>)只依赖 <code>Sample</code>/<code>Trajectory</code> 契约,与生成后端、模型后端完全无关。迁移的全部风险因此被隔离在少数几个边界文件里。</p>
+
+<h3>6.1　边界组件替换</h3>
+
+<p>离线与真机的差别,不在算法,而在四个"世界的边界":谁来算 logit(model)、谁来生成动作(policy)、谁来给 reward(env)、谁来切 token(tokenizer)。这四者在离线是可秒级运行的 tiny/mock 版本,在真机换成 HF 重后端。Table 5 列出全部替换点。关键在最后一列:接口已就位——真机适配器的骨架已写在仓库里,签名与离线版对齐,<code>tests/test_08_tau2_integration.py</code> 中 2 个 <code>skipif</code> 测试已挂,一旦真实 tau2 可导入即自动激活。</p>
+
+<div class="tabwrap"><table class="aca">
+<caption><span class="lbl">Table 5:</span> 从离线单测到真机训练的四个边界组件替换。算法层 (rollout/train/credit/shaping) 不在此表——它们一字不改。</caption>
+<thead><tr><th>离线 (单测)</th><th>真机</th><th>替换文件</th><th>状态</th></tr></thead>
+<tbody>
+<tr><td><code>TinyTransformer</code></td><td>Qwen3-4B (HF)</td><td><code>train/model.py</code> 改用 <code>AutoModelForCausalLM</code></td><td>接口已就位</td></tr>
+<tr><td><code>ScriptedPolicy</code> / <code>TinyModelPolicy</code></td><td><code>HFPolicy</code></td><td><code>rollout/hf_policy.py</code></td><td>接口已就位</td></tr>
+<tr><td><code>TauEnv</code> (mock)</td><td><code>RealTau2Env</code></td><td><code>env/tau2_adapter.py</code></td><td>接口已就位</td></tr>
+<tr><td><code>ByteTokenizer</code></td><td>Qwen3 tokenizer</td><td><code>hf_policy.py: load_hf_tokenizer</code></td><td>skipif 已挂</td></tr>
+</tbody>
+</table></div>
+
+<p>被替换的都是叶子组件,而调用它们的骨架保持不变:<code>rollout()</code> 采样多轮轨迹、<code>train_step()</code> 组装一个训练 step、<code>multi_step_ppo_update()</code> 做 PPO 更新,以及所有 <code>algo</code> / <code>credit</code> / <code>shaping</code> 模块——全部一字不改。原因写在 <code>HFPolicy</code> 的接口约定里:它的 <code>act(messages)</code> 与 <code>logprobs_of(token_ids)</code> 签名与离线 <code>Policy</code> 一致,<code>train_step</code> 消费的 <code>Sample</code> 契约不变(见 <code>rollout/hf_policy.py</code>);<code>RealTau2Env</code> 则把 tau2 <code>EnvironmentEvaluator.calculate_reward</code> 对齐到我们的 <code>StepResult.reward</code>——这套 reward 语义正是我们照 tau2 官方 evaluator 复刻、并用真实 gold <code>reward_info</code> 对拍通过的(见 <code>env/tau2_adapter.py</code> 注释)。边界之外,算法层对"背后是 tiny 还是 4B"一无所知,也不需要知道。</p>
+
+<h3>6.2　配置切换</h3>
+
+<p>第二件要换的只是一份 YAML。<code>configs/offline.yaml</code> 与 <code>configs/real_qwen3_4b.yaml</code> 共享同一 <code>Config</code> 结构,由 <code>tests/test_10_config.py::test_configs_share_structure</code>(该文件 4 个用例)锁定:同名字段、同层级,离线到真机零结构改动,只改字段值。真机版把 tiny model 换成 Qwen3-4B checkpoint、把 scripted rollout 换成 sglang 后端,并把 DAPO 四件套与 KL 锚点从 <code>false</code> 拨到 <code>true</code>。核心差异如下。</p>
+
+<pre class="code"><span class="cm"># offline.yaml           →   real_qwen3_4b.yaml</span>
+model.name:  tiny         →   Jarrodbarnes/Qwen3-4B-tau2-sft1
+credit.gamma: 0.8         →   0.95        <span class="cm"># 真机长轨迹用更接近 1 的 γ</span>
+algo.estimator: grpo      →   grpo        <span class="cm"># 算法不变</span>
+algo.clip_higher: false   →   true        <span class="cm"># DAPO ①</span>
+algo.dynamic_sampling: false → true       <span class="cm"># DAPO ②(或换 infopo 救活)</span>
+algo.token_level_loss: false → true       <span class="cm"># DAPO ③</span>
+algo.overlong_shaping: false → true       <span class="cm"># DAPO ④</span>
+algo.kl_coef: 0.0         →   0.001       <span class="cm"># 与 sft1 ref policy 的 KL 锚点</span>
+rollout.max_steps: 16     →   100         <span class="cm"># tau2 官方 TAU2_MAX_STEPS=100</span>
+rollout.temperature: 1.0  →   0.8         <span class="cm"># 对齐 grpo-v1 训练采样</span>
+<span class="cm"># 真机额外 runtime 段:rollout_backend=sglang, train_backend=slime</span></pre>
+
+<p>换句话说,从离线到真机,人为写下的改动只有"编辑一个 YAML 文件"这一件事;边界组件的替换由第 6.1 节的适配器就位来吸收。</p>
+
+<h3>6.3　免 SFT 冷启动与复现路线</h3>
+
+<p>真机 RL 通常需要一段 SFT 预热来把基座模型拉到"能用工具、能多轮对话"的起点。我们跳过这一步:直接以社区已 SFT 好的 checkpoint <code>Jarrodbarnes/Qwen3-4B-tau2-sft1</code>(pass@1 <strong>0.40</strong>)作为 RL 起点,不做任何额外 SFT 预热。效果目标以同源的 <code>Jarrodbarnes/Qwen3-4B-tau2-grpo-v1</code>(pass@4 <strong>59%</strong>)为参照物——它给出"同一基座、纯 GRPO"能到的水位,是我们复现路线第一站要对齐的 baseline。</p>
+
+<p>基于此,建议的复现路线按研究深度逐级叠加:</p>
+
+<ol>
+<li><strong>R2G + GRPO baseline</strong>:<code>credit.method=r2g</code> + <code>estimator=grpo</code>,先不开 shaping,对齐 grpo-v1 的 pass@4 59%,同时观察 User-Involvement Rate。</li>
+<li><strong>叠 DAPO 四件套</strong>:打开 <code>clip_higher</code> / <code>dynamic_sampling</code> / <code>token_level_loss</code> / <code>overlong_shaping</code>,提升长轨迹与零方差组下的训练稳定性。</li>
+<li><strong>BAO 治副作用</strong>:观察到 agent"话太多"(连续追问)或"想太多"(失败且提前终止)后,打开 <code>bao_info_seeking</code> + <code>bao_over_thinking</code>,自调 <code>lambda_ans</code> / <code>lambda_think</code>(BAO 论文未公开数值,属诚实边界)。</li>
+<li><strong>InfoPO / PPP 可选增强</strong>:<code>credit.method=infopo</code> 让零方差组靠反事实 info-gain 供梯度(与 dynamic_sampling 是对立处理,优先救活);或接入 PPP 三目标 reward,用 <code>shaping.parse_effort_from_cost</code> 解析 <code>[Cost N]</code> effort。</li>
+</ol>
+
+<figure><div class="figbox">
+<svg viewBox="0 0 720 300" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif" style="background:#fff">
+  <!-- 上半:迁移流程 -->
+  <text x="20" y="30" font-size="13" fill="#1a1a1a" font-weight="bold">(a) 迁移路径</text>
+  <rect x="20" y="46" width="150" height="52" fill="#f7f6f3" stroke="#333" stroke-width="1.2" rx="3"/>
+  <text x="95" y="68" font-size="12" fill="#1a1a1a" text-anchor="middle">离线 CPU 验证</text>
+  <text x="95" y="86" font-size="10" fill="#1f6b3f" text-anchor="middle">113P+2S · 2.35s</text>
+
+  <line x1="170" y1="72" x2="248" y2="72" stroke="#888" stroke-width="1.3"/>
+  <polygon points="248,72 240,68 240,76" fill="#888"/>
+
+  <rect x="250" y="40" width="180" height="64" fill="#f7f6f3" stroke="#8b2635" stroke-width="1.2" rx="3"/>
+  <text x="340" y="60" font-size="11" fill="#8b2635" text-anchor="middle" font-weight="bold">换 YAML + 4 边界组件</text>
+  <text x="340" y="78" font-size="9.5" fill="#1a1a1a" text-anchor="middle">model / policy / env / tokenizer</text>
+  <text x="340" y="94" font-size="9.5" fill="#2c5aa0" text-anchor="middle">算法层零改动</text>
+
+  <line x1="430" y1="72" x2="508" y2="72" stroke="#888" stroke-width="1.3"/>
+  <polygon points="508,72 500,68 500,76" fill="#888"/>
+
+  <rect x="510" y="46" width="180" height="52" fill="#f7f6f3" stroke="#333" stroke-width="1.2" rx="3"/>
+  <text x="600" y="68" font-size="12" fill="#1a1a1a" text-anchor="middle">真机 GPU 训练</text>
+  <text x="600" y="86" font-size="10" fill="#1a1a1a" text-anchor="middle">Qwen3-4B · sglang/slime</text>
+
+  <!-- 下半:复现阶段 pass 率递进示意 -->
+  <text x="20" y="150" font-size="13" fill="#1a1a1a" font-weight="bold">(b) 复现路线 (pass 率示意)</text>
+  <line x1="60" y1="270" x2="700" y2="270" stroke="#333" stroke-width="1"/>
+  <line x1="60" y1="270" x2="60" y2="168" stroke="#333" stroke-width="1"/>
+  <text x="30" y="200" font-size="9" fill="#555" text-anchor="middle">pass</text>
+  <!-- baseline 59% 基准线 -->
+  <line x1="60" y1="212" x2="700" y2="212" stroke="#1f6b3f" stroke-width="0.8" stroke-dasharray="4 3"/>
+  <text x="690" y="207" font-size="9" fill="#1f6b3f" text-anchor="end">grpo-v1 pass@4 = 59%</text>
+
+  <!-- 阶段柱 -->
+  <rect x="110" y="212" width="60" height="58" fill="#c9d4e3" stroke="#2c5aa0" stroke-width="1"/>
+  <text x="140" y="285" font-size="9" fill="#1a1a1a" text-anchor="middle">① R2G+GRPO</text>
+  <text x="140" y="205" font-size="9" fill="#1f6b3f" text-anchor="middle">59%</text>
+
+  <rect x="250" y="196" width="60" height="74" fill="#c9d4e3" stroke="#2c5aa0" stroke-width="1"/>
+  <text x="280" y="285" font-size="9" fill="#1a1a1a" text-anchor="middle">② +DAPO</text>
+
+  <rect x="390" y="184" width="60" height="86" fill="#c9d4e3" stroke="#2c5aa0" stroke-width="1"/>
+  <text x="420" y="285" font-size="9" fill="#1a1a1a" text-anchor="middle">③ +BAO</text>
+
+  <rect x="530" y="176" width="60" height="94" fill="#c9d4e3" stroke="#2c5aa0" stroke-width="1"/>
+  <text x="560" y="285" font-size="9" fill="#1a1a1a" text-anchor="middle">④ +InfoPO/PPP</text>
+
+  <path d="M140 208 L280 192 L420 180 L560 172" fill="none" stroke="#8b2635" stroke-width="1.4"/>
+  <circle cx="140" cy="208" r="2.5" fill="#8b2635"/>
+  <circle cx="280" cy="192" r="2.5" fill="#8b2635"/>
+  <circle cx="420" cy="180" r="2.5" fill="#8b2635"/>
+  <circle cx="560" cy="172" r="2.5" fill="#8b2635"/>
+</svg>
+</div>
+<figcaption><span class="lbl">Figure 7:</span> (a) 迁移路径:离线 CPU 全绿后,只换一份 YAML 与四个边界组件,即进入真机 GPU 训练,算法层零改动;(b) 复现路线示意——从对齐 grpo-v1 pass@4 = 59% 的 baseline 起步,逐级叠加 DAPO、BAO、InfoPO/PPP。② 之后的柱高为方法叠加方向的示意,非实测值。</figcaption></figure>
+
+<p>这条路线的价值在于它把"研究深度"与"工程风险"解耦:契约稳、边界活——只要 <code>Sample</code>/<code>Trajectory</code> 契约不动,后续所有算法层的探索(更精细的信用分配、新的正则、新的 estimator)都能安全地堆在离线可秒级验证的机理之上,而真机迁移的全部不确定性只落在 Table 5 那四个边界组件里。至此,一套在 CPU 上被逐 token 断言过的 RL 引擎,已经为 GPU 真机训练备好了全部接口。下一章 §7 总结全书,并给出这套"契约优先"方法论对后续工业级 agentic RL 的启示。</p>

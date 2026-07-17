@@ -1,0 +1,54 @@
+# 真机训练配置：Qwen3-4B-tau2-sft1 冷启动 + 真实 tau2 env。
+# 前置：Python>=3.12；pip install tau2-bench；GPU(>=24G，tp 可拆)。
+# 与离线配置结构完全一致 —— 只改字段值，RL 算法代码零改动。
+
+model:
+  # 免 SFT 冷启动：直接用别人 SFT 好的 checkpoint 作为 RL 起点
+  name: Jarrodbarnes/Qwen3-4B-tau2-sft1
+  # vocab/hidden 等由 HF config 自动读取，无需手填(以下仅占位)
+  max_seq_len: 4096
+
+credit:
+  method: r2g            # 先用 UserRL 的 R2G 打底；想复现 InfoPO 换 infopo
+  gamma: 0.95            # 真机长轨迹通常用更接近 1 的 gamma
+  infopo_variance_threshold: 1.0e-6
+  infopo_gain_weight: 0.5
+  infopo_kl_coef: 0.1
+
+shaping:
+  # 复现 BAO：训练中后期打开两条正则治"话太多/想太多"
+  bao_info_seeking: false     # 建议：先跑 baseline，观察 User-Involvement Rate 再开
+  lambda_ans: 0.1             # 注意：BAO 论文未公开数值，需自行调参
+  bao_over_thinking: false
+  lambda_think: 0.1
+  turn_budget: 16
+  ppp_enabled: false
+
+algo:
+  estimator: grpo
+  group_size: 8              # 对齐 grpo-v1 recipe；显存紧张可降到 4
+  clip_eps: 0.2
+  clip_higher: true          # DAPO：真机建议开
+  clip_eps_high: 0.28
+  dynamic_sampling: true     # DAPO：丢弃零方差组(或改 credit.method=infopo 救活)
+  token_level_loss: true     # DAPO：长轨迹每 token 等权
+  overlong_shaping: true
+  overlong_buffer: 512
+  max_response_len: 4096
+  kl_coef: 0.001             # 与 sft1 ref policy 的 KL 锚点，防漂移
+
+rollout:
+  max_steps: 100             # tau2 官方 TAU2_MAX_STEPS=100
+  temperature: 0.8           # 对齐 grpo-v1 训练采样
+
+# 真机额外(离线无):
+runtime:
+  base_checkpoint: Jarrodbarnes/Qwen3-4B-tau2-sft1
+  reference_checkpoint: Jarrodbarnes/Qwen3-4B-tau2-sft1   # KL 锚点
+  eval_checkpoint_baseline: Jarrodbarnes/Qwen3-4B-tau2-grpo-v1  # 效果参照(pass@4 59%)
+  user_simulator_model: gpt-4.1-mini    # tau2 官方评测用；训练可用本地 Qwen3-4B 省钱
+  domains: [retail, airline, telecom]
+  rollout_backend: sglang    # 真机 rollout 引擎
+  train_backend: slime       # THUDM/slime (Megatron-LM)
+
+seed: 0

@@ -1,0 +1,42 @@
+# 离线单测配置：tiny model + CPU，秒级跑通全部 RL 机理。
+# 用法：所有单测默认用 agentic_rl.utils.config.default_offline_config()，此文件是其 YAML 镜像。
+
+model:
+  name: tiny
+  vocab_size: 512
+  hidden_size: 32
+  n_layers: 2
+  n_heads: 2
+  max_seq_len: 2048
+
+credit:
+  method: r2g            # outcome | r2g | infopo
+  gamma: 0.8             # 对齐 survey TravelGym 算例
+  infopo_variance_threshold: 1.0e-6
+  infopo_gain_weight: 1.0
+  infopo_kl_coef: 0.1
+
+shaping:
+  bao_info_seeking: false
+  lambda_ans: 0.1
+  bao_over_thinking: false
+  lambda_think: 0.1
+  turn_budget: 16
+  ppp_enabled: false
+
+algo:
+  estimator: grpo        # grpo | rloo | ppo_gae
+  group_size: 8
+  clip_eps: 0.2
+  clip_higher: false
+  clip_eps_high: 0.28
+  dynamic_sampling: false
+  token_level_loss: false
+  overlong_shaping: false
+  kl_coef: 0.0
+
+rollout:
+  max_steps: 16
+  temperature: 1.0
+
+seed: 0
