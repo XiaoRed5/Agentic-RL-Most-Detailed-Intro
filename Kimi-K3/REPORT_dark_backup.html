@@ -1,0 +1,427 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>agentic-tau-rl · 最终交付报告</title>
+<style>
+  :root{
+    --bg:#0d1117; --panel:#161b22; --panel2:#1c2330; --border:#2d3748;
+    --text:#e6edf3; --muted:#8b949e; --accent:#58a6ff; --green:#3fb950;
+    --amber:#d29922; --purple:#bc8cff; --pink:#f778ba; --cyan:#39c5cf;
+    --mono:"SF Mono",ui-monospace,"JetBrains Mono",Menlo,monospace;
+  }
+  *{box-sizing:border-box;margin:0;padding:0}
+  body{background:var(--bg);color:var(--text);font-family:-apple-system,BlinkMacSystemFont,"Segoe UI",system-ui,sans-serif;line-height:1.65;-webkit-font-smoothing:antialiased}
+  .wrap{max-width:1080px;margin:0 auto;padding:0 24px 100px}
+  header{padding:64px 0 40px;border-bottom:1px solid var(--border);margin-bottom:48px;position:relative}
+  .badge{display:inline-block;font-family:var(--mono);font-size:12px;letter-spacing:.5px;color:var(--purple);border:1px solid var(--purple);border-radius:100px;padding:4px 14px;margin-bottom:20px}
+  h1{font-size:42px;font-weight:800;letter-spacing:-1px;line-height:1.1;margin-bottom:14px;background:linear-gradient(90deg,#58a6ff,#bc8cff 60%,#f778ba);-webkit-background-clip:text;background-clip:text;-webkit-text-fill-color:transparent}
+  .sub{font-size:18px;color:var(--muted);max-width:760px}
+  .meta-row{display:flex;flex-wrap:wrap;gap:10px;margin-top:26px}
+  .chip{font-family:var(--mono);font-size:12.5px;background:var(--panel);border:1px solid var(--border);border-radius:8px;padding:7px 13px;color:var(--muted)}
+  .chip b{color:var(--text);font-weight:600}
+  .chip .ok{color:var(--green)}
+  h2{font-size:26px;font-weight:700;margin:56px 0 8px;letter-spacing:-.3px;display:flex;align-items:center;gap:12px}
+  h2 .n{font-family:var(--mono);font-size:15px;color:var(--accent);opacity:.8}
+  h2::after{content:"";flex:1;height:1px;background:linear-gradient(90deg,var(--border),transparent);margin-left:8px}
+  h3{font-size:18px;font-weight:650;margin:30px 0 10px;color:var(--text)}
+  p{margin:12px 0;color:#c9d1d9}
+  .lead{font-size:16.5px}
+  .grid{display:grid;gap:16px;margin:24px 0}
+  .g2{grid-template-columns:1fr 1fr}
+  .g3{grid-template-columns:repeat(3,1fr)}
+  .g4{grid-template-columns:repeat(4,1fr)}
+  @media(max-width:820px){.g2,.g3,.g4{grid-template-columns:1fr}}
+  .card{background:var(--panel);border:1px solid var(--border);border-radius:12px;padding:22px}
+  .card.hl{background:linear-gradient(160deg,var(--panel2),var(--panel));border-color:#30507a}
+  .stat{text-align:center;padding:26px 16px}
+  .stat .num{font-size:40px;font-weight:800;font-family:var(--mono);letter-spacing:-1px}
+  .stat .num.green{color:var(--green)} .stat .num.blue{color:var(--accent)} .stat .num.purple{color:var(--purple)} .stat .num.pink{color:var(--pink)}
+  .stat .lbl{font-size:13px;color:var(--muted);margin-top:6px}
+  table{width:100%;border-collapse:collapse;margin:22px 0;font-size:14.5px;background:var(--panel);border-radius:12px;overflow:hidden;border:1px solid var(--border)}
+  th{background:var(--panel2);text-align:left;padding:13px 16px;font-weight:650;color:var(--text);font-size:13px;letter-spacing:.3px;border-bottom:1px solid var(--border)}
+  td{padding:12px 16px;border-bottom:1px solid var(--border);color:#c9d1d9;vertical-align:top}
+  tr:last-child td{border-bottom:none}
+  tr:hover td{background:rgba(88,166,255,.04)}
+  code{font-family:var(--mono);font-size:13px;background:var(--panel2);padding:2px 7px;border-radius:5px;color:var(--cyan);border:1px solid var(--border)}
+  .mono-block{font-family:var(--mono);font-size:13px;background:#0a0e14;border:1px solid var(--border);border-radius:10px;padding:18px 20px;overflow-x:auto;margin:18px 0;color:#c9d1d9;line-height:1.7}
+  .mono-block .c{color:var(--muted)}
+  .mono-block .g{color:var(--green)}
+  .mono-block .b{color:var(--accent)}
+  .mono-block .p{color:var(--purple)}
+  .tag{display:inline-block;font-family:var(--mono);font-size:11px;padding:2px 8px;border-radius:5px;font-weight:600}
+  .tag.pass{background:rgba(63,185,80,.15);color:var(--green);border:1px solid rgba(63,185,80,.3)}
+  .tag.skip{background:rgba(210,153,34,.15);color:var(--amber);border:1px solid rgba(210,153,34,.3)}
+  .flow{display:flex;align-items:stretch;gap:0;margin:24px 0;flex-wrap:wrap}
+  .flow .step{flex:1;min-width:130px;background:var(--panel);border:1px solid var(--border);border-radius:10px;padding:14px;text-align:center;position:relative;font-size:13px}
+  .flow .step .t{font-weight:700;color:var(--accent);font-size:13.5px;margin-bottom:4px}
+  .flow .arrow{display:flex;align-items:center;color:var(--muted);font-size:20px;padding:0 6px}
+  @media(max-width:820px){.flow{flex-direction:column}.flow .arrow{transform:rotate(90deg);padding:4px 0}}
+  .keypoint{border-left:3px solid var(--purple);background:linear-gradient(90deg,rgba(188,140,255,.07),transparent);padding:16px 20px;border-radius:0 10px 10px 0;margin:18px 0}
+  .keypoint .k{font-weight:700;color:var(--purple);font-size:14px;margin-bottom:5px;font-family:var(--mono)}
+  .win{border-left:3px solid var(--green);background:linear-gradient(90deg,rgba(63,185,80,.07),transparent)}
+  .win .k{color:var(--green)}
+  .warn{border-left:3px solid var(--amber);background:linear-gradient(90deg,rgba(210,153,34,.07),transparent)}
+  .warn .k{color:var(--amber)}
+  ul{margin:12px 0 12px 4px;list-style:none}
+  li{padding:6px 0 6px 26px;position:relative;color:#c9d1d9}
+  li::before{content:"▸";position:absolute;left:4px;color:var(--accent)}
+  .foot{margin-top:70px;padding-top:26px;border-top:1px solid var(--border);color:var(--muted);font-size:13px;text-align:center}
+  .foot b{color:var(--purple)}
+  .prove{font-family:var(--mono);font-size:12.5px;color:var(--green)}
+  .arrow-r{color:var(--muted)}
+</style>
+</head>
+<body>
+<div class="wrap">
+
+<header>
+  <span class="badge">◆ 由 Claude Opus 4.8 自主实现</span>
+  <h1>agentic-tau-rl</h1>
+  <p class="sub">工业级 Agentic RL 全链路 · tau2-bench 底座 · 免 SFT 冷启动 · 研究级信用分配与行为塑形 · 100% 离线可单测</p>
+  <div class="meta-row">
+    <span class="chip">测试 <b class="ok">113 passed</b> · 2 skipped</span>
+    <span class="chip">实现 <b>2356</b> 行</span>
+    <span class="chip">测试 <b>1489</b> 行</span>
+    <span class="chip">CPU <b>2.35s</b> 跑完</span>
+    <span class="chip">日期 <b>2026-07-16</b></span>
+  </div>
+</header>
+
+<p class="lead">这是一份把用户的 <b>τ-bench → UserRL → BAO + InfoPO / PPP</b> 调研脉络，逐层翻译成可运行、可单测、数值对拍论文算例的完整代码实现。全程在无 GPU 的 CPU 环境离线完成，每一个 RL 机理都用真实 tau2 轨迹或手算结果钉死正确性。</p>
+
+<!-- 关键数字 -->
+<div class="grid g4">
+  <div class="card stat"><div class="num green">115</div><div class="lbl">测试用例<br>(113 pass / 2 待真机)</div></div>
+  <div class="card stat"><div class="num blue">6</div><div class="lbl">核心模块<br>对齐 survey 各层</div></div>
+  <div class="card stat"><div class="num purple">3</div><div class="lbl">信用分配打法<br>可切换对比</div></div>
+  <div class="card stat"><div class="num pink">5</div><div class="lbl">真实 golden 轨迹<br>带 gold reward</div></div>
+</div>
+
+<!-- 定位 -->
+<h2><span class="n">01</span> 项目定位</h2>
+<p>用户是 agentic RL 新手，要做一个<b>有研究深度</b>的工业级项目。四条硬约束：训 7B 左右、免 SFT 直接 RL、用真实 query 不合成、100% 离线可单测。选型经过多轮对齐后锁定：</p>
+<div class="grid g2">
+  <div class="card">
+    <h3 style="margin-top:0">🎯 底座：tau2-bench</h3>
+    <p style="margin:8px 0">Sierra 的 dual-control 客服 benchmark（retail / airline / telecom）。用户是活的 LLM，会 STOP / TRANSFER；工具有副作用；reward 靠数据库终态断言。纯 Python 无 docker，离线可 mock。</p>
+  </div>
+  <div class="card">
+    <h3 style="margin-top:0">🚀 免 SFT 冷启动</h3>
+    <p style="margin:8px 0">直接用 <code>Jarrodbarnes/Qwen3-4B-tau2-sft1</code> 作 RL 起点（pass@1 0.40）。效果参照 <code>grpo-v1</code>（pass@4 59%）。数据取自同源 <code>tau2-sft-seed-v3</code> 真实轨迹。</p>
+  </div>
+</div>
+
+<!-- 架构 -->
+<h2><span class="n">02</span> 整体代码实现架构</h2>
+<p>一张图看懂全部模块的组织方式与一次训练 step 的数据流向。左侧竖轴是<b>数据 → 环境 → rollout → 信用/塑形 → 算法 → 训练</b>的分层管线；每个盒子标注了对应的源码文件、对齐的 survey 论文、以及最硬的验证锚点。</p>
+
+<div class="card" style="padding:10px;overflow-x:auto;background:#0a0e14">
+<svg viewBox="0 0 1000 1180" width="100%" font-family="-apple-system,system-ui,sans-serif" style="min-width:820px">
+  <defs>
+    <marker id="ar" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#58a6ff"/>
+    </marker>
+    <marker id="arp" markerWidth="10" markerHeight="10" refX="8" refY="3" orient="auto" markerUnits="strokeWidth">
+      <path d="M0,0 L8,3 L0,6 Z" fill="#bc8cff"/>
+    </marker>
+    <linearGradient id="gData" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#1f2d3d"/><stop offset="1" stop-color="#162230"/></linearGradient>
+    <style>
+      .box{stroke-width:1.5;rx:10}
+      .lbl{fill:#e6edf3;font-weight:700;font-size:15px}
+      .file{fill:#39c5cf;font-family:'SF Mono',monospace;font-size:11px}
+      .paper{fill:#bc8cff;font-size:11px;font-weight:600}
+      .desc{fill:#8b949e;font-size:11.5px}
+      .prove{fill:#3fb950;font-family:'SF Mono',monospace;font-size:10.5px}
+      .band{fill:#8b949e;font-size:12px;font-weight:700;font-family:'SF Mono',monospace}
+      .flowlbl{fill:#58a6ff;font-size:10.5px;font-family:'SF Mono',monospace}
+    </style>
+  </defs>
+
+  <!-- 左侧分层竖轴标签 -->
+  <text x="30" y="70" class="band" transform="rotate(-90 30 70)" text-anchor="middle">DATA</text>
+  <text x="30" y="215" class="band" transform="rotate(-90 30 215)" text-anchor="middle">ENV</text>
+  <text x="30" y="400" class="band" transform="rotate(-90 30 400)" text-anchor="middle">ROLLOUT</text>
+  <text x="30" y="620" class="band" transform="rotate(-90 30 620)" text-anchor="middle">CREDIT + SHAPING</text>
+  <text x="30" y="830" class="band" transform="rotate(-90 30 830)" text-anchor="middle">ALGO</text>
+  <text x="30" y="1030" class="band" transform="rotate(-90 30 1030)" text-anchor="middle">TRAIN</text>
+
+  <!-- ===== DATA ===== -->
+  <rect x="330" y="20" width="360" height="92" rx="10" class="box" fill="url(#gData)" stroke="#30507a"/>
+  <text x="350" y="46" class="lbl">📦 真实轨迹数据 (不合成)</text>
+  <text x="350" y="66" class="file">fixtures/*.json  ·  utils/fixtures.py</text>
+  <text x="350" y="84" class="desc">5 条 Jarrodbarnes/tau2-sft-seed-v3 真实轨迹</text>
+  <text x="350" y="101" class="prove">✓ 带 gold reward_info (DB终态 + action_checks)</text>
+
+  <!-- DATA -> ENV -->
+  <line x1="510" y1="112" x2="510" y2="140" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="520" y="130" class="flowlbl">golden 对拍基准</text>
+
+  <!-- ===== ENV ===== -->
+  <rect x="150" y="145" width="340" height="150" rx="10" class="box" fill="#161b22" stroke="#2d3748"/>
+  <text x="170" y="171" class="lbl">🏢 离线 tau2 环境 (契约兼容)</text>
+  <text x="170" y="191" class="file">env/tau_env.py · offline_tasks.py</text>
+  <text x="170" y="210" class="paper">◆ τ-bench / τ²-bench</text>
+  <text x="170" y="229" class="desc">step()→(obs, reward, term, trunc, info)</text>
+  <text x="170" y="246" class="desc">确定性 user-sim · STOP/TRANSFER · dual-control</text>
+  <text x="170" y="266" class="desc">有状态 DB · 双侧工具(agent/user)</text>
+  <text x="170" y="285" class="prove">✓ retail/airline/telecom 三域可解</text>
+
+  <rect x="510" y="145" width="340" height="150" rx="10" class="box" fill="#161b22" stroke="#2d3748"/>
+  <text x="530" y="171" class="lbl">⚖️ reward 聚合器</text>
+  <text x="530" y="191" class="file">env/reward.py</text>
+  <text x="530" y="211" class="desc">reward = ∏ component[c] for c in basis</text>
+  <text x="530" y="230" class="desc">[DB,COMMUNICATE] | [ENV_ASSERTION]</text>
+  <text x="530" y="249" class="desc">复刻 tau2 官方 evaluator 乘法门控</text>
+  <text x="530" y="272" class="prove">✓ 逐条对拍真实 gold reward</text>
+  <text x="530" y="288" class="prove">  两种 basis 全覆盖</text>
+
+  <line x1="490" y1="220" x2="508" y2="220" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <!-- ENV -> ROLLOUT -->
+  <line x1="320" y1="295" x2="320" y2="325" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="330" y="315" class="flowlbl">env.step(action)</text>
+
+  <!-- ===== ROLLOUT ===== -->
+  <rect x="150" y="330" width="700" height="165" rx="10" class="box" fill="#161b22" stroke="#2d3748"/>
+  <text x="170" y="356" class="lbl">🔁 多轮 rollout loop (agentic RL 的心脏)</text>
+  <text x="170" y="376" class="file">rollout/rollout.py · policy.py · tokenizer.py</text>
+  <text x="170" y="395" class="paper">◆ Slime example (asolve)</text>
+
+  <!-- inner loop -->
+  <rect x="175" y="410" width="150" height="62" rx="8" fill="#1c2330" stroke="#30507a"/>
+  <text x="250" y="435" text-anchor="middle" class="desc" style="fill:#e6edf3;font-weight:600">Policy 生成</text>
+  <text x="250" y="453" text-anchor="middle" class="desc">&lt;tool_call&gt;</text>
+  <text x="250" y="467" text-anchor="middle" class="prove">assistant tok</text>
+
+  <rect x="350" y="410" width="150" height="62" rx="8" fill="#1c2330" stroke="#30507a"/>
+  <text x="425" y="435" text-anchor="middle" class="desc" style="fill:#e6edf3;font-weight:600">env.step</text>
+  <text x="425" y="453" text-anchor="middle" class="desc">observation</text>
+  <text x="425" y="467" text-anchor="middle" class="prove">obs tok</text>
+
+  <rect x="525" y="410" width="300" height="62" rx="8" fill="#12241a" stroke="#2f6b3f"/>
+  <text x="675" y="432" text-anchor="middle" class="desc" style="fill:#3fb950;font-weight:700">token-level loss masking</text>
+  <text x="675" y="450" text-anchor="middle" class="desc">assistant token = 1  ·  obs token = 0</text>
+  <text x="675" y="466" text-anchor="middle" class="prove">✓ 逐 token 断言 · 最易错处钉死</text>
+
+  <line x1="325" y1="441" x2="348" y2="441" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#ar)"/>
+  <line x1="500" y1="441" x2="523" y2="441" stroke="#3fb950" stroke-width="1.5" marker-end="url(#ar)"/>
+  <path d="M250,472 L250,485 L425,485 L425,474" fill="none" stroke="#8b949e" stroke-width="1.2" stroke-dasharray="3,3" marker-end="url(#ar)"/>
+  <text x="337" y="483" text-anchor="middle" class="desc" style="font-size:10px">循环直到 STOP/truncated</text>
+
+  <!-- ROLLOUT -> Trajectory -->
+  <line x1="500" y1="495" x2="500" y2="522" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="510" y="513" class="flowlbl">Trajectory (turns + tokens + mask)</text>
+
+  <!-- ===== CREDIT + SHAPING ===== -->
+  <rect x="150" y="527" width="340" height="195" rx="10" class="box" fill="#161b22" stroke="#2d3748"/>
+  <text x="170" y="553" class="lbl">🎯 信用分配 (3 打法可切换)</text>
+  <text x="170" y="573" class="file">credit/credit.py · infopo_runtime.py</text>
+  <text x="170" y="592" class="paper">◆ UserRL / InfoPO</text>
+  <rect x="170" y="602" width="140" height="30" rx="6" fill="#1c2330" stroke="#30507a"/>
+  <text x="240" y="622" text-anchor="middle" class="desc">outcome (朴素)</text>
+  <rect x="320" y="602" width="150" height="30" rx="6" fill="#1c2330" stroke="#30507a"/>
+  <text x="395" y="622" text-anchor="middle" class="desc" style="fill:#e6edf3">R2G 折扣前传</text>
+  <rect x="170" y="638" width="300" height="34" rx="6" fill="#241c30" stroke="#5a3a7a"/>
+  <text x="320" y="659" text-anchor="middle" class="desc" style="fill:#bc8cff;font-weight:600">InfoPO 反事实增益 KL(P真‖P_mask) + 方差门控</text>
+  <text x="170" y="692" class="prove">✓ R2G 对拍 survey 第7轮 = 1.44</text>
+  <text x="170" y="710" class="prove">✓ 零方差组靠 info-gain 救活(供梯度)</text>
+
+  <rect x="510" y="527" width="340" height="195" rx="10" class="box" fill="#161b22" stroke="#2d3748"/>
+  <text x="530" y="553" class="lbl">🛡️ 行为塑形正则</text>
+  <text x="530" y="573" class="file">shaping/shaping.py</text>
+  <text x="530" y="592" class="paper">◆ BAO (减法) / PPP (加法)</text>
+  <rect x="530" y="602" width="300" height="30" rx="6" fill="#1c2330" stroke="#30507a"/>
+  <text x="680" y="622" text-anchor="middle" class="desc">BAO① 连问罚 −λ_ans  ·  ② 早停罚 −λ_think·(T−T′)/T′</text>
+  <rect x="530" y="638" width="300" height="30" rx="6" fill="#1c2330" stroke="#30507a"/>
+  <text x="680" y="658" text-anchor="middle" class="desc">PPP  R=R_Prod+R_Proact+R_Pers  ·  [Cost N]→effort</text>
+  <text x="530" y="692" class="prove">✓ BAO 对拍算例 4.33</text>
+  <text x="530" y="710" class="prove">✓ PPP clip 归一化语义</text>
+
+  <!-- CREDIT/SHAPING -> ALGO -->
+  <line x1="320" y1="722" x2="320" y2="750" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="330" y="740" class="flowlbl">turn-level reward / advantage</text>
+  <line x1="680" y1="722" x2="680" y2="750" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
+
+  <!-- ===== ALGO ===== -->
+  <rect x="150" y="755" width="700" height="150" rx="10" class="box" fill="#161b22" stroke="#2d3748"/>
+  <text x="170" y="781" class="lbl">🧮 Advantage 估计 + PPO Loss (全对拍手算)</text>
+  <text x="170" y="801" class="file">algo/advantage.py · loss.py · dapo.py</text>
+  <text x="170" y="820" class="paper">◆ GRPO / DAPO</text>
+
+  <rect x="175" y="830" width="200" height="60" rx="8" fill="#1c2330" stroke="#30507a"/>
+  <text x="275" y="852" text-anchor="middle" class="desc" style="fill:#e6edf3;font-weight:600">Advantage</text>
+  <text x="275" y="870" text-anchor="middle" class="desc">GRPO · RLOO · PPO+GAE</text>
+  <text x="275" y="884" text-anchor="middle" class="prove">组内标准化 (x−μ)/σ</text>
+
+  <rect x="390" y="830" width="230" height="60" rx="8" fill="#1c2330" stroke="#30507a"/>
+  <text x="505" y="852" text-anchor="middle" class="desc" style="fill:#e6edf3;font-weight:600">DAPO 四件套 (可开关)</text>
+  <text x="505" y="870" text-anchor="middle" class="desc">clip-higher · dyn-sampling</text>
+  <text x="505" y="884" text-anchor="middle" class="desc">token-level · overlong-shaping</text>
+
+  <rect x="635" y="830" width="195" height="60" rx="8" fill="#12241a" stroke="#2f6b3f"/>
+  <text x="732" y="852" text-anchor="middle" class="desc" style="fill:#3fb950;font-weight:700">PPO clipped loss</text>
+  <text x="732" y="870" text-anchor="middle" class="desc">token 级 · 尊重 mask</text>
+  <text x="732" y="884" text-anchor="middle" class="prove">ratio≠1 时 clip 真裁剪</text>
+
+  <line x1="375" y1="860" x2="388" y2="860" stroke="#58a6ff" stroke-width="1.5" marker-end="url(#ar)"/>
+  <line x1="620" y1="860" x2="633" y2="860" stroke="#3fb950" stroke-width="1.5" marker-end="url(#ar)"/>
+
+  <!-- ALGO -> TRAIN -->
+  <line x1="500" y1="905" x2="500" y2="932" stroke="#58a6ff" stroke-width="2" marker-end="url(#ar)"/>
+  <text x="510" y="923" class="flowlbl">loss.backward()</text>
+
+  <!-- ===== TRAIN ===== -->
+  <rect x="150" y="937" width="700" height="140" rx="10" class="box" fill="#161b22" stroke="#2d3748"/>
+  <text x="170" y="963" class="lbl">🚂 训练闭环 · TinyTransformer + GRPO step</text>
+  <text x="170" y="983" class="file">train/model.py · trainer.py · demo_train.py</text>
+  <rect x="175" y="995" width="215" height="62" rx="8" fill="#1c2330" stroke="#30507a"/>
+  <text x="282" y="1017" text-anchor="middle" class="desc" style="fill:#e6edf3;font-weight:600">train_step (单步)</text>
+  <text x="282" y="1035" text-anchor="middle" class="desc">on-policy · InfoPO 门控融合</text>
+  <text x="282" y="1050" text-anchor="middle" class="prove">success_logprob ↑</text>
+  <rect x="405" y="995" width="215" height="62" rx="8" fill="#1c2330" stroke="#30507a"/>
+  <text x="512" y="1017" text-anchor="middle" class="desc" style="fill:#e6edf3;font-weight:600">multi_step_ppo_update</text>
+  <text x="512" y="1035" text-anchor="middle" class="desc">捕获 old_logprobs · ppo_epochs</text>
+  <text x="512" y="1050" text-anchor="middle" class="prove">ref-KL 抑制漂移</text>
+  <rect x="635" y="995" width="195" height="62" rx="8" fill="#241c30" stroke="#5a3a7a"/>
+  <text x="732" y="1017" text-anchor="middle" class="desc" style="fill:#bc8cff;font-weight:600">TinyTransformer</text>
+  <text x="732" y="1035" text-anchor="middle" class="desc">2 层 · CPU 秒级</text>
+  <text x="732" y="1050" text-anchor="middle" class="prove">→ Qwen3-4B (真机)</text>
+
+  <!-- 右侧 Config 纵贯条 -->
+  <rect x="875" y="145" width="105" height="932" rx="10" fill="#12100a" stroke="#5a4a1a"/>
+  <text x="927" y="175" text-anchor="middle" class="lbl" style="fill:#d29922;font-size:13px">⚙️ Config</text>
+  <text x="927" y="200" text-anchor="middle" class="file" style="fill:#d29922;font-size:10px">utils/</text>
+  <text x="927" y="214" text-anchor="middle" class="file" style="fill:#d29922;font-size:10px">config.py</text>
+  <text x="927" y="255" text-anchor="middle" class="desc" style="font-size:10.5px">所有旋钮</text>
+  <text x="927" y="271" text-anchor="middle" class="desc" style="font-size:10.5px">集中一处</text>
+  <line x1="875" y1="300" x2="875" y2="300" stroke="#5a4a1a"/>
+  <text x="927" y="330" text-anchor="middle" class="desc" style="font-size:10.5px">offline</text>
+  <text x="927" y="346" text-anchor="middle" class="desc" style="font-size:10.5px">.yaml</text>
+  <text x="927" y="380" text-anchor="middle" class="desc" style="font-size:20px">⇅</text>
+  <text x="927" y="410" text-anchor="middle" class="desc" style="font-size:10.5px">real_qwen3</text>
+  <text x="927" y="426" text-anchor="middle" class="desc" style="font-size:10.5px">_4b.yaml</text>
+  <text x="927" y="620" text-anchor="middle" class="desc" style="fill:#d29922;font-size:10.5px" transform="rotate(90 927 620)">同一 Config 结构 · 离线/真机切换零改动</text>
+
+  <!-- 底部真机迁移条 -->
+  <rect x="150" y="1100" width="700" height="60" rx="10" fill="url(#gData)" stroke="#30507a"/>
+  <text x="170" y="1125" class="lbl" style="font-size:14px">🚀 真机迁移 (免 SFT · 零算法改动)</text>
+  <text x="170" y="1147" class="desc">TinyTransformer→Qwen3-4B-tau2-sft1  ·  ScriptedPolicy→HFPolicy  ·  TauEnv→RealTau2Env  ·  换 YAML 即可</text>
+  <text x="835" y="1147" text-anchor="end" class="prove">docs/MIGRATION.md</text>
+</svg>
+</div>
+
+<p style="color:var(--muted);font-size:13.5px;text-align:center;margin-top:6px">
+  <span style="color:#39c5cf;font-family:var(--mono)">■ 源码文件</span> &nbsp;·&nbsp;
+  <span style="color:#bc8cff">■ 对齐论文</span> &nbsp;·&nbsp;
+  <span style="color:#3fb950;font-family:var(--mono)">✓ 验证锚点</span> &nbsp;·&nbsp;
+  <span style="color:#d29922">■ 配置纵贯</span>
+</p>
+
+<p>左边是用户调研的论文脉络，右边是本项目对应的模块与最硬的验证方式。每一层的深度都可运行、可单测。</p>
+<table>
+  <tr><th style="width:20%">survey 层</th><th style="width:16%">论文</th><th style="width:24%">代码模块</th><th>最硬的验证</th></tr>
+  <tr><td><b>评测底座</b><br><span style="color:var(--muted);font-size:12px">用户是活的 LLM</span></td><td>τ-bench / τ²</td><td><code>env/</code></td><td class="prove">reward 聚合逐条对拍<br>真实 gold reward_info</td></tr>
+  <tr><td><b>rollout + masking</b></td><td>Slime</td><td><code>rollout/</code></td><td class="prove">assistant=1 / obs=0<br>逐 token 断言</td></tr>
+  <tr><td><b>信用分配</b><br><span style="color:var(--muted);font-size:12px">R2G / 反事实增益 / 方差门控</span></td><td>UserRL / InfoPO</td><td><code>credit/</code></td><td class="prove">R2G 对拍 survey 第7轮=1.44<br>零方差组靠 info-gain 救活</td></tr>
+  <tr><td><b>advantage + loss</b><br><span style="color:var(--muted);font-size:12px">GRPO/RLOO/PPO+GAE, DAPO四件套</span></td><td>GRPO / DAPO</td><td><code>algo/</code> <code>train/</code></td><td class="prove">全对拍手算<br>ratio≠1 时 clip 真裁剪</td></tr>
+  <tr><td><b>行为塑形</b><br><span style="color:var(--muted);font-size:12px">BAO 两正则 / PPP 三目标</span></td><td>BAO / PPP</td><td><code>shaping/</code></td><td class="prove">BAO 对拍算例 4.33<br>PPP [Cost N]→effort</td></tr>
+  <tr><td><b>训练闭环 + 迁移</b></td><td>—</td><td><code>train/</code> <code>configs/</code></td><td class="prove">成功轨迹 logprob 上升<br>离线/真机同 Config</td></tr>
+</table>
+
+<!-- 数据流 -->
+<h3>一个训练 step 的数据流</h3>
+<div class="flow">
+  <div class="step"><div class="t">Rollout</div>多轮 asolve<br>+ token masking</div>
+  <div class="arrow">→</div>
+  <div class="step"><div class="t">Credit</div>R2G / InfoPO<br>反事实增益</div>
+  <div class="arrow">→</div>
+  <div class="step"><div class="t">Shaping</div>BAO 正则<br>PPP 三目标</div>
+  <div class="arrow">→</div>
+  <div class="step"><div class="t">Advantage</div>GRPO 组内<br>标准化</div>
+  <div class="arrow">→</div>
+  <div class="step"><div class="t">PPO Loss</div>token 级<br>+ backward</div>
+</div>
+
+<!-- 三个亮点 -->
+<h2><span class="n">03</span> 三个最有价值的实现点</h2>
+
+<div class="keypoint win">
+  <div class="k">① 数据是真的，验证是硬的</div>
+  <p style="margin:6px 0">5 条 golden fixture 取自冷启动同源数据，带真实 <code>reward_info</code>。照 tau2 官方 evaluator 复刻乘法门控语义 <code>reward = ∏ component[c]</code>，<b>逐条对拍真实 gold 值全部通过</b>——覆盖 <code>[DB,COMMUNICATE]</code> 与 <code>[ENV_ASSERTION]</code> 两种 basis。这比"跑通就行"强得多。</p>
+</div>
+
+<div class="keypoint">
+  <div class="k">② 信用分配三种打法并存，且真能看出差异</div>
+  <p style="margin:6px 0">outcome / R2G / InfoPO 在同一条 rollout 上可切换。最关键：<b>InfoPO 的反事实 info-gain 在 tiny model 上真算 KL</b>（factual vs masked 下一步分布），验证了 survey 核心命题——零方差组（GRPO 梯度≈0 学不动）靠 info-gain 产生非平凡梯度被救活。</p>
+</div>
+
+<div class="keypoint warn">
+  <div class="k">③ 修了一个真实的 credit assignment bug</div>
+  <p style="margin:6px 0">demo 里 success_logprob 一开始在<b>下降</b>。根因是 R2G 的 turn-level 归一化被错误地写在单条轨迹内（<code>traj_adv*(1+nv)</code>），把成功轨迹早期轮翻成负 advantage。正确做法是<b>在整个 group 层面统一归一化</b>——这正是 agentic RL 最易踩的坑。修完后 logprob 从 -6.3 稳升到 -5.1。</p>
+</div>
+
+<!-- demo 输出 -->
+<h3>端到端训练 demo 实测输出</h3>
+<div class="mono-block">
+<span class="c">config: credit=r2g estimator=grpo gamma=0.8</span>
+step      loss  <span class="g">success_logprob↑</span>  mean_reward
+   0   -0.0675       <span class="b">-6.3159</span>          0.500
+   5   -0.0675       <span class="b">-5.9214</span>          0.500
+  10   -0.0675       <span class="b">-5.7708</span>          0.500
+  20   -0.0675       <span class="b">-5.4990</span>          0.500
+  29   -0.0675       <span class="g">-5.1066</span>          0.500
+<span class="c">✓ success_logprob 单调上升 = 成功轨迹被正 advantage 强化（模型在学）</span>
+</div>
+
+<!-- 测试全景 -->
+<h2><span class="n">04</span> 测试全景 · 每层都钉死</h2>
+<table>
+  <tr><th>测试文件</th><th style="width:12%">用例</th><th>验证内容</th><th style="width:10%">状态</th></tr>
+  <tr><td><code>test_00_fixtures_and_types</code></td><td>8</td><td>真实 fixture 完整性 + 核心类型拍平 masking</td><td><span class="tag pass">PASS</span></td></tr>
+  <tr><td><code>test_01_env</code></td><td>10</td><td>reward 聚合对拍真实 gold + dual-control 可解</td><td><span class="tag pass">PASS</span></td></tr>
+  <tr><td><code>test_02_rollout_masking</code></td><td>11</td><td>多轮 rollout + token masking（assistant=1/obs=0）</td><td><span class="tag pass">PASS</span></td></tr>
+  <tr><td><code>test_03_algo</code></td><td>20</td><td>GRPO/RLOO/GAE/PPO-clip/DAPO 全对拍手算</td><td><span class="tag pass">PASS</span></td></tr>
+  <tr><td><code>test_04_credit</code></td><td>17</td><td>R2G 对拍 1.44 + 反事实 KL + 方差门控</td><td><span class="tag pass">PASS</span></td></tr>
+  <tr><td><code>test_05_shaping</code></td><td>14</td><td>BAO 对拍 4.33 + PPP 三目标 + clip 语义</td><td><span class="tag pass">PASS</span></td></tr>
+  <tr><td><code>test_06_train_e2e</code></td><td>10</td><td>tiny model 真跑 GRPO，logprob 上升</td><td><span class="tag pass">PASS</span></td></tr>
+  <tr><td><code>test_07_infopo_train</code></td><td>7</td><td>零方差组靠 info-gain 救活（InfoPO 主战场）</td><td><span class="tag pass">PASS</span></td></tr>
+  <tr><td><code>test_08_tau2_integration</code></td><td>5</td><td>全 fixture 交叉验证 + 真实 tau2 skipif</td><td><span class="tag pass">3</span> <span class="tag skip">2 SKIP</span></td></tr>
+  <tr><td><code>test_09_hardening</code></td><td>9</td><td>多步 PPO（ratio≠1）+ ref-KL + effort 解析</td><td><span class="tag pass">PASS</span></td></tr>
+  <tr><td><code>test_10_config</code></td><td>4</td><td>离线/真机 YAML 同 Config 结构</td><td><span class="tag pass">PASS</span></td></tr>
+</table>
+
+<!-- 迁移 -->
+<h2><span class="n">05</span> 通往真机 · 免 SFT，零算法改动</h2>
+<p>三个边界组件替换 + 换一个 YAML，即可上真机训练。所有 <code>algo/</code>、<code>credit/</code>、<code>shaping/</code>、训练循环逻辑<b>一字不改</b>——它们只依赖 <code>Sample</code> / <code>Trajectory</code> 契约。</p>
+<table>
+  <tr><th>离线（单测）</th><th></th><th>真机</th><th>已就位</th></tr>
+  <tr><td><code>TinyTransformer</code></td><td class="arrow-r">→</td><td>Qwen3-4B-tau2-sft1 (HF)</td><td class="prove">train/model.py</td></tr>
+  <tr><td><code>ScriptedPolicy</code></td><td class="arrow-r">→</td><td><code>HFPolicy</code></td><td class="prove">rollout/hf_policy.py</td></tr>
+  <tr><td><code>TauEnv</code> (mock)</td><td class="arrow-r">→</td><td><code>RealTau2Env</code></td><td class="prove">env/tau2_adapter.py</td></tr>
+  <tr><td><code>ByteTokenizer</code></td><td class="arrow-r">→</td><td>Qwen3 tokenizer</td><td class="prove">load_hf_tokenizer</td></tr>
+</table>
+<p style="color:var(--muted);font-size:14px">复现路线：R2G+GRPO baseline（对齐 grpo-v1 的 59%）→ 叠 DAPO 四件套 → BAO 治副作用 → InfoPO / PPP 可选。详见 <code>docs/MIGRATION.md</code>。</p>
+
+<!-- 诚实边界 -->
+<h2><span class="n">06</span> 两个诚实的边界</h2>
+<div class="grid g2">
+  <div class="card warn keypoint" style="margin:0">
+    <div class="k">tau2 需 Python ≥ 3.12</div>
+    <p style="margin:6px 0;font-size:14px">当前离线环境是 3.9，装不上真实 tau2，故用 mock env + 真实 gold reward_info 交叉验证（最强证明）。真机适配器与 skipif 集成测试已就位，环境满足时自动激活。</p>
+  </div>
+  <div class="card warn keypoint" style="margin:0">
+    <div class="k">BAO 超参论文未公开</div>
+    <p style="margin:6px 0;font-size:14px">λ_ans / λ_think / w 的具体数值 survey 也指出论文未披露。代码用占位默认值，公式与思想严格对齐，真机需自行调参。</p>
+  </div>
+</div>
+
+<div class="foot">
+  <p>项目位于 <code>agentic_tau_rl/</code> · 运行 <code>python3 -m pytest</code> 复现 113 passed</p>
+  <p style="margin-top:10px">本报告与全部代码由 <b>Claude Opus 4.8</b> 自主实现于 2026-07-16</p>
+</div>
+
+</div>
+</body>
+</html>

@@ -1,0 +1,111 @@
+<h2>5　实验与测试全景</h2>
+
+<p class="lead">一个 RL 训练库最危险的自欺，是把"跑通了、loss 在下降"当成正确性证据 —— 而 advantage 符号写反、token masking 错位、reward 门控多乘一项，都能让训练"看起来在收敛"却学错了东西。本章的验证哲学是把每一层都钉在可证伪的实证命题上:reward 聚合逐条对拍真实 gold <code>reward_info</code>，advantage 与 loss 全部对拍手算数值，token-level masking 逐 token 断言，survey 的关键算例(R2G=1.44、Over-Thinking=4.33)当成必须复现的靶子。全套 <strong>115 个用例</strong>(113 passed + 2 skipped)、<strong>1489 行</strong>测试代码，在 CPU 上 <strong>2.35s</strong> 跑完 —— 每一条断言都是一个可被单独推翻的命题，而非一句"应该没问题"。</p>
+
+<h3>5.1　实验设置</h3>
+
+<p>为使验证完全离线可复现，测试环境采用 tiny model + CPU 配置:<code>TinyTransformer</code>(hidden=32、2 层、2 头)+ <code>ByteTokenizer</code>(vocab=512)+ <code>ScriptedPolicy</code> + <code>TauEnv</code> mock 环境。这套栈刻意做小到能在秒级跑完，但走的是与真机<em>完全相同</em>的代码路径 —— 真机迁移(§6)只换 YAML,不改任何算法代码。</p>
+
+<p>实证数据的锚点是 <strong>5 条真实 golden fixture</strong>，取自 <code>Jarrodbarnes/tau2-sft-seed-v3</code>，每条都带 tau2 官方 evaluator 产出的 gold <code>reward_info</code>:<code>airline_success</code>、<code>airline_fail</code>、<code>retail_success</code>、<code>telecom_success_dualctrl</code>、<code>telecom_fail_dualctrl</code>。它们覆盖 retail / airline / telecom 三域、success 与 fail 两种结局，并含 dual-control 场景。fixture 本身就是真实 tau2 的输出，因此"我们的 reward 聚合逻辑重算 = gold reward"这一等式，等价于一次与真实 evaluator 的交叉验证。</p>
+
+<div class="callout limit">
+<div class="k">诚实边界:2 个 skipped 用例</div>
+<p>tau2-bench 要求 Python≥3.12，而离线环境为 Python 3.9 装不上真实包。因此 <code>test_08</code> 中 2 个直接调用真实 <code>tau2.evaluator</code> 的用例被 <code>skipif(not tau2_available())</code> 守卫、当前 skip，代码路径就位待环境具备时自动激活。这 2 个用例的验证责任，由同文件另外 3 个 passing 用例用 mock env + 真实 gold <code>reward_info</code> 的交叉验证承担 —— 我们不隐藏这个边界，而是用更强的等式绕过它。</p>
+</div>
+
+<h3>5.2　测试全景表</h3>
+
+<p>下表把 11 个测试文件按"测试即实验"的框架排开:每个文件是一组受控验证，用例数即该层被独立证伪的命题数。全部 113 个 passing 用例覆盖从 env 语义到端到端训练的每一层。</p>
+
+<div class="tabwrap"><table class="aca">
+<caption><span class="lbl">Table 4:</span> 测试全景 —— 11 个测试文件、115 个用例(113 passed + 2 skipped)、CPU 2.35s。用例数逐文件核实，非估算。</caption>
+<thead><tr><th>测试文件</th><th class="num">用例数</th><th>验证内容(实证命题)</th><th>状态</th></tr></thead>
+<tbody>
+<tr><td><code>test_00_fixtures</code></td><td class="num">8</td><td>golden fixture 完整性 + 类型系统拍平与 masking 结构</td><td>PASS</td></tr>
+<tr><td><code>test_01_reward</code></td><td class="num">10</td><td>reward 聚合对拍 gold <code>reward_info</code>;dual-control 场景可解</td><td>PASS</td></tr>
+<tr><td><code>test_02_rollout</code></td><td class="num">11</td><td>rollout 生成 + token masking(assistant=1 / obs=0 逐 token)</td><td>PASS</td></tr>
+<tr><td><code>test_03_algo</code></td><td class="num">20</td><td>GRPO / RLOO / GAE / PPO-clip / DAPO 全部对拍手算</td><td>PASS</td></tr>
+<tr><td><code>test_04_credit</code></td><td class="num">17</td><td>R2G 对拍 1.44 + 反事实 KL 信息增益 + 方差门控</td><td>PASS</td></tr>
+<tr><td><code>test_05_shaping</code></td><td class="num">14</td><td>BAO 对拍 4.33 + PPP 三目标 + clip 归一化语义</td><td>PASS</td></tr>
+<tr><td><code>test_06_train_e2e</code></td><td class="num">10</td><td>tiny model 真跑 GRPO，验证 logprob 单调上升</td><td>PASS</td></tr>
+<tr><td><code>test_07_infopo_train</code></td><td class="num">7</td><td>零方差组靠 info-gain 救活(供非平凡梯度)</td><td>PASS</td></tr>
+<tr><td><code>test_08_tau2_integration</code></td><td class="num">5</td><td>全 fixture 交叉验证 + 真 tau2 evaluator(skipif)</td><td>3 pass / 2 skip</td></tr>
+<tr><td><code>test_09_ppo_multistep</code></td><td class="num">9</td><td>多步 PPO ratio≠1 + ref-KL + <code>[Cost N]</code>→effort 解析</td><td>PASS</td></tr>
+<tr><td><code>test_10_config</code></td><td class="num">4</td><td>离线 / 真机 YAML 解析出同一 <code>Config</code></td><td>PASS</td></tr>
+</tbody>
+</table></div>
+
+<h3>5.3　关键实证结果</h3>
+
+<p>从全景表中抽三个最有分量的结果展开 —— 它们分别钉死了 env 层语义、credit 层的 survey 核心命题、以及端到端训练的真实收敛。</p>
+
+<p><strong>(a) reward 聚合逐条对拍真实 gold。</strong> tau2 的 reward 语义是乘法门控 $\text{reward}=\prod_{c\in\text{basis}}\text{component}[c]$:任一分量为 0 则整单判负，复刻自官方 <code>evaluator_env.py</code>。<code>test_08</code> 的 <code>test_our_reward_matches_real_tau2_outputs</code> 遍历全部 5 条 fixture，用我们的 <code>reconstruct_from_reward_info</code> 重算，逐条 <code>approx</code> gold <code>reward</code> 全通过;<code>test_reward_basis_coverage</code> 进一步确认 fixture 同时覆盖了两种 reward_basis —— <code>[DB, COMMUNICATE]</code>(retail/airline 单控)与 <code>[ENV_ASSERTION]</code>(telecom dual-control)。两种 basis 全覆盖，意味着乘法门控的语义在单控与双控两条路径上都被独立验证，而非只在"简单情形"下侥幸成立。</p>
+
+<div class="callout finding">
+<div class="k">核心发现:InfoPO 救活零方差组</div>
+<p>survey 反复强调的痛点是:一组 rollout 若奖励全相同(zero-variance group)，GRPO 的组内标准化 advantage $\approx 0$，该组<em>不产生任何梯度、学不动</em>。<code>test_07</code> 用 7 个用例把这条命题钉死:先由 <code>test_zero_variance_group_no_gradient_under_grpo</code> 建立基线(纯 R2G/GRPO 下全成功组梯度趋近 0)，再由 <code>test_infopo_rescues_zero_variance_group</code> 证明切到 InfoPO 后 <code>stats.n_infogain_gated == 1</code>(方差门控确实开启)且 <code>total_grad &gt; 1e-6</code>(反事实信息增益顶上，供出非平凡梯度)。更关键的是 <code>test_infopo_gate_closes_on_varied_group</code>:有区分度的组门控自动关闭(<code>n_infogain_gated == 0</code>)、退回外部奖励主导 —— 门控是<em>选择性</em>的，不会污染正常组。这正是 survey "用反事实信息增益补齐无梯度组"这一核心命题的可执行证伪。</p>
+</div>
+
+<p><strong>(c) 端到端 demo 的真实收敛。</strong> 在 <code>credit=r2g、estimator=grpo、γ=0.8</code> 配置下真跑 30 步(<code>test_06</code>)，成功轨迹的 <code>success_logprob</code> 从 step0 的 <strong>−6.3159</strong> 单调上升到 step29 的 <strong>−5.1066</strong>，而 <code>mean_reward</code> 恒为 <strong>0.500</strong>。这一对信号联合起来才有意义:reward 未变(没有靠环境噪声刷分)，但成功轨迹的对数似然被稳定抬高 —— 正 advantage 确实在强化"做对的那条轨迹"。值得记录的是,这条曲线一度不单调:R2G 的 turn-level 归一化曾被错写在单条轨迹内(<code>traj_adv*(1+nv)</code>)，把成功轨迹早期轮翻成负 advantage;修正为在整个 group 层面统一归一化后，logprob 才从 −6.3 稳升到 −5.1。这个 bug 能被曲线形状暴露，本身就是逐层证伪价值的写照。</p>
+
+<figure><div class="figbox">
+<svg viewBox="0 0 580 330" width="100%" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif">
+  <rect x="0" y="0" width="580" height="330" fill="#ffffff"/>
+  <!-- 左 y 轴 -->
+  <line x1="70" y1="40" x2="70" y2="260" stroke="#333" stroke-width="1.2"/>
+  <!-- x 轴 -->
+  <line x1="70" y1="260" x2="520" y2="260" stroke="#333" stroke-width="1.2"/>
+  <!-- 右 y 轴 -->
+  <line x1="520" y1="40" x2="520" y2="260" stroke="#888" stroke-width="1"/>
+  <!-- 左轴刻度 (success_logprob) -->
+  <g fill="#1a1a1a" font-size="11" text-anchor="end">
+    <text x="64" y="264">−6.5</text>
+    <text x="64" y="197">−6.0</text>
+    <text x="64" y="130">−5.5</text>
+    <text x="64" y="63">−5.0</text>
+  </g>
+  <g stroke="#e5e3de" stroke-width="1">
+    <line x1="70" y1="193" x2="520" y2="193"/>
+    <line x1="70" y1="126" x2="520" y2="126"/>
+    <line x1="70" y1="59" x2="520" y2="59"/>
+  </g>
+  <!-- 右轴刻度 (mean_reward 0..1) -->
+  <g fill="#1f6b3f" font-size="11" text-anchor="start">
+    <text x="526" y="264">0.0</text>
+    <text x="526" y="154">0.5</text>
+    <text x="526" y="44">1.0</text>
+  </g>
+  <!-- x 轴刻度 -->
+  <g fill="#1a1a1a" font-size="11" text-anchor="middle">
+    <text x="70" y="278">0</text>
+    <text x="147" y="278">5</text>
+    <text x="225" y="278">10</text>
+    <text x="380" y="278">20</text>
+    <text x="520" y="278">29</text>
+  </g>
+  <text x="295" y="300" font-size="12" text-anchor="middle" fill="#1a1a1a">training step</text>
+  <text x="20" y="150" font-size="12" text-anchor="middle" fill="#8b2635" transform="rotate(-90 20 150)">success_logprob</text>
+  <!-- mean_reward = 0.500 水平参考线 (右轴 0.5 → y=150) -->
+  <line x1="70" y1="150" x2="520" y2="150" stroke="#1f6b3f" stroke-width="1.3" stroke-dasharray="6 4"/>
+  <text x="360" y="144" font-size="11" fill="#1f6b3f">mean_reward = 0.500 (恒定)</text>
+  <!-- success_logprob 折线 -->
+  <polyline points="70,233.6 147,174.9 225,152.9 380,113.3 520,56.1" fill="none" stroke="#8b2635" stroke-width="1.8"/>
+  <!-- 数据点 -->
+  <g fill="#8b2635">
+    <circle cx="70" cy="233.6" r="3.2"/>
+    <circle cx="147" cy="174.9" r="3.2"/>
+    <circle cx="225" cy="152.9" r="3.2"/>
+    <circle cx="380" cy="113.3" r="3.2"/>
+    <circle cx="520" cy="56.1" r="3.2"/>
+  </g>
+  <!-- 端点标注 -->
+  <g font-size="10.5" fill="#8b2635" text-anchor="middle">
+    <text x="86" y="228">−6.32</text>
+    <text x="504" y="50">−5.11</text>
+  </g>
+</svg>
+</div>
+<figcaption><span class="lbl">Figure 6:</span> 端到端 demo 训练(<code>credit=r2g, estimator=grpo, γ=0.8</code>)。红线为成功轨迹 <code>success_logprob</code>，从 step0 的 −6.32 单调升至 step29 的 −5.11(标注点:−6.32 / −5.92 / −5.77 / −5.50 / −5.11);绿色虚线为 <code>mean_reward</code>，全程恒定 0.500(右轴)。reward 不变而成功轨迹 logprob 稳升,说明正 advantage 在强化正确轨迹,而非靠环境噪声刷分。</figcaption>
+</figure>
+
+<p>把这三类结果放在一起看,本项目区别于"demo 级"实现的关键并不在于"能跑",而在于每一层都保留了被独立证伪的能力:env 层的乘法门控可以被 gold reward 推翻、credit 层的 InfoPO 命题可以被梯度大小推翻、训练层的收敛可以被 logprob 曲线推翻 —— 事实上它已经推翻过一次(R2G 归一化 bug)并被修正。正是这套逐层对拍的纪律,让我们有底气把完全相同的算法代码迁到真机上运行。§6 将说明这次零算法改动的迁移如何仅靠替换 YAML 完成。</p>

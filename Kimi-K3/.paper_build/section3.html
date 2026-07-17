@@ -1,0 +1,199 @@
+<h2>3　信用分配：从 outcome 到反事实信息增益</h2>
+
+<p class="lead">多轮 agent 的信用分配(credit assignment)是这条 survey 线最深的一口井。任务的成败信号往往只在轨迹末尾出现一个标量 —— 数据库终态匹配、用户是否被满足 —— 而真正决定成败的动作可能发生在很早以前：某一轮恰到好处的澄清追问、某一次没有立刻见效却铺平了后路的工具调用。如何把这唯一的末端功劳，公平地记回到那些"当时看着没用"的关键步上，是 agentic RL 区别于单轮 RLHF 的核心难题。本项目不押注单一答案，而是让三种打法在<strong>同一条 rollout</strong> 上并存、可切换对比：outcome(朴素末端奖励)、R2G(UserRL 折扣前传)、InfoPO(反事实信息增益)。三者共享同一套 <code>Trajectory</code> / <code>Turn</code> 数据结构 <span class="cite">(utils/types.py)</span>，切换只改 <code>config.method</code> 一个字段，从而能在受控条件下亲眼看到"零奖励澄清轮"被不同方法救活的差异。</p>
+
+<h3>3.1　问题形式化</h3>
+
+<p>信用分配的最小单位是 <strong>turn</strong>：从"轮到 agent"到"agent 交还控制权"之间的一段，通常对应一条 assistant 消息(可能含一次 tool_call)加上紧随其后的环境/工具/用户反馈。<code>Turn</code> 携带信用分配所需的全部字段：即时奖励 <code>immediate_reward</code>($r_t$，环境在当轮给出的原始奖励)、折扣前传结果 <code>r2g</code>、以及最终喂给 loss 的 <code>advantage</code> <span class="cite">(utils/types.py)</span>。轨迹级的成败 <code>outcome_reward</code> 与 turn 级塑形解耦 —— 这正是 UserRL 的核心思想：trajectory-level scoring 只负责"这条轨迹最终对不对",怎么把它摊回每一步交给独立的信用分配算子。</p>
+
+<p>记一条轨迹有 $T$ 个 turn、即时奖励序列 $r_0,\dots,r_{T-1}$、折扣因子 $\gamma$。turn $t$ 的<strong>回报(return)</strong>是它之后所有奖励的折扣累加，turn-level advantage 则在此基础上做 group 级归一化(见 §3.4 的教训)：</p>
+
+<div class="body" style="text-align:center;margin:0.6em 0;">$$ G_t \;=\; \sum_{k=0}^{T-1-t} \gamma^{k}\, r_{t+k}, \qquad A_t \;=\; \operatorname{normalize}_{\text{group}}\!\big(G_t\big). $$</div>
+
+<p>在 token 层面，每个 turn 的 assistant token 继承本轮 advantage、loss_mask=1，环境反馈 token 则 advantage=0、loss_mask=0 <span class="cite">(逐 token 断言)</span>。三种打法的分歧全部落在"$G_t$(或其替身)怎么算"这一步。</p>
+
+<h3>3.2　outcome 与 Reward-to-Go</h3>
+
+<p><strong>outcome(朴素)</strong>是最省事的一档：每个 turn 的 advantage 直接等于轨迹最终 <code>outcome_reward</code>(常数广播)，中间轮不额外赋值。这是 Search-R1 式的做法 —— 简单、无偏，但把所有功劳均摊给全程，无法区分"关键澄清轮"和"无关闲聊轮",信号极稀疏。代码里它就是 <code>compute_turn_advantages(method="outcome")</code> 的一行常数填充 <span class="cite">(credit/credit.py)</span>。</p>
+
+<p><strong>R2G(Reward-to-Go，UserRL 折扣前传)</strong>是第二档、也是 demo 默认打法。它把上式写成反向递推：</p>
+
+<div class="eqn-num"><div class="body">$$ R2G_t \;=\; r_t \;+\; \gamma\, R2G_{t+1}, \qquad \gamma = 0.8 $$</div><span class="tag">(1)</span></div>
+
+<p>直觉是"把终点的成功奖励沿时间倒着折扣，分给一路铺路的每一步"：末端那个 $r=1$ 会以 $\gamma^k$ 的衰减渗透回第 $k$ 步之前，让当时看着没用的那句澄清也分到非零功劳。实现是标准的一次反向扫描 <span class="cite">(credit/credit.py: reward_to_go)</span>。需要强调 R2G 值可以 $>1$ —— 它是折扣累加而非概率，当轨迹中有多个正奖励时早期 turn 会叠加多份贡献。作为交叉验证锚点，本实现对拍了 survey 的 TravelGym 算例($\gamma=0.8$)：在一个既有中途 partial reward、又有末端成功奖励的例子里，第 7 轮 $R2G_7 = 1.44$，与算例逐位吻合。</p>
+
+<figure><div class="figbox">
+<svg viewBox="0 0 720 330" width="100%" font-family="sans-serif" style="background:#ffffff">
+  <!-- title -->
+  <text x="24" y="26" font-size="13" fill="#1a1a1a" font-weight="bold">一条 8-turn rollout 上的信用分布：outcome vs. R2G (γ=0.8)</text>
+
+  <!-- axis turns -->
+  <line x1="70" y1="150" x2="660" y2="150" stroke="#888" stroke-width="1"/>
+  <!-- turn nodes -->
+  <g font-size="11" fill="#1a1a1a" text-anchor="middle">
+    <!-- x positions: 90,170,250,330,410,490,570,650 -->
+    <circle cx="90"  cy="150" r="4" fill="#333"/><text x="90"  y="172">t1</text>
+    <circle cx="170" cy="150" r="4" fill="#333"/><text x="170" y="172">t2</text>
+    <circle cx="250" cy="150" r="4" fill="#333"/><text x="250" y="172">t3</text>
+    <circle cx="330" cy="150" r="4" fill="#333"/><text x="330" y="172">t4</text>
+    <circle cx="410" cy="150" r="4" fill="#333"/><text x="410" y="172">t5</text>
+    <circle cx="490" cy="150" r="4" fill="#333"/><text x="490" y="172">t6</text>
+    <circle cx="570" cy="150" r="6" fill="#8b2635"/><text x="570" y="172">t7</text>
+    <circle cx="650" cy="150" r="6" fill="#1f6b3f"/><text x="650" y="172">t8</text>
+  </g>
+
+  <!-- reward badges -->
+  <g font-size="10">
+    <rect x="548" y="96" width="44" height="18" fill="#f7f6f3" stroke="#8b2635" stroke-width="1"/>
+    <text x="570" y="109" text-anchor="middle" fill="#8b2635">r=0.64</text>
+    <rect x="628" y="96" width="44" height="18" fill="#f7f6f3" stroke="#1f6b3f" stroke-width="1"/>
+    <text x="650" y="109" text-anchor="middle" fill="#1f6b3f">r=1.0</text>
+    <text x="650" y="128" text-anchor="middle" font-size="9" fill="#666">末端成功</text>
+    <text x="570" y="128" text-anchor="middle" font-size="9" fill="#666">中途partial</text>
+  </g>
+
+  <!-- R2G row (below axis) -->
+  <text x="24" y="214" font-size="11" fill="#2c5aa0" font-weight="bold">R2G</text>
+  <g font-size="10" fill="#2c5aa0" text-anchor="middle">
+    <text x="90"  y="214">0.38</text>
+    <text x="170" y="214">0.47</text>
+    <text x="250" y="214">0.59</text>
+    <text x="330" y="214">0.74</text>
+    <text x="410" y="214">0.92</text>
+    <text x="490" y="214">1.15</text>
+    <text x="570" y="214" font-weight="bold" fill="#8b2635">1.44</text>
+    <text x="650" y="214">1.00</text>
+  </g>
+  <!-- highlight box for t7=1.44 -->
+  <rect x="552" y="203" width="36" height="15" fill="none" stroke="#8b2635" stroke-width="1" stroke-dasharray="2,2"/>
+
+  <!-- outcome row -->
+  <text x="24" y="248" font-size="11" fill="#666" font-weight="bold">outcome</text>
+  <g font-size="10" fill="#999" text-anchor="middle">
+    <text x="90"  y="248">0</text>
+    <text x="170" y="248">0</text>
+    <text x="250" y="248">0</text>
+    <text x="330" y="248">0</text>
+    <text x="410" y="248">0</text>
+    <text x="490" y="248">0</text>
+    <text x="570" y="248">0</text>
+    <text x="650" y="248" fill="#1f6b3f" font-weight="bold">1</text>
+  </g>
+
+  <!-- discount arrows (backward propagation) -->
+  <g stroke="#2c5aa0" stroke-width="1" fill="none">
+    <path d="M642,142 C610,120 550,120 500,138" marker-end="url(#arr3)"/>
+    <path d="M562,150 C520,132 460,132 420,146" marker-end="url(#arr3)"/>
+  </g>
+  <text x="518" y="118" font-size="9" fill="#2c5aa0" text-anchor="middle">×0.8 折扣倒传</text>
+  <defs>
+    <marker id="arr3" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#2c5aa0"/>
+    </marker>
+  </defs>
+
+  <!-- caption note -->
+  <text x="24" y="300" font-size="10" fill="#666">outcome 把功劳全压到 t8；R2G 用 (1) 式把奖励沿 γ=0.8 倒着折扣，早期澄清轮 t1–t6 都分到非零信用。</text>
+  <text x="24" y="316" font-size="10" fill="#666">t7 同时拿到自身 partial(0.64) 与折扣末端(0.8×1.0)，得 R2G₇=1.44 —— 与 TravelGym 算例对拍一致。</text>
+</svg>
+</div>
+<figcaption><span class="lbl">Figure 3:</span> 信用分配三打法中 outcome 与 R2G 的对比示意。同一条 8-turn rollout 下，outcome 只在末端记 1、中间全 0；R2G 依 (1) 式将奖励按 $\gamma=0.8$ 逐轮倒传，早期澄清轮获得非零 advantage。第 7 轮 $R2G_7=1.44$ 对拍 survey TravelGym 算例(值 $>1$ 因该轮叠加了中途 partial 与折扣后的末端成功)。</figcaption></figure>
+
+<h3>3.3　InfoPO 反事实信息增益</h3>
+
+<p>R2G 解决了"稀疏奖励怎么摊回早期步",但它只按时间位置摊分 —— 离末端越近分得越多，与"这一轮到底有没有用"无关。更棘手的是<strong>零方差组</strong>：当一个 group 内所有轨迹的 reward 完全相同(全对或全错)，组内标准化后 advantage 全为 $0$，GRPO 拿不到任何梯度，整组白跑 <span class="cite">(algo/dapo.py: is_zero_variance_group)</span>。DAPO 的对策是 Dynamic Sampling 直接丢弃这种组；InfoPO 的对策相反 —— 换一个和外部奖励无关的信号把它救活。</p>
+
+<p>这个信号是<strong>反事实信息增益(counterfactual info-gain)</strong>。对第 $t$ 轮，它的 observation $o_t$(环境反馈)究竟关不关键？做一次反事实对照 <span class="cite">(credit/infopo_runtime.py)</span>：</p>
+
+<ul class="tight">
+<li><strong>factual 分支</strong>：喂 <code>prompt + turns[0..t]</code>(含真实 $o_t$)，读出模型在"下一步动作"位置的 next-token 分布 $P_\text{factual}$；</li>
+<li><strong>masked 分支</strong>：同一条序列，但把 $o_t$ 对应的 token 全部换成 <code>pad</code>，读出分布 $P_\text{masked}$。</li>
+</ul>
+
+<p>两个分支只差"agent 到底看没看到 $o_t$"这一件事。它们的差异就衡量了 $o_t$ 对下一步决策的影响量，用 KL 散度度量：</p>
+
+<div class="eqn-num"><div class="body">$$ \text{gain}_t \;=\; \mathrm{KL}\!\big(P_\text{factual}\,\big\Vert\,P_\text{masked}\big) \;=\; \sum_{a} P_\text{factual}(a)\,\log\frac{P_\text{factual}(a)}{P_\text{masked}(a)} $$</div><span class="tag">(2)</span></div>
+
+<p>$\text{gain}_t$ 越大，说明拿掉 $o_t$ 后 agent 下一步的动作分布变得越剧烈 —— 这一轮反馈越关键，功劳越大，精确归因到触发它的那个动作，而不像 R2G 只按位置粗摊。计算上 KL 做了 <code>clamp_min</code> 数值保护并对齐两个分布的归一化 <span class="cite">(credit/credit.py: counterfactual_info_gain)</span>；最后一轮没有"下一步动作"，gain 记 0 <span class="cite">(trajectory_info_gains)</span>。</p>
+
+<figure><div class="figbox">
+<svg viewBox="0 0 720 340" width="100%" font-family="sans-serif" style="background:#ffffff">
+  <text x="24" y="24" font-size="13" fill="#1a1a1a" font-weight="bold">反事实信息增益：o_t 关不关键？盖住它，看下一步决策分布变多少</text>
+
+  <!-- factual branch -->
+  <g>
+    <rect x="40" y="60" width="112" height="30" fill="#f7f6f3" stroke="#1f6b3f" stroke-width="1.2"/>
+    <text x="96" y="79" font-size="10" fill="#1a1a1a" text-anchor="middle">prompt + turns[0..t]</text>
+    <text x="96" y="106" font-size="10" fill="#1f6b3f" text-anchor="middle">含真实 o_t</text>
+    <!-- arrow to model -->
+    <line x1="152" y1="75" x2="212" y2="75" stroke="#333" stroke-width="1" marker-end="url(#arr4)"/>
+    <rect x="212" y="58" width="70" height="34" rx="4" fill="#ffffff" stroke="#333" stroke-width="1.2"/>
+    <text x="247" y="79" font-size="11" fill="#1a1a1a" text-anchor="middle">model</text>
+    <line x1="282" y1="75" x2="332" y2="75" stroke="#333" stroke-width="1" marker-end="url(#arr4)"/>
+  </g>
+  <!-- P_factual bars -->
+  <g>
+    <text x="392" y="46" font-size="10" fill="#1f6b3f" text-anchor="middle" font-weight="bold">P_factual (下一步动作)</text>
+    <line x1="340" y1="96" x2="452" y2="96" stroke="#888" stroke-width="1"/>
+    <rect x="348" y="58" width="16" height="38" fill="#1f6b3f"/>
+    <rect x="372" y="74" width="16" height="22" fill="#1f6b3f"/>
+    <rect x="396" y="82" width="16" height="14" fill="#1f6b3f"/>
+    <rect x="420" y="88" width="16" height="8"  fill="#1f6b3f"/>
+  </g>
+
+  <!-- masked branch -->
+  <g>
+    <rect x="40" y="200" width="112" height="30" fill="#f7f6f3" stroke="#8b2635" stroke-width="1.2"/>
+    <text x="96" y="219" font-size="10" fill="#1a1a1a" text-anchor="middle">prompt + turns[0..t]</text>
+    <text x="96" y="246" font-size="10" fill="#8b2635" text-anchor="middle">o_t → [pad]…[pad]</text>
+    <line x1="152" y1="215" x2="212" y2="215" stroke="#333" stroke-width="1" marker-end="url(#arr4)"/>
+    <rect x="212" y="198" width="70" height="34" rx="4" fill="#ffffff" stroke="#333" stroke-width="1.2"/>
+    <text x="247" y="219" font-size="11" fill="#1a1a1a" text-anchor="middle">model</text>
+    <line x1="282" y1="215" x2="332" y2="215" stroke="#333" stroke-width="1" marker-end="url(#arr4)"/>
+  </g>
+  <!-- P_masked bars (different shape) -->
+  <g>
+    <text x="392" y="164" font-size="10" fill="#8b2635" text-anchor="middle" font-weight="bold">P_masked (盖住 o_t 后)</text>
+    <line x1="340" y1="236" x2="452" y2="236" stroke="#888" stroke-width="1"/>
+    <rect x="348" y="212" width="16" height="24" fill="#8b2635"/>
+    <rect x="372" y="204" width="16" height="32" fill="#8b2635"/>
+    <rect x="396" y="216" width="16" height="20" fill="#8b2635"/>
+    <rect x="420" y="222" width="16" height="14" fill="#8b2635"/>
+  </g>
+
+  <!-- KL connector -->
+  <g stroke="#2c5aa0" stroke-width="1.2" fill="none">
+    <path d="M456,80 C520,80 520,196 512,214" marker-end="url(#arr4b)"/>
+  </g>
+  <rect x="520" y="128" width="150" height="60" rx="4" fill="#f7f6f3" stroke="#2c5aa0" stroke-width="1.2"/>
+  <text x="595" y="152" font-size="12" fill="#2c5aa0" text-anchor="middle" font-weight="bold">gainₜ = KL(P_fact ‖ P_mask)</text>
+  <text x="595" y="172" font-size="10" fill="#1a1a1a" text-anchor="middle">变化越大 → o_t 越关键</text>
+
+  <defs>
+    <marker id="arr4" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#333"/>
+    </marker>
+    <marker id="arr4b" markerWidth="7" markerHeight="7" refX="5" refY="3" orient="auto">
+      <path d="M0,0 L6,3 L0,6 Z" fill="#2c5aa0"/>
+    </marker>
+  </defs>
+
+  <text x="24" y="292" font-size="10" fill="#666">两分支唯一差别 = agent 有没有看到 o_t。KL 度量下一步 next-token 分布的偏移量，即 o_t 的边际信息价值。</text>
+  <text x="24" y="310" font-size="10" fill="#666">奖励零方差、GRPO advantage≈0 时，此 gain 顶上来当梯度信号，让"学不动"的组继续训练。</text>
+</svg>
+</div>
+<figcaption><span class="lbl">Figure 4:</span> InfoPO 反事实信息增益机制。对第 $t$ 轮，factual 分支保留真实 observation $o_t$、masked 分支把 $o_t$ 的 token 替换为 pad，两者经同一模型得到 next-token 动作分布 $P_\text{factual}$ 与 $P_\text{masked}$，其 KL 散度即 (2) 式的 $\text{gain}_t$，衡量 $o_t$ 对下一步决策的因果影响。</figcaption></figure>
+
+<p>信息增益如何接回训练，由<strong>方差门控(variance gate)</strong>决定 <span class="cite">(credit/credit.py: variance_gate_weight, fuse_advantage)</span>。设 group 内奖励方差为 $\mathrm{Var}(r_\text{group})$、阈值 $\tau=10^{-6}$：只有当一组奖励塌成零方差时才开大 info-gain 权重 $w$，否则退回外部奖励主导：</p>
+
+<div class="eqn-num"><div class="body">$$ A_t \;=\; A^{\text{reward}}_t \;+\; w\cdot A^{\text{infogain}}_t, \qquad w=\begin{cases} w_{\text{gain}}, & \mathrm{Var}(r_\text{group}) < \tau \\[2pt] 0, & \text{otherwise} \end{cases} $$</div><span class="tag">(3)</span></div>
+
+<p>正常组 $w=0$，行为与纯 GRPO 完全一致，不引入额外偏差；零方差组 $A^{\text{reward}}_t\approx0$，梯度全由 group 级归一化后的 info-gain 提供 <span class="cite">(infopo_runtime.py: group_infogain_advantages)</span>。这条自适应融合路径由 <code>test_07_infopo_train</code> 的 7 个用例覆盖，验证零方差组确实靠 info-gain 被救活、继续供出非零梯度。</p>
+
+<h3>3.4　一个真实的信用分配 bug</h3>
+
+<div class="callout finding">
+<div class="k">现象：成功轨迹的 success_logprob 反而在下降</div>
+<p>demo 训练早期出现一个反直觉现象：明明是成功轨迹，模型对其动作的 <code>success_logprob</code> 却在往下掉,策略在"忘记"怎么做对。逐轮打印 advantage 后定位到根因：R2G 之后的 turn-level 归一化被错写在<strong>单条轨迹内部</strong> —— 形如 <code>traj_adv*(1+nv)</code> 的实现只用本条轨迹自己的 R2G 序列做尺度缩放。由于成功轨迹早期轮的 R2G 低于该轨迹自身均值，归一化把它们翻成了<strong>负 advantage</strong>，等于在惩罚成功轨迹的早期铺路动作。</p>
+<p>正确做法是把归一化提到<strong>整个 group 层面</strong>统一做：advantage 的正负必须相对"同一 prompt 下其它轨迹"才有意义，而非相对轨迹自身 <span class="cite">(credit/credit.py: normalize_turn_values；infopo_runtime.py 亦在 group 级 pool 后归一)</span>。修复后 <code>success_logprob</code> 从 step0 的 $-6.32$ 单调稳升到 step29 的 $-5.11$，mean_reward 全程恒为 $0.500$、loss $\approx-0.068$,训练恢复正常。这是 agentic RL 最易踩的坑之一：归一化的作用域一旦错配，信用分配的符号就会整体反向,而表面 loss 却看不出异常。</p>
+</div>
