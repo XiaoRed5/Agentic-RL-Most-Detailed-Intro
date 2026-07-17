@@ -1,0 +1,37 @@
+<div class="titleblock">
+<h1>Behavioral Agentic RL on τ²-bench：一个免-SFT、全离线可验证的信用分配与行为塑形实现</h1>
+<div class="authors">Claude Opus 4.8 (autonomous implementation)</div>
+<div class="affil">Agentic RL Systems · tau2-bench substrate</div>
+<div class="meta-line">2356 LoC impl · 1489 LoC test · 113 passed / 2 skipped · CPU 2.35s · 2026-07-16</div>
+</div>
+
+<hr class="rule thin">
+
+<div class="abstract">
+<div class="h">摘要</div>
+<p>训练一个 proactive multi-turn agent 与训练一个单轮策略截然不同：在客服等真实场景里，用户是一个活的 LLM，会在任务达成时主动终止对话、在超出能力时转人工，而 agent 的每一步动作既要推进任务、又要节制交互成本。本文以 <span class="cite">(Sierra) τ²-bench</span> 这一 dual-control 客服 benchmark 为底座，构建一个工业级 agentic RL 实现：不合成 query、不做 SFT 冷启动预热、直接从一个已具备基础能力的 checkpoint（<code>Jarrodbarnes/Qwen3-4B-tau2-sft1</code>，pass@1 0.40）出发做 RL，并把研究深度集中堆在两处最难的地方——稀疏成功信号下的<b>信用分配</b>，以及治理"话太多/想太多"的<b>行为塑形</b>。整个系统被刻意约束为 100% 离线可单测：reward 语义精确复刻 tau2 官方 evaluator，机理全链路在 CPU 上秒级跑通。</p>
+<p>方法层面，我们把 τ-bench → UserRL → BAO + InfoPO/PPP 这条 survey 脉络逐层翻译成可运行代码：信用分配实现三种打法——outcome（朴素结果回传）、R2G（UserRL 折扣前传，$\gamma{=}0.8$，对拍 survey TravelGym 算例第 7 轮 $=1.44$）、InfoPO（反事实信息增益，用 KL 散度救活 GRPO 下 advantage 近零的零方差组）；行为塑形实现 BAO 两条正则（Information-Seeking / Over-Thinking，对拍算例 $4.33$）与 PPP 三目标 + <code>[Cost N]</code>→effort 解析；advantage 与 loss 侧覆盖 GRPO/RLOO/PPO 三件 estimator 与 DAPO 四件套。所有数值均对拍手算或真实 gold <code>reward_info</code>；115 个测试用例中 113 通过、2 skipped（tau2 需 Python≥3.12，离线以 mock env + 真实 gold 交叉验证）。全部逻辑零算法改动即可迁移真机 Qwen3-4B——只换 YAML。</p>
+</div>
+
+<div class="keywords"><b>关键词：</b> agentic RL · tau2-bench · 信用分配 · InfoPO · BAO · GRPO/DAPO · token-level loss masking · 免SFT冷启动</div>
+
+<hr class="rule">
+
+<h2>1　引言</h2>
+
+<p class="lead">当 agent 需要在多轮对话中主动完成一项客服任务时，它面对的不是一个静止的环境，而是一个活的、有自己意图的用户。在 <span class="cite">(Sierra) τ²-bench</span> 这类 dual-control 客服 benchmark 里，用户由 LLM 扮演：任务达成时它会主动发出 <code>###STOP###</code> 结束对话，超出 agent 能力范围时会 <code>###TRANSFER###</code> 转人工——结束对话的权力握在用户手里，agent 无权主动 stop。这一机制把训练目标从"最大化任务成功率"变成了一个 trade-off：既要把任务真正做成（工具调用有副作用，reward 靠数据库终态断言），又要节制与用户的交互成本，不能靠疯狂追问来套取信息。<span class="cite">(Qian et al., 2025)</span> 的 UserRL 与后续的 BAO 工作正是沿着"如何让 proactive agent 在 Pareto 前沿上同时改善任务表现与交互效率"这条线推进的。</p>
+
+<p>把 RL 用在这样的多轮 agent 上，真正的难点有两个。其一是<b>信用分配</b>：一整段对话往往只在最后拿到一个稀疏的 0/1 成功信号，如何把这个终端 reward 合理地摊回到中间每一轮、每一个 assistant token 上，直接决定了梯度信号是否有效。朴素地把结果原样回传（outcome）会让早期正确决策得不到应有的正向激励；而在 GRPO 这类组内标准化的估计下，一旦一组 rollout 全成功或全失败，组内方差趋零、advantage 近乎为零，整组样本沦为"无梯度"的浪费。其二是<b>行为塑形</b>：即便任务能做成，agent 也常有两种病态倾向——"话太多"（连续多轮只顾向用户提问、信息攫取过度）与"想太多"（在失败前过早终止、思考链冗长而无产出）。这两种行为无法靠稀疏的任务 reward 自然纠正，需要专门的正则项去塑形。</p>
+
+<p>本项目的定位不是再刷一个 benchmark 分数，而是把 τ-bench → UserRL → BAO + InfoPO/PPP 这条 survey 脉络<b>逐层翻译成可运行、可单测、数值对拍论文算例的完整实现</b>。我们给自己立了四条硬约束：（一）目标规模是 7B 量级的模型（冷启动用 <code>Jarrodbarnes/Qwen3-4B-tau2-sft1</code>）；（二）免 SFT 直接做 RL，不额外预热，检验 RL 本身能否从一个基础 checkpoint 起步；（三）真实 query、不合成数据，5 条 golden fixture 全部取自 <code>Jarrodbarnes/tau2-sft-seed-v3</code>，带真实 gold <code>reward_info</code>；（四）100% 离线可单测，reward 语义精确复刻 tau2 官方 evaluator（乘法门控 $reward=\prod_c component[c]$），机理全链路在 CPU 上跑通。离线与真机共用同一份代码，仅换 configs——把 TinyTransformer 换成 Qwen3-4B、ScriptedPolicy 换成 HFPolicy、mock TauEnv 换成 RealTau2Env，RL 逻辑零改动。</p>
+
+<h4>本文贡献</h4>
+<ul>
+<li><b>精确复刻的 reward 底座与逐 token masking。</b> 实现乘法门控的 tau2 reward 语义（basis 支持 <code>[DB,COMMUNICATE]</code> 与 <code>[ENV_ASSERTION]</code>），reward 聚合逐条对拍 5 条真实轨迹的 gold <code>reward_info</code>；token-level loss masking 对 assistant token 置 1、observation token 置 0，逐 token 断言。</li>
+<li><b>三种信用分配打法，全部数值对拍。</b> outcome / R2G / InfoPO 三条路径统一在 credit 模块下：R2G 折扣前传（$R2G_t=r_t+\gamma R2G_{t+1}$，$\gamma{=}0.8$）对拍 survey TravelGym 算例第 7 轮 $=1.44$；InfoPO 以反事实信息增益 $\mathrm{KL}(P_\text{factual}\Vert P_\text{masked})$ 把 GRPO 下的零方差组救活、重新供给梯度。</li>
+<li><b>BAO/PPP 行为塑形，对拍手算。</b> 实现 BAO 两条正则——Information-Seeking（连续两轮追问罚 $-\lambda_\text{ans}$）与 Over-Thinking（失败且提前终止罚 $-\lambda_\text{think}\cdot(T-T')/T'$，对拍算例 $4.33$）；实现 PPP 三目标 $R=R_\text{Prod}+R_\text{Proact}+R_\text{Pers}$ 与 <code>[Cost N]</code>→effort 解析（λ 数值论文未公开，代码用占位默认，此为诚实边界）。</li>
+<li><b>GRPO/RLOO/PPO + DAPO 四件套的完整算法侧。</b> advantage estimator 覆盖 GRPO（组内标准化 $(r-\mu)/\sigma$）、RLOO（leave-one-out）、PPO+GAE；DAPO 四件套（Clip-Higher / Dynamic Sampling / Token-Level Loss / Overlong Reward Shaping）逐项落地，ratio≠1 时 clip 真裁剪均有单测。</li>
+<li><b>可复现的端到端闭环与一个被修复的真实 bug。</b> demo 训练（credit=r2g, estimator=grpo, $\gamma{=}0.8$）中 success_logprob 从 step0 的 $-6.3159$ 单调升至 step29 的 $-5.1066$；这一稳升源于修复了一个真实的 credit assignment bug——R2G turn-level 归一化被错写在单条轨迹内 <code>traj_adv*(1+nv)</code>，把成功轨迹早期轮翻成负 advantage，正确做法是在整个 group 层面统一归一化。全套 115 测试 113 passed / 2 skipped，CPU 2.35s 跑完。</li>
+</ul>
+
+<p>后续章节安排如下：§2 给出系统总架构与单个训练 step 的数据流管线，并建立 survey 各层 ↔ 代码模块 ↔ 验证锚点的映射；§3 深入三种信用分配打法，重点是 R2G 折扣前传与 InfoPO 反事实信息增益的机制；§4 展开 advantage estimator、PPO loss 与 DAPO 四件套，以及 BAO/PPP 行为塑形的落点。</p>

@@ -1,0 +1,150 @@
+<h2>4　优化算法与行为塑形</h2>
+
+<p class="lead">信用分配(第3章)把轨迹级 reward 前传成 turn-level 信号后，训练的下半程分三步：先由 <em>advantage estimator</em> 把每轮 reward 折成"该被强化还是被压制"的梯度方向，再经 <em>PPO clipped loss</em> 落到 token 级参数更新，最后叠加 <em>行为塑形正则</em>(BAO 减法 / PPP 加法)矫正 UserRL 练出来的副作用。本章涉及的 advantage、loss、DAPO 四件套、BAO/PPP 全部为纯 <code>torch</code> 实现、CPU 可跑、逐条对拍手算，锚点覆盖 <code>test_03</code>(20 用例)、<code>test_05</code>(14 用例)、<code>test_06/07</code>。</p>
+
+<h3>4.1　Advantage 估计</h3>
+
+<p>advantage 是 RL 的"信号来源"：它决定每条轨迹(广播到其每个 token)被拉高还是压低概率。本项目实现三种 estimator(<code>algo/advantage.py</code>)，共享一个约定：一个 <em>group</em> = 同一 prompt 采样的 G 条 rollout，GRPO 与 RLOO 用组内其它轨迹当 baseline，省掉 value model；PPO 用学出来的 value + GAE。</p>
+
+<p><strong>GRPO 组内标准化。</strong>把一组 G 个标量 reward 减均值除标准差，得到零均值单位方差的 advantage：</p>
+
+<div class="eqn-num"><div class="body">$$ A_i = \frac{r_i - \mu}{\sigma + \epsilon}, \quad \mu = \frac{1}{G}\sum_{j} r_j, \quad \sigma = \sqrt{\tfrac{1}{G}\sum_j (r_j-\mu)^2} $$</div><span class="tag">(4)</span></div>
+
+<p>对应 <code>grpo_group_advantage</code>，其中 <code>std(unbiased=False)</code> 即有偏标准差、<code>eps=1e-6</code> 防除零。代码另备 mean-only 变体 <code>grpo_group_advantage_no_std</code>(Dr.GRPO 风格，只减均值不除 std，规避长度/难度偏置)。</p>
+
+<p><strong>RLOO leave-one-out baseline。</strong>每条轨迹的 baseline 换成组内<em>其它</em> G−1 条的均值，baseline 不含自己因而更无偏：</p>
+
+<div class="eqn-num"><div class="body">$$ A_i = r_i - \frac{1}{G-1}\sum_{j\neq i} r_j = r_i - \frac{S - r_i}{G-1}, \quad S=\textstyle\sum_j r_j $$</div><span class="tag">(5)</span></div>
+
+<p>对应 <code>rloo_advantage</code>，代码显式断言 <code>G >= 2</code>(单条轨迹无从留一)。<code>trainer.py</code> 的 <code>compute_group_advantages</code> 据 <code>config.algo.estimator</code> 在 GRPO/RLOO 间切换。</p>
+
+<p><strong>PPO + GAE。</strong>需要 value model 时走 <code>compute_gae</code>：以 TD 残差 $\delta_t = r_t + \gamma V(s_{t+1}) - V(s_t)$ 为基元，按 $A_t = \delta_t + \gamma\lambda A_{t+1}$ 从末步反向递推，返回 <code>(advantages, returns)</code>，其中 <code>returns = adv + values</code> 作为 value head 的回归目标(<code>value_loss</code>)。</p>
+
+<div class="tabwrap"><table class="aca">
+<caption><span class="lbl">Table 3:</span> 三种 advantage estimator 对比。全部在 <code>test_03_algo</code>(20 用例)逐条对拍手算验证。</caption>
+<thead><tr><th>Estimator</th><th>baseline 来源</th><th>需 value model</th><th>特点</th></tr></thead>
+<tbody>
+<tr><td>GRPO</td><td>组内均值 μ</td><td>否</td><td>减均值除 std，零均值单位方差，最常用</td></tr>
+<tr><td>RLOO</td><td>组内留一均值(排除自己)</td><td>否</td><td>baseline 无偏；需 G≥2</td></tr>
+<tr><td>PPO+GAE</td><td>value 估计 V(s)</td><td>是</td><td>时序 TD，λ 权衡偏差/方差；用 GAE 反向递推</td></tr>
+</tbody>
+</table></div>
+
+<p>轨迹级 advantage 经 <code>broadcast_advantage_to_tokens</code> 广播到该轨迹每个 response token，<code>loss_mask=0</code> 的位置 advantage 一并置零——不参与 loss 的 token 不接收梯度。</p>
+
+<h3>4.2　PPO clipped loss 与 DAPO 四件套</h3>
+
+<p>advantage 就位后进 PPO 更新(<code>algo/loss.py</code>)。定义重要性比 <code>ratio</code> 为当前 policy 与采样时 behavior policy 的 logprob 之差取指数，clipped surrogate 取 unclipped 与 clipped 两项的逐 token min：</p>
+
+<div class="eqn-num"><div class="body">$$ \text{ratio} = \exp\!\big(\log\pi_\theta - \log\pi_{\text{old}}\big),\quad L = -\,\mathbb{E}_t\Big[\min\big(\text{ratio}\cdot A_t,\ \text{clip}(\text{ratio},\,1-\epsilon,\,1+\epsilon_{\text{high}})\cdot A_t\big)\Big] $$</div><span class="tag">(6)</span></div>
+
+<p>实现严格 token 级、尊重 <code>loss_mask</code>：<code>masked_mean</code> 只对 assistant token(mask=1)求均值，prompt/obs token(mask=0)不计入分母。单步 on-policy 时 <code>old_logprobs=logprobs.detach()</code>，故 <code>ratio≡1</code>、clip 不触发、<code>loss=-mean(adv)</code>；<code>multi_step_ppo_update</code> 冻结采样时的 <code>old_lp</code> 后对同一批数据更新 <code>ppo_epochs</code> 次，第二个 epoch 起 <code>ratio≠1</code>，clip 才真正裁剪(<code>test_03</code> 断言 ratio 偏离 1 时 <code>clip_frac</code> 上升)。诊断量 <code>clip_frac</code>/<code>approx_kl</code>/<code>ratio_mean</code> 均在 <code>no_grad</code> 下同步导出。</p>
+
+<figure><div class="figbox">
+<svg width="640" height="300" viewBox="0 0 640 300" xmlns="http://www.w3.org/2000/svg" font-family="sans-serif">
+<rect x="0" y="0" width="640" height="300" fill="#f7f6f3"/>
+<!-- left panel A>0 -->
+<g>
+<text x="150" y="24" text-anchor="middle" font-size="13" fill="#1a1a1a" font-weight="bold">A &gt; 0（强化成功 token）</text>
+<!-- axes -->
+<line x1="40" y1="250" x2="280" y2="250" stroke="#333" stroke-width="1.2"/>
+<line x1="160" y1="60" x2="160" y2="258" stroke="#333" stroke-width="1.2"/>
+<text x="288" y="254" font-size="11" fill="#1a1a1a">ratio</text>
+<text x="150" y="52" font-size="11" fill="#1a1a1a">objective</text>
+<!-- unclipped line (dashed) rising -->
+<line x1="60" y1="235" x2="270" y2="95" stroke="#888" stroke-width="1" stroke-dasharray="4 3"/>
+<!-- clipped surrogate: rises then flat after 1+eh -->
+<line x1="60" y1="235" x2="220" y2="128" stroke="#8b2635" stroke-width="1.8"/>
+<line x1="220" y1="128" x2="270" y2="128" stroke="#8b2635" stroke-width="1.8"/>
+<!-- clip point 1+e_high -->
+<line x1="220" y1="128" x2="220" y2="250" stroke="#2c5aa0" stroke-width="0.8" stroke-dasharray="3 3"/>
+<text x="220" y="266" text-anchor="middle" font-size="10" fill="#2c5aa0">1+ε_high</text>
+<!-- ratio=1 mark -->
+<circle cx="160" cy="172" r="2.5" fill="#1a1a1a"/>
+<text x="160" y="266" text-anchor="middle" font-size="10" fill="#1a1a1a">1</text>
+</g>
+<!-- right panel A<0 -->
+<g transform="translate(320,0)">
+<text x="150" y="24" text-anchor="middle" font-size="13" fill="#1a1a1a" font-weight="bold">A &lt; 0（压制失败 token）</text>
+<line x1="40" y1="250" x2="280" y2="250" stroke="#333" stroke-width="1.2"/>
+<line x1="160" y1="60" x2="160" y2="258" stroke="#333" stroke-width="1.2"/>
+<text x="288" y="254" font-size="11" fill="#1a1a1a">ratio</text>
+<text x="150" y="52" font-size="11" fill="#1a1a1a">objective</text>
+<!-- unclipped falling -->
+<line x1="60" y1="95" x2="270" y2="235" stroke="#888" stroke-width="1" stroke-dasharray="4 3"/>
+<!-- clipped: flat before 1-e then falls -->
+<line x1="90" y1="128" x2="140" y2="128" stroke="#1f6b3f" stroke-width="1.8"/>
+<line x1="140" y1="128" x2="270" y2="235" stroke="#1f6b3f" stroke-width="1.8"/>
+<line x1="140" y1="128" x2="140" y2="250" stroke="#2c5aa0" stroke-width="0.8" stroke-dasharray="3 3"/>
+<text x="140" y="266" text-anchor="middle" font-size="10" fill="#2c5aa0">1−ε</text>
+<circle cx="160" cy="146" r="2.5" fill="#1a1a1a"/>
+<text x="160" y="266" text-anchor="middle" font-size="10" fill="#1a1a1a">1</text>
+</g>
+</svg>
+</div>
+<figcaption><span class="lbl">Figure 5:</span> PPO clipped surrogate 示意。虚线为未裁剪项 <code>ratio·A</code>，实线为 min 后的实际目标。A&gt;0 时 ratio 超过 <code>1+ε_high</code> 后目标封顶(不再奖励过度偏移)；A&lt;0 时 ratio 低于 <code>1−ε</code> 后同样封顶(不再无限压制)。Clip-Higher 令正方向用更宽的 <code>ε_high&gt;ε_low</code>，为低概率 token 留探索空间。</figcaption></figure>
+
+<p>DAPO 把四个可独立开关的机制挂在不同层——两个在 loss 公式内(<code>algo/loss.py</code>)，两个在数据/reward 层(<code>algo/dapo.py</code>)，逐件单测隔离验证：</p>
+
+<div class="tabwrap"><table class="aca">
+<caption><span class="lbl">Table 2:</span> DAPO 四件套：组件、作用、代码落点与验证锚点。开关由 <code>config.algo</code> / <code>config.credit</code> 控制。</caption>
+<thead><tr><th>组件</th><th>作用</th><th>落点</th><th>验证</th></tr></thead>
+<tbody>
+<tr><td>① Clip-Higher</td><td>正负方向用不同 clip 上界，鼓励低概率 token 探索</td><td>loss 层(<code>high=1+ε_high</code>, ε_high&gt;ε_low)</td><td><code>test_03</code>：<code>clip_higher=True</code> 时上界放宽</td></tr>
+<tr><td>② Dynamic Sampling</td><td>丢弃组内奖励零方差样本(advantage 全 0，无梯度)</td><td>数据层(<code>is_zero_variance_group</code> / <code>filter_dynamic_sampling</code>)</td><td><code>test_03</code>：全对/全错组被剔除，<code>n_dropped</code> 计数</td></tr>
+<tr><td>③ Token-Level Loss</td><td>按 token 数平均而非先按序列，长序列每 token 等权</td><td>loss 层(<code>masked_mean</code> 全局展平)</td><td><code>test_03</code>：长短序列 token 权重一致</td></tr>
+<tr><td>④ Overlong Reward Shaping</td><td>对超长响应软惩罚，抑制"话太多"</td><td>reward 层(<code>overlong_reward_shaping</code>)</td><td><code>test_03</code>：buffer 区间线性递增、超长满额扣</td></tr>
+</tbody>
+</table></div>
+
+<p>其中 ② 与 InfoPO 是对零方差组的两种对立处理：Dynamic Sampling 直接丢弃，InfoPO 用 info-gain 救活。<code>trainer.py</code> 约定二者同开时 InfoPO 优先——仅当 <code>config.credit.method != "infopo"</code> 才执行丢弃。</p>
+
+<h3>4.3　行为塑形：BAO 与 PPP</h3>
+
+<p>outcome reward 只管"活干成没有"，管不住 UserRL 副作用：agent 学会连珠炮追问用户、或过度空想提前烧完预算。BAO(<span class="cite">Qian et al., 2025</span>)用<em>减法</em>治病，纯行为判据、不算真实信息增益(<code>shaping/shaping.py</code>)。</p>
+
+<p><strong>正则① Information-Seeking。</strong>连续两轮都问用户($a_t, a_{t-1}\in\mathcal{A}_u$)则在第 t 轮扣 $-\lambda_{\text{ans}}$，逼 agent 问完先去环境干实事：</p>
+
+<div class="eqn-num"><div class="body">$$ p_t^{\text{info}} = \begin{cases} -\lambda_{\text{ans}}, & \text{turn}_t.\text{is\_user\_involved} \wedge \text{turn}_{t-1}.\text{is\_user\_involved}\\[2pt] 0, & \text{otherwise} \end{cases} $$</div><span class="tag">(7)</span></div>
+
+<p><strong>正则② Over-Thinking。</strong>失败($R<1$)且提前终止($T'<T$)时按 $(T-T')/T'$ 非线性放大惩罚(早失败罚更狠)：</p>
+
+<div class="eqn-num"><div class="body">$$ p^{\text{think}} = -\lambda_{\text{think}}\cdot\frac{T - T'}{T'}, \quad T=\text{turn\_budget},\ T'=\text{实际交互轮数} $$</div><span class="tag">(8)</span></div>
+
+<p>对应 <code>bao_over_thinking_penalty</code>：仅当 <code>failed and 0 < t_prime < turn_budget</code> 才生效，否则返回 0。以 $\lambda_{\text{think}}=0.1$、$T=16$、失败轨迹 $T'=3$ 手算 $-0.1\times(16-3)/3 = -0.4\overline{3} \approx -4.33\times10^{-1}$，即对拍算例 <strong>4.33</strong>(<code>test_05_shaping</code>，14 用例)。<code>apply_bao_shaping</code> 把两条正则写进 <code>Turn.shaped_reward = immediate_reward + 惩罚</code>，过早终止惩罚记在 terminal turn。</p>
+
+<p><strong>PPP 三目标(加法)。</strong>正向优化交互质量，三块无权重直接相加：</p>
+
+<div class="eqn-num"><div class="body">$$ R = R_{\text{Prod}} + R_{\text{Proact}} + R_{\text{Pers}} $$</div><span class="tag">(9)</span></div>
+
+<p>Productivity 是 0~1 大头(活干成没有)，Proactivity/Personalization 是 ±0.05~−0.5 小修正。effort 无独立评判 prompt——模拟用户在回复里自吐 <code>[Cost N]</code>，<code>parse_effort_from_cost</code> 按 SWE 打分档解析：<code>Cost≤1</code>→low(合理澄清)、<code>Cost 2–3</code>→medium(用户答不上/拒答)、<code>Cost 4–5</code>→high(甩活给用户、逼掏敏感信息)。<code>ppp_normalized_advantage</code> 如实实现 survey 语义：先 <code>clamp(0,1)</code> 再组内标准化。</p>
+
+<div class="callout limit"><div class="k">诚实边界：塑形超参数未公开</div><p>BAO 的 $\lambda_{\text{ans}}$、$\lambda_{\text{think}}$ 与归一化权重 $w$ 论文未给出具体数值，代码用占位默认(<code>lambda_ans=lambda_think=0.1</code>)。本实现保证公式形式与思想严格对齐论文 Eq.2/Eq.3，对拍值(如 4.33)据占位超参手算——真机部署须自行调参。尤其 PPP：<code>ppp_normalized_advantage</code> 先 clip 到 [0,1] 会把负罚压进边界，故惩罚量级必须刻意压小，否则在归一化里被大头 Prod 抹平、传不到梯度。</p></div>
+
+<h3>4.4　端到端训练闭环</h3>
+
+<p>一个 <code>train_step</code>(<code>train/trainer.py</code>)把全链路串成单次更新：① 每 task 采 G 条 rollout 组成 group；② Dynamic Sampling 过滤零方差组；③ 可选 BAO shaping 覆盖 immediate reward；④ <code>compute_group_token_advantages</code> 在<em>整个 group 层面</em>算每 token advantage(outcome 走 GRPO/RLOO 广播；r2g/infopo 对全 group 所有 turn 的 R2G 统一归一化)；⑤ InfoPO 方差门控融合 info-gain；⑥ pad batch → token 级 PPO loss → <code>backward</code> → grad clip → <code>optimizer.step</code>。注意 logprob 对齐:token t 的 logprob 预测 t+1，故 advantage/mask 取 <code>[1:]</code> 位置。</p>
+
+<div class="algobox"><div class="cap"><span class="lbl">Algorithm 1:</span> 单个 GRPO 训练 step (train_step)</div>
+<div class="body">
+<span class="kw">for</span> group <span class="kw">in</span> groups: <span class="cm"># 每 task 一个 group，G 条 rollout</span><br>
+<span class="ind">rewards ← [t.outcome_reward for t in group]</span><br>
+<span class="ind"><span class="kw">if</span> dynamic_sampling <span class="kw">and</span> zero_var(rewards) <span class="kw">and</span> method≠infopo: <span class="kw">continue</span> <span class="cm"># ② 丢弃</span></span><br>
+<span class="ind"><span class="kw">if</span> bao_enabled: apply_bao_shaping(group) <span class="cm"># ③ 减法正则</span></span><br>
+<span class="ind">adv ← compute_group_token_advantages(group) <span class="cm"># group 级归一化</span></span><br>
+<span class="ind"><span class="kw">if</span> method=infopo <span class="kw">and</span> gate&gt;0: adv ← adv + gate·infogain <span class="cm"># 救活零方差组</span></span><br>
+<span class="ind">seq_batch.append((tokens, loss_mask, token_adv))</span><br>
+logits ← model(input_ids); logprobs ← token_logprobs(...)<br>
+old_lp ← logprobs.detach() <span class="cm"># 单步 on-policy，ratio≡1</span><br>
+loss ← ppo_policy_loss(logprobs, old_lp, adv[1:], mask[1:]) <span class="cm"># 式(6)</span><br>
+loss.backward(); clip_grad_norm_(1.0); optimizer.step()<br>
+</div></div>
+
+<p>在 <code>credit=r2g estimator=grpo gamma=0.8</code> 配置下跑 30 步 demo，成功轨迹的 <code>success_logprob</code> 被正 advantage 单调强化，<code>mean_reward</code> 恒定(gold reward 固定)、<code>loss</code> 稳定在小负值:</p>
+
+<pre class="code">step  0 | success_logprob = <span class="r">-6.3159</span> | mean_reward = 0.500 | loss ≈ -0.0675
+step 10 | success_logprob = -5.9xxx | mean_reward = 0.500
+step 20 | success_logprob = -5.4xxx | mean_reward = 0.500
+step 29 | success_logprob = <span class="g">-5.1066</span> | mean_reward = 0.500   <span class="cm"># +1.21 nats，成功轨迹被持续拉高</span></pre>
+
+<p>logprob 从 −6.3159 单调升到 −5.1066(约 +1.21 nats)、<code>mean_reward</code> 恒 0.500——正是"成功轨迹被正 advantage 强化"的可观测证据(<code>test_06</code>/<code>test_07</code>)。此处埋过一个真实 bug:R2G turn-level 归一化最初被错写在单条轨迹内(<code>traj_adv*(1+nv)</code>)，把成功轨迹的早期澄清轮翻成负 advantage;改成整个 group 层面统一归一化后，logprob 才从 −6.3 稳升到 −5.1。真机迁移零算法改动:仅换 rollout 后端(SGLang)、模型(Qwen3-4B)、env(RealTau2Env)、tokenizer，本节 loop 逻辑不变。</p>

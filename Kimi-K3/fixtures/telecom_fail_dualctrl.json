@@ -1,0 +1,200 @@
+{
+  "fixture_name": "telecom_fail_dualctrl",
+  "task_id": "[telecom][service_issue]airplane_mode_on|break_apn_settings|unseat_sim_card[PERSONA:None][sample_2]",
+  "domain": "telecom",
+  "tau2_task_id": "[service_issue]airplane_mode_on|break_apn_settings|unseat_sim_card[PERSONA:None]",
+  "split": "train",
+  "messages": [
+    {
+      "role": "system",
+      "content": "## Output Format\nEvery turn: exactly ONE tool call in this format:\n<tool_call>\n{\"name\": \"tool_name\", \"arguments\": {\"param\": \"value\"}}\n</tool_call>\n\nSpecial actions:\n- respond: <tool_call>{\"name\": \"respond\", \"arguments\": {\"content\": \"message\"}}</tool_call>\n- done: <tool_call>{\"name\": \"done\", \"arguments\": {}}</tool_call>\n\n---\n\nYou are a telecom customer support agent. Complete the user's task following the policy below.\n\nCRITICAL: You CANNOT call device diagnostic tools directly. Instead, you must ASK THE USER to:\n- Toggle airplane mode\n- Check/reset APN settings\n- Restart their device\n- Check network status\n- Run speed tests\n- Toggle mobile data\n\nAlways INSTRUCT the user and WAIT for their confirmation before proceeding.\n\n# Telecom Agent Policy\n\n## Capabilities\nHelp users with: technical support, overdue bill payment, line suspension, plan changes, data roaming, data refueling.\n\n## Core Rules\n1. Authenticate customer first (by phone, customer_id, or name+DOB).\n2. One tool call OR one response per turn, never both.\n3. Confirm before any state-changing action.\n4. Transfer to human only if request is outside your capabilities.\n\n## Action Ownership (CRITICAL)\nYou can directly perform: customer lookup, account queries, enable/disable roaming, resume lines, refuel data, process payments.\n\nFor device diagnostics and settings, you must INSTRUCT THE USER to perform them:\n- Ask user to toggle airplane mode on/off\n- Ask user to check and reset APN settings\n- Ask user to restart/reboot their device\n- Ask user to reseat their SIM card\n- Ask user to toggle mobile data on/off\n- Ask user to run a speed test\n\nAfter instructing the user, wait for them to confirm they've done it, then proceed.\n\n## Key Procedures\n\n### Customer Lookup\n- Look up by phone number, customer ID, or full name (requires DOB for verification).\n- Get details for customer, line, device, bill, or plan as needed.\n\n### Line Suspension\n- Lines suspend for: overdue bills OR expired contract.\n- Can resume after bills paid, UNLESS contract expired.\n- After resuming a line, ask user to reboot their device.\n\n### Overdue Bills\n- Check bill status to confirm it is overdue.\n- Only one bill can be AWAITING_PAYMENT at a time.\n- Flow: send payment request -> user checks and accepts -> make payment -> verify PAID.\n\n### Data Issues\n- Check data usage vs plan limit.\n- If exceeded: offer plan change OR data refuel (max 2GB).\n- If abroad: check and enable roaming if needed.\n\n### Technical Support\n- First identify the customer and check their line/device status.\n- For connectivity issues, instruct user step-by-step:\n  1. Toggle airplane mode on, wait 10 seconds, toggle off\n  2. If still not working, restart the device\n  3. If still not working, check/reset APN settings\n  4. If still not working, reseat SIM card\n- After each step, ask user to confirm and check if issue is resolved.\n- Only transfer to human after troubleshooting steps are exhausted.\n\n\n## Example: Correct Dual-Control Pattern\n\nUser: Hi, my mobile data isn't working. My phone number is 555-123-4567.\n\n<tool_call>{\"name\": \"get_customer_by_phone\", \"arguments\": {\"phone_number\": \"555-123-4567\"}}</tool_call>\n\nTool result: {\"id\": \"C1001\", \"name\": \"John Smith\", \"phone\": \"555-123-4567\", ...}\n\n<tool_call>{\"name\": \"get_details_by_id\", \"arguments\": {\"id\": \"L1001\"}}</tool_call>\n\nTool result: {\"line_id\": \"L1001\", \"status\": \"active\", \"data_usage_gb\": 2.1, \"data_limit_gb\": 5.0, ...}\n\n<tool_call>{\"name\": \"respond\", \"arguments\": {\"content\": \"I found your account, John. Your line is active and you have 2.1GB of 5GB used, so data limits aren't the issue. Let's troubleshoot your connectivity. Please toggle airplane mode ON, wait 10 seconds, then toggle it OFF. Let me know once you've done that.\"}}</tool_call>\n\nUser: Ok, I toggled airplane mode on and off. Still no data.\n\n<tool_call>{\"name\": \"respond\", \"arguments\": {\"content\": \"Thanks for trying that. Next, please go to Settings > Cellular/Mobile Data and make sure mobile data is turned ON. Can you confirm what you see there?\"}}</tool_call>\n\nUser: It says mobile data is OFF. I turned it on and now it's working!\n\n<tool_call>{\"name\": \"respond\", \"arguments\": {\"content\": \"That was the issue - your mobile data was disabled in settings. It's now working. Is there anything else I can help you with today?\"}}</tool_call>\n\nUser: No, that's all. Thanks!\n\n<tool_call>{\"name\": \"done\", \"arguments\": {}}</tool_call>\n\nKey pattern: The agent INSTRUCTS the user to perform device actions (toggle airplane mode, check settings) rather than calling diagnostic tools directly.\n\n\n## Available Tools\n[\n  {\n    \"name\": \"get_customer_by_phone\",\n    \"description\": \"Finds a customer by their primary contact or line phone number.\",\n    \"parameters\": {\n      \"properties\": {\n        \"phone_number\": {\n          \"description\": \"The phone number to search for.\",\n          \"title\": \"Phone Number\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"phone_number\"\n      ],\n      \"title\": \"parameters\",\n      \"type\": \"object\"\n    }\n  },\n  {\n    \"name\": \"get_customer_by_id\",\n    \"description\": \"Retrieves a customer directly by their unique ID.\",\n    \"parameters\": {\n      \"properties\": {\n        \"customer_id\": {\n          \"description\": \"The unique identifier of the customer.\",\n          \"title\": \"Customer Id\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"customer_id\"\n      ],\n      \"title\": \"parameters\",\n      \"type\": \"object\"\n    }\n  },\n  {\n    \"name\": \"get_customer_by_name\",\n    \"description\": \"Searches for customers by name and DOB. May return multiple matches if names are similar,\\n\\nDOB helps disambiguate.\",\n    \"parameters\": {\n      \"properties\": {\n        \"full_name\": {\n          \"description\": \"The full name of the customer.\",\n          \"title\": \"Full Name\",\n          \"type\": \"string\"\n        },\n        \"dob\": {\n          \"description\": \"Date of birth for verification, in the format YYYY-MM-DD.\",\n          \"title\": \"Dob\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"full_name\",\n        \"dob\"\n      ],\n      \"title\": \"parameters\",\n      \"type\": \"object\"\n    }\n  },\n  {\n    \"name\": \"get_details_by_id\",\n    \"description\": \"Retrieves the details for a given ID.\\n\\nThe ID must be a valid ID for a Customer, Line, Device, Bill, or Plan.\",\n    \"parameters\": {\n      \"properties\": {\n        \"id\": {\n          \"description\": \"The ID of the object to retrieve.\",\n          \"title\": \"Id\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"id\"\n      ],\n      \"title\": \"parameters\",\n      \"type\": \"object\"\n    }\n  },\n  {\n    \"name\": \"suspend_line\",\n    \"description\": \"Suspends a specific line (max 6 months).\\n\\nChecks: Line status must be Active.\\nLogic: Sets line status to Suspended, records suspension_start_date.\",\n    \"parameters\": {\n      \"properties\": {\n        \"customer_id\": {\n          \"description\": \"ID of the customer who owns the line.\",\n          \"title\": \"Customer Id\",\n          \"type\": \"string\"\n        },\n        \"line_id\": {\n          \"description\": \"ID of the line to suspend.\",\n          \"title\": \"Line Id\",\n          \"type\": \"string\"\n        },\n        \"reason\": {\n          \"description\": \"Reason for suspension.\",\n          \"title\": \"Reason\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"customer_id\",\n        \"line_id\",\n        \"reason\"\n      ],\n      \"title\": \"parameters\",\n      \"type\": \"object\"\n    }\n  },\n  {\n    \"name\": \"resume_line\",\n    \"description\": \"Resumes a suspended line.\\n\\nChecks: Line status must be Suspended or Pending Activation.\\nLogic: Sets line status to Active, clears suspension_start_date.\",\n    \"parameters\": {\n      \"properties\": {\n        \"customer_id\": {\n          \"description\": \"ID of the customer who owns the line.\",\n          \"title\": \"Customer Id\",\n          \"type\": \"string\"\n        },\n        \"line_id\": {\n          \"description\": \"ID of the line to resume.\",\n          \"title\": \"Line Id\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"customer_id\",\n        \"line_id\"\n      ],\n      \"title\": \"parameters\",\n      \"type\": \"object\"\n    }\n  },\n  {\n    \"name\": \"get_bills_for_customer\",\n    \"description\": \"Retrieves a list of the customer's bills, most recent first.\",\n    \"parameters\": {\n      \"properties\": {\n        \"customer_id\": {\n          \"description\": \"ID of the customer.\",\n          \"title\": \"Customer Id\",\n          \"type\": \"string\"\n        },\n        \"limit\": {\n          \"default\": 12,\n          \"description\": \"Maximum number of bills to return.\",\n          \"title\": \"Limit\",\n          \"type\": \"integer\"\n        }\n      },\n      \"required\": [\n        \"customer_id\"\n      ],\n      \"title\": \"parameters\",\n      \"type\": \"object\"\n    }\n  },\n  {\n    \"name\": \"send_payment_request\",\n    \"description\": \"Sends a payment request to the customer for a specific bill.\\n\\nChecks:\\n    - Customer exists\\n    - Bill exists and belongs to the customer\\n    - No other bills are already awaiting payment for this customer\\nLogic: Sets bill status to AWAITING_PAYMENT and notifies customer.\\nWarning: This method does not check if the bill is already PAID.\\nAlways check the bill status before calling this method.\",\n    \"parameters\": {\n      \"properties\": {\n        \"customer_id\": {\n          \"description\": \"ID of the customer who owns the bill.\",\n          \"title\": \"Customer Id\",\n          \"type\": \"string\"\n        },\n        \"bill_id\": {\n          \"description\": \"ID of the bill to send payment request for.\",\n          \"title\": \"Bill Id\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"customer_id\",\n        \"bill_id\"\n      ],\n      \"title\": \"parameters\",\n      \"type\": \"object\"\n    }\n  },\n  {\n    \"name\": \"get_data_usage\",\n    \"description\": \"Retrieves current billing cycle data usage for a line, including data\\n\\nrefueling amount, data limit, and cycle end date.\",\n    \"parameters\": {\n      \"properties\": {\n        \"customer_id\": {\n          \"description\": \"ID of the customer who owns the line.\",\n          \"title\": \"Customer Id\",\n          \"type\": \"string\"\n        },\n        \"line_id\": {\n          \"description\": \"ID of the line to check usage for.\",\n          \"title\": \"Line Id\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"customer_id\",\n        \"line_id\"\n      ],\n      \"title\": \"parameters\",\n      \"type\": \"object\"\n    }\n  },\n  {\n    \"name\": \"enable_roaming\",\n    \"description\": \"Enables international roaming on a line.\",\n    \"parameters\": {\n      \"properties\": {\n        \"customer_id\": {\n          \"description\": \"ID of the customer who owns the line.\",\n          \"title\": \"Customer Id\",\n          \"type\": \"string\"\n        },\n        \"line_id\": {\n          \"description\": \"ID of the line to enable roaming for.\",\n          \"title\": \"Line Id\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"customer_id\",\n        \"line_id\"\n      ],\n      \"title\": \"parameters\",\n      \"type\": \"object\"\n    }\n  },\n  {\n    \"name\": \"disable_roaming\",\n    \"description\": \"Disables international roaming on a line.\",\n    \"parameters\": {\n      \"properties\": {\n        \"customer_id\": {\n          \"description\": \"ID of the customer who owns the line.\",\n          \"title\": \"Customer Id\",\n          \"type\": \"string\"\n        },\n        \"line_id\": {\n          \"description\": \"ID of the line to disable roaming for.\",\n          \"title\": \"Line Id\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"customer_id\",\n        \"line_id\"\n      ],\n      \"title\": \"parameters\",\n      \"type\": \"object\"\n    }\n  },\n  {\n    \"name\": \"transfer_to_human_agents\",\n    \"description\": \"Transfer the user to a human agent, with a summary of the user's issue.\\n\\nOnly transfer if\\n -  the user explicitly asks for a human agent\\n -  given the policy and the available tools, you cannot solve the user's issue.\",\n    \"parameters\": {\n      \"properties\": {\n        \"summary\": {\n          \"description\": \"A summary of the user's issue.\",\n          \"title\": \"Summary\",\n          \"type\": \"string\"\n        }\n      },\n      \"required\": [\n        \"summary\"\n      ],\n      \"title\": \"parameters\",\n      \"type\": \"object\"\n    }\n  },\n  {\n    \"name\": \"refuel_data\",\n    \"description\": \"Refuels data for a specific line, adding to the customer's bill.\\n\\nChecks: Line status must be Active, Customer owns the line.\\nLogic: Adds data to the line and charges customer based on the plan's refueling rate.\",\n    \"parameters\": {\n      \"properties\": {\n        \"customer_id\": {\n          \"description\": \"ID of the customer who owns the line.\",\n          \"title\": \"Customer Id\",\n          \"type\": \"string\"\n        },\n        \"line_id\": {\n          \"description\": \"ID of the line to refuel data for.\",\n          \"title\": \"Line Id\",\n          \"type\": \"string\"\n        },\n        \"gb_amount\": {\n          \"description\": \"Amount of data to add in gigabytes.\",\n          \"title\": \"Gb Amount\",\n          \"type\": \"number\"\n        }\n      },\n      \"required\": [\n        \"customer_id\",\n        \"line_id\",\n        \"gb_amount\"\n      ],\n      \"title\": \"parameters\",\n      \"type\": \"object\"\n    }\n  },\n  {\n    \"name\": \"done\",\n    \"description\": \"Call this function when you are done with the task.\",\n    \"parameters\": {\n      \"properties\": {},\n      \"title\": \"parameters\",\n      \"type\": \"object\"\n    }\n  }\n]\n\n## Rules\n- One tool call per turn (no plain text responses)\n- Authenticate user before state changes\n- Confirm before modifications\n- Communicate all relevant details to the user\n- Call done immediately when task is complete\n"
+    },
+    {
+      "role": "user",
+      "content": "My phone's been showing 'No Service' for a few hours now. I'm John Smith, by the way. My number is 555-123-2002."
+    },
+    {
+      "role": "assistant",
+      "content": "<tool_call>\n{\n  \"name\": \"get_customer_by_phone\",\n  \"arguments\": {\n    \"phone_number\": \"555-123-2002\"\n  }\n}\n</tool_call>"
+    },
+    {
+      "role": "user",
+      "content": "Tool result for get_customer_by_phone(phone_number=\"555-123-2002\"):\n{\"customer_id\": \"C1001\", \"full_name\": \"John Smith\", \"date_of_birth\": \"1985-06-15\", \"email\": \"john.smith@example.com\", \"phone_number\": \"555-123-2002\", \"address\": {\"street\": \"123 Main St\", \"city\": \"Anytown\", \"state\": \"CA\", \"zip_code\": \"90210\"}, \"account_status\": \"Active\", \"payment_methods\": [{\"method_type\": \"Credit Card\", \"account_number_last_4\": \"1235\", \"expiration_date\": \"12/2026\"}], \"line_ids\": [\"L1001\", \"L1002\", \"L1003\"], \"bill_ids\": [\"B1001\", \"B1002\", \"B1003\"], \"created_at\": \"2025-01-15 10:30:00\", \"last_extension_date\": null, \"goodwill_credit_used_this_year\": 25.0}"
+    },
+    {
+      "role": "assistant",
+      "content": "<tool_call>\n{\n  \"name\": \"get_details_by_id\",\n  \"arguments\": {\n    \"id\": \"L1001\"\n  }\n}\n</tool_call>"
+    },
+    {
+      "role": "user",
+      "content": "Tool result for get_details_by_id(id=\"L1001\"):\n{\"line_id\": \"L1001\", \"phone_number\": \"555-123-2001\", \"status\": \"Active\", \"plan_id\": \"P1001\", \"device_id\": \"D1001\", \"data_used_gb\": 3.2, \"data_refueling_gb\": 0.0, \"roaming_enabled\": false, \"contract_end_date\": \"2026-12-31\", \"last_plan_change_date\": \"2025-01-10\", \"last_sim_replacement_date\": null, \"suspension_start_date\": null}"
+    },
+    {
+      "role": "assistant",
+      "content": "<tool_call>\n{\n  \"name\": \"get_details_by_id\",\n  \"arguments\": {\n    \"id\": \"L1002\"\n  }\n}\n</tool_call>"
+    },
+    {
+      "role": "user",
+      "content": "Tool result for get_details_by_id(id=\"L1002\"):\n{\"line_id\": \"L1002\", \"phone_number\": \"555-123-2002\", \"status\": \"Active\", \"plan_id\": \"P1002\", \"device_id\": \"D1002\", \"data_used_gb\": 8.7, \"data_refueling_gb\": 0.0, \"roaming_enabled\": true, \"contract_end_date\": \"2026-12-31\", \"last_plan_change_date\": \"2024-12-15\", \"last_sim_replacement_date\": \"2025-01-20\", \"suspension_start_date\": null}"
+    },
+    {
+      "role": "assistant",
+      "content": "<tool_call>\n{\n  \"name\": \"respond\",\n  \"arguments\": {\n    \"content\": \"Thank you, John. I've located your account and confirmed your line (555-123-2002) is active with no service suspensions. International roaming is enabled, so that's not the issue. Let's troubleshoot the 'No Service' problem. \\n\\nFirst, please toggle airplane mode ON, wait 10 seconds, then toggle it OFF. Let me know once you've done that.\"\n  }\n}\n</tool_call>"
+    },
+    {
+      "role": "user",
+      "content": "I've toggled airplane mode off. It says 'No Signal' and 'Data Disabled' on my status bar."
+    },
+    {
+      "role": "assistant",
+      "content": "<tool_call>\n{\n  \"name\": \"respond\",\n  \"arguments\": {\n    \"content\": \"Thanks for trying that. Since airplane mode didn't resolve it, please restart your device completely. Turn it off, wait 10 seconds, then turn it back on. Let me know once it's restarted and whether you're seeing service.\"\n  }\n}\n</tool_call>"
+    },
+    {
+      "role": "user",
+      "content": "I've restarted my phone, but it's still showing 'No Signal' and 'Data Disabled'."
+    },
+    {
+      "role": "assistant",
+      "content": "<tool_call>\n{\n  \"name\": \"respond\",\n  \"arguments\": {\n    \"content\": \"I understand this is frustrating. Since restarting didn't help, please check your mobile data settings. Go to Settings > Mobile Data and ensure it's turned ON. Also, verify that your SIM card is properly seated. If you recently had it replaced, make sure it's fully inserted. Let me know what you find.\"\n  }\n}\n</tool_call>"
+    },
+    {
+      "role": "user",
+      "content": "I can't check my settings or physically check my SIM card. I'm not sure what to do."
+    },
+    {
+      "role": "assistant",
+      "content": "<tool_call>\n{\n  \"name\": \"transfer_to_human_agents\",\n  \"arguments\": {\n    \"summary\": \"Customer John Smith (555-123-2002) is experiencing 'No Service' and 'Data Disabled' issues. Line is active, roaming is enabled. Customer has attempted airplane mode toggle and device restart without success. Unable to check mobile data settings or SIM card physically. Requires hands-on support for potential SIM or hardware issue.\"\n  }\n}\n</tool_call>"
+    },
+    {
+      "role": "user",
+      "content": "Tool result for transfer_to_human_agents(summary=\"Customer John Smith (555-123-2002) is experiencing 'No Service' and 'Data Disabled' issues. Line is active, roaming is enabled. Customer has attempted airplane mode toggle and device restart without success. Unable to check mobile data settings or SIM card physically. Requires hands-on support for potential SIM or hardware issue.\"):\nTransfer successful"
+    },
+    {
+      "role": "assistant",
+      "content": "<tool_call>\n{\n  \"name\": \"done\",\n  \"arguments\": {}\n}\n</tool_call>"
+    }
+  ],
+  "gold": {
+    "reward": 0.0,
+    "success": false,
+    "partial_score": 0.5,
+    "partial_components": {
+      "action": 0.5,
+      "env_assertion": 0.5,
+      "db": 0.0
+    },
+    "tool_sequence": [
+      "get_customer_by_phone",
+      "get_details_by_id",
+      "get_details_by_id",
+      "transfer_to_human_agents"
+    ],
+    "reward_info": {
+      "reward": 0.0,
+      "db_check": {
+        "db_match": false,
+        "db_reward": 0.0
+      },
+      "env_assertions": [
+        {
+          "env_assertion": {
+            "env_type": "user",
+            "func_name": "assert_service_status",
+            "arguments": {
+              "expected_status": "connected"
+            },
+            "assert_value": true,
+            "message": "Service status is not as expected"
+          },
+          "met": false,
+          "reward": 0.0
+        },
+        {
+          "env_assertion": {
+            "env_type": "assistant",
+            "func_name": "assert_no_overdue_bill",
+            "arguments": {
+              "overdue_bill_id": "B1234321"
+            },
+            "assert_value": true,
+            "message": "Overdue bill is not as expected"
+          },
+          "met": true,
+          "reward": 1.0
+        }
+      ],
+      "action_checks": [
+        {
+          "action": {
+            "action_id": "toggle_airplane_mode_0",
+            "requestor": "user",
+            "name": "toggle_airplane_mode",
+            "arguments": {},
+            "info": null,
+            "compare_args": null
+          },
+          "action_match": true,
+          "action_reward": 1.0
+        },
+        {
+          "action": {
+            "action_id": "reset_apn_settings_1",
+            "requestor": "user",
+            "name": "reset_apn_settings",
+            "arguments": {},
+            "info": null,
+            "compare_args": null
+          },
+          "action_match": false,
+          "action_reward": 0.0
+        },
+        {
+          "action": {
+            "action_id": "reboot_device_2",
+            "requestor": "user",
+            "name": "reboot_device",
+            "arguments": {},
+            "info": null,
+            "compare_args": null
+          },
+          "action_match": true,
+          "action_reward": 1.0
+        },
+        {
+          "action": {
+            "action_id": "reseat_sim_card_3",
+            "requestor": "user",
+            "name": "reseat_sim_card",
+            "arguments": {},
+            "info": null,
+            "compare_args": null
+          },
+          "action_match": false,
+          "action_reward": 0.0
+        }
+      ],
+      "nl_assertions": null,
+      "communicate_checks": null,
+      "reward_basis": [
+        "ENV_ASSERTION"
+      ],
+      "reward_breakdown": {
+        "ENV_ASSERTION": 0.0
+      },
+      "info": {
+        "env": null,
+        "nl": null,
+        "communicate": {
+          "note": "No communicate_info to evaluate"
+        },
+        "action": null
+      }
+    }
+  },
+  "source": {
+    "dataset": "Jarrodbarnes/tau2-sft-seed-v3",
+    "file": "seed_sft_v3.jsonl",
+    "teacher_model": "together_ai/Qwen/Qwen3-235B-A22B-Instruct-2507-tput",
+    "user_model": "gemini/gemini-2.5-flash-lite"
+  }
+}
