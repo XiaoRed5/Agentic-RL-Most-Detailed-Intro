@@ -1,0 +1,538 @@
+{
+  "title": "Kimi-K3 为什么这么强？",
+  "viewportWidth": 1080,
+  "viewportHeight": 1200,
+  "totalHeight": 14741,
+  "summaryEnd": 1247.09375,
+  "pageBreaks": [],
+  "protected": [
+    {
+      "index": 1,
+      "tag": "h1",
+      "className": "",
+      "top": 48,
+      "bottom": 158.875,
+      "height": 110.875
+    },
+    {
+      "index": 2,
+      "tag": "h2",
+      "className": "sec",
+      "top": 528.046875,
+      "bottom": 590.609375,
+      "height": 62.5625
+    },
+    {
+      "index": 3,
+      "tag": "div",
+      "className": "mg-pain",
+      "top": 1015.15625,
+      "bottom": 1182.09375,
+      "height": 166.9375
+    },
+    {
+      "index": 4,
+      "tag": "h2",
+      "className": "sec",
+      "top": 1336.09375,
+      "bottom": 1398.265625,
+      "height": 62.171875
+    },
+    {
+      "index": 5,
+      "tag": "div",
+      "className": "note",
+      "top": 1742.046875,
+      "bottom": 1868.046875,
+      "height": 126
+    },
+    {
+      "index": 6,
+      "tag": "p",
+      "className": "",
+      "top": 1882.046875,
+      "bottom": 1959.046875,
+      "height": 77
+    },
+    {
+      "index": 7,
+      "tag": "table",
+      "className": "mg-table mg-compact",
+      "top": 2227.828125,
+      "bottom": 2393.359375,
+      "height": 165.53125
+    },
+    {
+      "index": 8,
+      "tag": "div",
+      "className": "figwrap",
+      "top": 2170.453125,
+      "bottom": 2521.6875,
+      "height": 351.234375
+    },
+    {
+      "index": 9,
+      "tag": "div",
+      "className": "",
+      "top": 2775.5625,
+      "bottom": 3239.09375,
+      "height": 463.53125
+    },
+    {
+      "index": 10,
+      "tag": "h2",
+      "className": "sec",
+      "top": 3371.09375,
+      "bottom": 3433.265625,
+      "height": 62.171875
+    },
+    {
+      "index": 11,
+      "tag": "p",
+      "className": "",
+      "top": 3681.453125,
+      "bottom": 3785.375,
+      "height": 103.921875
+    },
+    {
+      "index": 12,
+      "tag": "p",
+      "className": "",
+      "top": 3872.6875,
+      "bottom": 3907.328125,
+      "height": 34.640625
+    },
+    {
+      "index": 13,
+      "tag": "p",
+      "className": "",
+      "top": 3921.328125,
+      "bottom": 4001.671875,
+      "height": 80.34375
+    },
+    {
+      "index": 14,
+      "tag": "p",
+      "className": "",
+      "top": 4015.671875,
+      "bottom": 4084.953125,
+      "height": 69.28125
+    },
+    {
+      "index": 15,
+      "tag": "div",
+      "className": "figwrap",
+      "top": 4096.953125,
+      "bottom": 4610.78125,
+      "height": 513.828125
+    },
+    {
+      "index": 16,
+      "tag": "div",
+      "className": "mg-pain",
+      "top": 4698.09375,
+      "bottom": 4829.0625,
+      "height": 130.96875
+    },
+    {
+      "index": 17,
+      "tag": "div",
+      "className": "figwrap",
+      "top": 4843.0625,
+      "bottom": 5167.671875,
+      "height": 324.609375
+    },
+    {
+      "index": 18,
+      "tag": "div",
+      "className": "figwrap",
+      "top": 4843.0625,
+      "bottom": 5104.859375,
+      "height": 261.796875
+    },
+    {
+      "index": 19,
+      "tag": "h2",
+      "className": "sec",
+      "top": 5297.671875,
+      "bottom": 5359.84375,
+      "height": 62.171875
+    },
+    {
+      "index": 20,
+      "tag": "p",
+      "className": "note",
+      "top": 5570.71875,
+      "bottom": 5704.640625,
+      "height": 133.921875
+    },
+    {
+      "index": 21,
+      "tag": "p",
+      "className": "",
+      "top": 5791.953125,
+      "bottom": 5861.234375,
+      "height": 69.28125
+    },
+    {
+      "index": 22,
+      "tag": "p",
+      "className": "",
+      "top": 5875.234375,
+      "bottom": 5931.0625,
+      "height": 55.828125
+    },
+    {
+      "index": 23,
+      "tag": "p",
+      "className": "",
+      "top": 5945.0625,
+      "bottom": 6048.984375,
+      "height": 103.921875
+    },
+    {
+      "index": 24,
+      "tag": "div",
+      "className": "figwrap",
+      "top": 6062.984375,
+      "bottom": 6533.140625,
+      "height": 470.15625
+    },
+    {
+      "index": 25,
+      "tag": "div",
+      "className": "mg-pain",
+      "top": 6549.140625,
+      "bottom": 6688.890625,
+      "height": 139.75
+    },
+    {
+      "index": 26,
+      "tag": "h2",
+      "className": "sec",
+      "top": 6814.890625,
+      "bottom": 6877.0625,
+      "height": 62.171875
+    },
+    {
+      "index": 27,
+      "tag": "p",
+      "className": "note",
+      "top": 6899.0625,
+      "bottom": 7032.984375,
+      "height": 133.921875
+    },
+    {
+      "index": 28,
+      "tag": "div",
+      "className": "figwrap",
+      "top": 7046.984375,
+      "bottom": 7498.03125,
+      "height": 451.046875
+    },
+    {
+      "index": 29,
+      "tag": "table",
+      "className": "mg-table",
+      "top": 7571.34375,
+      "bottom": 7836.078125,
+      "height": 264.734375
+    },
+    {
+      "index": 30,
+      "tag": "p",
+      "className": "note",
+      "top": 7846.078125,
+      "bottom": 7980,
+      "height": 133.921875
+    },
+    {
+      "index": 31,
+      "tag": "h2",
+      "className": "sec",
+      "top": 8100,
+      "bottom": 8162.171875,
+      "height": 62.171875
+    },
+    {
+      "index": 32,
+      "tag": "p",
+      "className": "note",
+      "top": 8368.390625,
+      "bottom": 8502.3125,
+      "height": 133.921875
+    },
+    {
+      "index": 33,
+      "tag": "div",
+      "className": "figwrap",
+      "top": 8524.3125,
+      "bottom": 8900.859375,
+      "height": 376.546875
+    },
+    {
+      "index": 34,
+      "tag": "div",
+      "className": "mg-pain",
+      "top": 8922.859375,
+      "bottom": 9062.328125,
+      "height": 139.46875
+    },
+    {
+      "index": 35,
+      "tag": "p",
+      "className": "",
+      "top": 8971.546875,
+      "bottom": 9040.828125,
+      "height": 69.28125
+    },
+    {
+      "index": 36,
+      "tag": "p",
+      "className": "",
+      "top": 8971.546875,
+      "bottom": 9040.828125,
+      "height": 69.28125
+    },
+    {
+      "index": 37,
+      "tag": "h2",
+      "className": "sec",
+      "top": 9188.328125,
+      "bottom": 9250.5,
+      "height": 62.171875
+    },
+    {
+      "index": 38,
+      "tag": "div",
+      "className": "metric-grid",
+      "top": 9522.890625,
+      "bottom": 9641.078125,
+      "height": 118.1875
+    },
+    {
+      "index": 39,
+      "tag": "div",
+      "className": "figwrap",
+      "top": 9655.078125,
+      "bottom": 10033.4375,
+      "height": 378.359375
+    },
+    {
+      "index": 40,
+      "tag": "div",
+      "className": "mg-pain",
+      "top": 10049.4375,
+      "bottom": 10162,
+      "height": 112.5625
+    },
+    {
+      "index": 41,
+      "tag": "h2",
+      "className": "sec",
+      "top": 10288,
+      "bottom": 10350.171875,
+      "height": 62.171875
+    },
+    {
+      "index": 42,
+      "tag": "div",
+      "className": "punchline",
+      "top": 10443.484375,
+      "bottom": 10571.40625,
+      "height": 127.921875
+    },
+    {
+      "index": 43,
+      "tag": "p",
+      "className": "",
+      "top": 10646.71875,
+      "bottom": 10750.640625,
+      "height": 103.921875
+    },
+    {
+      "index": 44,
+      "tag": "table",
+      "className": "mg-table",
+      "top": 10760.640625,
+      "bottom": 11217.953125,
+      "height": 457.3125
+    },
+    {
+      "index": 45,
+      "tag": "p",
+      "className": "",
+      "top": 11227.953125,
+      "bottom": 11252.703125,
+      "height": 24.75
+    },
+    {
+      "index": 46,
+      "tag": "p",
+      "className": "",
+      "top": 11328.015625,
+      "bottom": 11362.65625,
+      "height": 34.640625
+    },
+    {
+      "index": 47,
+      "tag": "li",
+      "className": "",
+      "top": 11370.65625,
+      "bottom": 11437.15625,
+      "height": 66.5
+    },
+    {
+      "index": 48,
+      "tag": "li",
+      "className": "",
+      "top": 11444.15625,
+      "bottom": 11510.65625,
+      "height": 66.5
+    },
+    {
+      "index": 49,
+      "tag": "li",
+      "className": "",
+      "top": 11517.65625,
+      "bottom": 11584.15625,
+      "height": 66.5
+    },
+    {
+      "index": 50,
+      "tag": "li",
+      "className": "",
+      "top": 11591.15625,
+      "bottom": 11657.65625,
+      "height": 66.5
+    },
+    {
+      "index": 51,
+      "tag": "li",
+      "className": "",
+      "top": 11664.65625,
+      "bottom": 11764.40625,
+      "height": 99.75
+    },
+    {
+      "index": 52,
+      "tag": "li",
+      "className": "",
+      "top": 11771.40625,
+      "bottom": 11837.90625,
+      "height": 66.5
+    },
+    {
+      "index": 53,
+      "tag": "table",
+      "className": "mg-table",
+      "top": 11917.21875,
+      "bottom": 12349.734375,
+      "height": 432.515625
+    },
+    {
+      "index": 54,
+      "tag": "p",
+      "className": "",
+      "top": 12359.734375,
+      "bottom": 12498.296875,
+      "height": 138.5625
+    },
+    {
+      "index": 55,
+      "tag": "div",
+      "className": "mg-pain",
+      "top": 12577.609375,
+      "bottom": 12798.921875,
+      "height": 221.3125
+    },
+    {
+      "index": 56,
+      "tag": "div",
+      "className": "punchline",
+      "top": 12810.921875,
+      "bottom": 12869.5625,
+      "height": 58.640625
+    },
+    {
+      "index": 57,
+      "tag": "p",
+      "className": "",
+      "top": 12944.875,
+      "bottom": 13014.15625,
+      "height": 69.28125
+    },
+    {
+      "index": 58,
+      "tag": "li",
+      "className": "",
+      "top": 13022.15625,
+      "bottom": 13055.40625,
+      "height": 33.25
+    },
+    {
+      "index": 59,
+      "tag": "li",
+      "className": "",
+      "top": 13062.40625,
+      "bottom": 13095.65625,
+      "height": 33.25
+    },
+    {
+      "index": 60,
+      "tag": "li",
+      "className": "",
+      "top": 13102.65625,
+      "bottom": 13135.90625,
+      "height": 33.25
+    },
+    {
+      "index": 61,
+      "tag": "p",
+      "className": "",
+      "top": 13149.90625,
+      "bottom": 13219.1875,
+      "height": 69.28125
+    },
+    {
+      "index": 62,
+      "tag": "p",
+      "className": "",
+      "top": 13294.5,
+      "bottom": 13363.78125,
+      "height": 69.28125
+    },
+    {
+      "index": 63,
+      "tag": "p",
+      "className": "",
+      "top": 13446.171875,
+      "bottom": 13550.09375,
+      "height": 103.921875
+    },
+    {
+      "index": 64,
+      "tag": "h2",
+      "className": "sec",
+      "top": 13682.09375,
+      "bottom": 13744.265625,
+      "height": 62.171875
+    },
+    {
+      "index": 65,
+      "tag": "p",
+      "className": "",
+      "top": 13770.265625,
+      "bottom": 13867.15625,
+      "height": 96.890625
+    },
+    {
+      "index": 66,
+      "tag": "div",
+      "className": "figwrap",
+      "top": 13881.15625,
+      "bottom": 14518.671875,
+      "height": 637.515625
+    }
+  ]
+}

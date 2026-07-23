@@ -16,6 +16,7 @@
 - [Agentic RL入门6：多轮工具调用](./Agentic%20RL%E5%85%A5%E9%97%A86%EF%BC%9A%E5%A4%9A%E8%BD%AE%E5%B7%A5%E5%85%B7%E8%B0%83%E7%94%A8.html)
 - [如何在 5 万张国产芯片训练出 1.6T 万亿参数模型？](./longcat-2.0/如何在%205%20万张国产芯片训练出%201.6T%20万亿参数模型？.html)
 - [GLM-5.2 长程任务的 RL 怎么做？](./glm-5.2-longhorizon-rl/GLM-5.2%20%E9%95%BF%E7%A8%8B%E4%BB%BB%E5%8A%A1%E7%9A%84%20RL%20%E6%80%8E%E4%B9%88%E5%81%9A%EF%BC%9F.html)
+- [Kimi-K3 为什么这么强？](./Kimi-K3/Kimi-K3%20%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E4%B9%88%E5%BC%BA%EF%BC%9F.html)
 - ...
 
 ## 在线阅读
@@ -29,6 +30,7 @@
 - [Agentic RL入门6：多轮工具调用](https://xiaored5.github.io/Agentic-RL-Most-Detailed-Intro/Agentic%20RL%E5%85%A5%E9%97%A86%EF%BC%9A%E5%A4%9A%E8%BD%AE%E5%B7%A5%E5%85%B7%E8%B0%83%E7%94%A8.html)
 - [如何在 5 万张国产芯片训练出 1.6T 万亿参数模型？](https://xiaored5.github.io/Agentic-RL-Most-Detailed-Intro/longcat-2.0/如何在%205%20万张国产芯片训练出%201.6T%20万亿参数模型？.html)
 - [GLM-5.2 长程任务的 RL 怎么做？](https://xiaored5.github.io/Agentic-RL-Most-Detailed-Intro/glm-5.2-longhorizon-rl/GLM-5.2%20%E9%95%BF%E7%A8%8B%E4%BB%BB%E5%8A%A1%E7%9A%84%20RL%20%E6%80%8E%E4%B9%88%E5%81%9A%EF%BC%9F.html)
+- [Kimi-K3 为什么这么强？](https://xiaored5.github.io/Agentic-RL-Most-Detailed-Intro/Kimi-K3/Kimi-K3%20%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E4%B9%88%E5%BC%BA%EF%BC%9F.html)
 
 ## 本地预览
 
