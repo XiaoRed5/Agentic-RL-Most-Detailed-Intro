@@ -1,0 +1,1054 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kimi-K3 为什么这么强？</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});"></script>
+<style>
+/* === XHS 1080px canvas === */
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:#f3f3f3}
+body{font-family:'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC',sans-serif;color:#222;font-size:21px;line-height:1.65}
+.xhs-canvas{width:1080px;margin:0 auto;background:#fff;padding:36px 40px 72px}
+code{font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:.9em;background:#f3f4f6;padding:1px 6px;border-radius:4px;color:#d04040}
+
+/* KaTeX */
+.katex-display{margin:14px 0!important;padding:14px 18px;background:#faf9ff;border-left:4px solid #8b5cf6;border-radius:0 8px 8px 0;overflow-x:auto;font-size:22px}
+.katex-display>.katex{font-size:1.0em}
+.katex{font-size:1.0em;white-space:nowrap;display:inline-block}
+.katex-mathml{position:absolute!important;clip:rect(1px,1px,1px,1px)!important;padding:0!important;border:0!important;height:1px!important;width:1px!important;overflow:hidden!important}
+.katex-html{white-space:nowrap}
+
+/* Headings */
+h1{font-size:42px;font-weight:800;letter-spacing:-0.5px;line-height:1.32;color:#111;margin:0 0 18px}
+.subtitle{color:#666;font-size:20px;margin:6px 0 18px;font-style:normal;font-weight:500}
+.subtitle b{color:#1a3a8a}
+h2.sec{display:inline-block;background:#1a3a8a;color:#fff;font-size:28px;font-weight:800;padding:8px 20px;border-radius:10px;margin:40px 0 16px}
+h3.subsec{display:inline-block;background:#ffe0b5;color:#7a4a00;font-size:24px;font-weight:800;padding:6px 18px;border-radius:8px;margin:24px 0 12px}
+p{margin:6px 0;text-align:left;hyphens:none;word-break:normal;overflow-wrap:break-word}
+strong{font-weight:800;color:#1a3a8a}
+
+/* Paper card (XHS) */
+.paper{background:#fff;border:1px solid #e6e6e6;border-radius:16px;padding:24px 26px;margin:24px 0;box-shadow:0 2px 14px rgba(0,0,0,.05)}
+.paper h4{font-size:30px;font-weight:800;color:#000;line-height:1.35;margin-bottom:10px;letter-spacing:-0.3px}
+.paper h4 a{color:#000;text-decoration:none}
+.paper p{font-size:21px;color:#333;line-height:1.65;margin:6px 0}
+.paper p.body{color:#222}
+.tag{display:inline-block;font-size:17px;background:#f1fbef;border:1px solid #bfe8b8;color:#1e6b1e;padding:2px 10px;border-radius:6px;margin:2px 4px 2px 0;font-weight:700;font-family:'PingFang SC',sans-serif;vertical-align:middle}
+.tag-star{background:#ffe9b8;border-color:#e0a040;color:#7a4a00}
+.paper h4 .tag,.paper h4 .tag-star{font-size:14px;font-weight:700;vertical-align:middle}
+
+/* Tables */
+table{width:100%;border-collapse:collapse;margin:20px 0;font-size:20px;background:#fff;border-radius:10px;overflow:hidden}
+th{background:#1a3a8a;color:#fff;padding:12px 14px;text-align:left;font-weight:800;font-size:18px;letter-spacing:.02em}
+td{border:1px solid #e6e6e6;padding:10px 14px;line-height:1.55;color:#333}
+tr:last-child td{border-bottom:1px solid #e6e6e6}
+
+/* Note callout (类比块) */
+.note{background:#fff5e8;border:1px solid #efd5ac;border-radius:12px;padding:14px 18px;margin:14px 0;font-size:20px;line-height:1.6;color:#5a3a18}
+.note strong{font-weight:800;color:#7a4a00}
+
+/* punchline */
+.punchline{background:#fffaf0;border-left:4px solid #e0a040;color:#5a4a18;font-size:21px;font-weight:700;padding:12px 16px;border-radius:0 10px 10px 0;display:block;margin:8px 0 14px}
+
+/* figure */
+.figwrap{margin:14px 0 16px;background:linear-gradient(180deg,#f8fbff 0%,#ffffff 100%);border:1.5px solid #d7e2f2;border-radius:14px;padding:16px 16px 12px;box-shadow:0 6px 18px rgba(26,58,138,.06)}
+.figwrap img{display:block;width:100%;height:auto;border-radius:10px;background:#fff}
+.figwrap .cap{margin-top:10px;text-align:center;font-size:14px;color:#667085;line-height:1.5}
+
+/* formula block (fan-out agents wrap $$...$$ in .formula) */
+.formula{background:#faf9ff;border-left:4px solid #8b5cf6;border-radius:0 8px 8px 0;padding:6px 18px;margin:12px 0;overflow-x:auto;font-size:20px}
+.formula .katex-display{margin:8px 0!important;padding:0;background:transparent;border:none}
+
+/* section blocks */
+.mg-section{margin:22px 0 18px}
+.mg-section-tag{display:inline-block;background:#1a3a8a;color:#fff;font-size:16px;font-weight:800;padding:5px 14px;border-radius:6px;margin-bottom:10px;letter-spacing:.03em}
+.bad{color:#9f2e2e;font-weight:700}
+.mg-pain{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0 12px}
+.mg-pain-box{background:#fff;border:1.5px solid #1a3a8a;border-radius:8px;padding:14px 16px;font-size:17px;color:#2c2c2c;line-height:1.6}
+.mg-pain-box.bad{background:#fff5f5;border-color:#c0392b;color:#7a2727}
+.mg-pain-box strong{color:#1a3a8a;font-weight:800}
+.mg-pain-box.bad strong{color:#c0392b}
+.mg-pain-box b{color:#1a3a8a;font-weight:800}
+.mg-pain-box.bad b{color:#c0392b}
+.mg-table{width:100%;border-collapse:collapse;margin:10px 0;font-size:16px;background:#fff;border:1.5px solid #1a3a8a;border-radius:8px;overflow:hidden}
+.mg-table th{background:#1a3a8a;color:#fff;padding:9px 12px;text-align:left;font-weight:800;font-size:15px;letter-spacing:.03em}
+.mg-table td{padding:9px 12px;border-top:1px solid #e6e6e6;line-height:1.55;color:#2c2c2c}
+.mg-table td:first-child{font-weight:700;color:#1a3a8a}
+.mg-table.mg-compact th{padding:5px 8px;font-size:12px}
+.mg-table.mg-compact td{padding:4px 8px;line-height:1.35}
+
+/* formula legend */
+.legend{margin:6px 0 12px 8px;padding:0;list-style:none;font-size:18px}
+.legend li{margin-bottom:5px;padding-left:10px;border-left:3px solid #d7e2f2;line-height:1.6;color:#333}
+.readable{margin:8px 0 14px 26px;padding:0}
+.readable li{margin-bottom:7px;line-height:1.75;font-size:19px}
+.translate{background:#f4f7ff;border-left:3px solid #1a3a8a;padding:10px 14px;margin:8px 0 14px;font-size:19px;color:#243b6b;border-radius:0 8px 8px 0}
+.translate em{font-style:normal;font-weight:700}
+
+/* metric grid */
+.metric-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(200px,1fr));gap:12px;margin:14px 0}
+.metric-card{background:#fff;border:1.5px solid #d8d8d8;border-radius:12px;padding:16px;text-align:center}
+.metric-card .val{font-size:32px;font-weight:900;color:#1a3a8a;line-height:1.1}
+.metric-card .lab{font-size:15px;color:#666;margin-top:6px;line-height:1.4}
+
+/* toc chip nav */
+.tocbar{display:flex;flex-wrap:wrap;gap:8px;margin:18px 0 4px}
+.tocbar a{font-size:15px;font-weight:700;color:#1a3a8a;background:#eef0fb;border:1px solid #cdd6f4;padding:5px 12px;border-radius:999px;text-decoration:none}
+.tocbar a:hover{background:#1a3a8a;color:#fff}
+
+/* summary box */
+.summary-box{background:#111;color:#fff;border-radius:16px;padding:26px 28px;margin:26px 0}
+.summary-box h3{color:#fff;font-size:26px;font-weight:900;margin-bottom:10px}
+.summary-box p{color:#e8e8e8;font-size:19px;line-height:1.7;margin:8px 0}
+.summary-box .take{display:grid;gap:10px;margin-top:14px}
+.summary-box .take div{background:#1e1e1e;border-left:4px solid #e0a040;border-radius:0 8px 8px 0;padding:12px 16px;font-size:18px;color:#f3f3f3;line-height:1.6}
+
+/* decomposition bar */
+.decomp{display:grid;gap:8px;margin:14px 0}
+.decomp-row{display:grid;grid-template-columns:180px 1fr 70px;gap:12px;align-items:center;font-size:16px}
+.decomp-row .nm{font-weight:800;color:#1a3a8a;text-align:right;line-height:1.3}
+.decomp-row .bar{height:34px;border-radius:6px;display:flex;align-items:center;padding-left:12px;color:#fff;font-weight:800;font-size:15px;font-family:'SF Mono',monospace;white-space:nowrap;position:relative}
+.decomp-row .bar span.ov{position:absolute;left:calc(100% + 8px);color:#444;white-space:nowrap}
+.decomp-row .pct{font-weight:800;color:#444;font-size:15px}
+
+@media (max-width:780px){
+  .mg-pain{grid-template-columns:1fr}
+  .decomp-row{grid-template-columns:120px 1fr 60px}
+}
+</style></head><body><div class="xhs-canvas">
+
+  <!-- ============ HERO ============ -->
+  <div style="text-align:center;margin-bottom:24px;padding-top:12px">
+    <h1 style="margin-bottom:6px">Kimi-K3 为什么这么强？<br/><span style="color:#c0392b">两件事同时做到极端</span></h1>
+  </div>
+
+  <div class="paper paper-grid" id="sec-why25">
+    <div style="background:linear-gradient(135deg,#fff7ed 0%,#fff 42%,#eef4ff 100%);border:2px solid #e0a040;border-radius:18px;padding:18px 20px;margin:10px 0 16px;box-shadow:0 10px 24px rgba(224,160,64,.12)">
+      <div style="font-size:28px;line-height:1.35;font-weight:900;color:#111;letter-spacing:-.4px">K3 不是“突然靠某个黑科技变强”，而是把 <span style="color:#c0392b">两件事同时做到极端</span>。</div>
+      <div style="margin-top:8px;font-size:17px;line-height:1.6;color:#4a4a4a">架构创新（KDA + AttnRes + Stable LatentMoE）让 <b>2.8T 模型能被训练和部署</b>；真正把它变成强 Coding/Agent 模型的，更多是 <b>大规模数据、环境交互训练和推理预算</b>。</div>
+
+      <div style="display:grid;grid-template-columns:repeat(2,1fr);gap:12px;margin:16px 0 4px">
+        <div style="background:#fff;border:2px solid #1a3a8a;border-radius:14px;padding:14px 14px 12px;min-height:150px;position:relative;overflow:hidden">
+          <div style="position:absolute;right:10px;top:6px;font-size:38px;opacity:.10">构</div>
+          <div style="font-size:14px;color:#1a3a8a;font-weight:900;letter-spacing:.06em">可扩展架构撑起巨大稀疏容量</div>
+          <div style="font-size:22px;line-height:1.2;font-weight:900;color:#1a3a8a;margin:6px 0">KDA×AttnRes×LatentMoE → 2.8T MoE</div>
+          <div style="font-size:14px;line-height:1.5;color:#333">序列、深度、宽度三个瓶颈各被一个模块解开，综合 <b>~2.5× scaling 效率</b>—— <b>896 选 16 的 2.8T MoE</b>。</div>
+        </div>
+        <div style="background:#fff;border:2px solid #1e6b1e;border-radius:14px;padding:14px 14px 12px;min-height:150px;position:relative;overflow:hidden">
+          <div style="position:absolute;right:10px;top:6px;font-size:38px;opacity:.10">算</div>
+          <div style="font-size:14px;color:#1e6b1e;font-weight:900;letter-spacing:.06em">高推理时计算</div>
+          <div style="display:inline-block;background:#1e6b1e;color:#fff;font-weight:900;font-size:17px;border-radius:8px;padding:3px 10px;margin:8px 0 4px">输出 token ≈ 同类 <span style="font-size:21px">2×</span></div>
+          <div style="font-size:14px;line-height:1.5;color:#333">默认最高推理档，Agent Harness 放大能力。</div>
+        </div>
+      </div>
+
+      <h2 class="sec" style="background:#c0392b;margin-top:20px">先看一个数字：训练效率 <span style="font-family:'SF Mono',monospace">≈2.5×</span></h2>
+
+    <div style="background:linear-gradient(135deg,#fff7ed 0%,#fff 45%,#fdeeee 100%);border:2px solid #c0392b;border-radius:18px;padding:20px 22px;margin:12px 0 16px;box-shadow:0 10px 24px rgba(192,57,64,.10)">
+      <div style="display:grid;grid-template-columns:auto 1fr;gap:22px;align-items:center">
+        <div style="text-align:center;padding:8px 18px 8px 4px;border-right:1.5px dashed #e0a040">
+          <div style="font-size:64px;line-height:1;font-weight:900;color:#c0392b;font-family:'SF Mono',monospace">2.5<span style="font-size:38px">×</span></div>
+          <div style="font-size:14px;color:#7a4a00;font-weight:800;margin-top:6px">整体 scaling 效率<br/>（相对 K2，官方口径）</div>
+        </div>
+        <div>
+          <div style="font-size:19px;line-height:1.5;font-weight:800;color:#111">同一笔训练预算，K3 能学出 <span style="color:#c0392b">2.5 倍</span> 的「有效能力」。</div>
+          <div style="margin-top:8px;font-size:19px;font-weight:800;color:#4a4a4a">2.5× 从哪来 · 四个技术模块的贡献（按对数贡献占比）</div>
+        </div>
+      </div>
+
+      <div class="decomp" style="margin:8px 0 6px">
+        <div class="decomp-row"><span class="nm">KDA<br/><span style="font-size:12px;color:#888;font-weight:600">长上下文注意力</span></span><span class="bar" style="background:#1a3a8a;width:66%">≈1.83× · 占 66%</span><span class="pct">§①</span></div>
+        <div class="decomp-row"><span class="nm">AttnRes<br/><span style="font-size:12px;color:#888;font-weight:600">深度残差</span></span><span class="bar" style="background:#e0a040;width:40%">≈1.20× · 20%</span><span class="pct">§②</span></div>
+        <div class="decomp-row"><span class="nm">Stable LatentMoE<br/><span style="font-size:12px;color:#888;font-weight:600">稀疏宽度</span></span><span class="bar" style="background:#1e6b1e;width:18%"><span class="ov">≈1.08× · 8%</span></span><span class="pct">§③</span></div>
+        <div class="decomp-row"><span class="nm">训练与数据配方<br/><span style="font-size:12px;color:#888;font-weight:600">Muon/课程/轨迹</span></span><span class="bar" style="background:#888;width:12%"><span class="ov">≈1.053× · 6%</span></span><span class="pct">§④⑤</span></div>
+      </div>
+    </div>
+
+    <div class="mg-pain" style="margin:10px 0 4px">
+      <div class="mg-pain-box" style="background:#f1fbef;border-color:#1e6b1e">
+        <strong style="color:#1e6b1e">对估值意味着什么</strong><br/>训练效率 2.5× ≈ 单位能力的<b>训练成本降到约 1/2.5</b>。同样的 GPU 预算，K3 能站上 2.8T 这个别人烧不起的规模，并把省下的钱转投到 Agent/Coding 的数据与 RL 上。
+      </div>
+      <div class="mg-pain-box bad">
+        <strong>但必须诚实标注口径</strong><br/>「2.5×」是官方对外说法，<b>尚无公开的逐模块消融</b>；下面每一章给出的 1.83× / 1.20× / 1.08× / 1.053× 都是基于公开论文数据的<b>反推与估算</b>（会逐条标口径）。
+      </div>
+    </div>
+    </div>
+  </div>
+  <!-- 章节将陆续追加到此处之后 -->
+
+<div class="paper paper-grid">
+  <h2 class="sec" id="sec-1">① KDA：为什么它能把训练效率拉到 1.83×</h2>
+
+  <!-- 效率账卡（章首结论） -->
+  <div style="background:linear-gradient(135deg,#eef0fb 0%,#fff 60%);border:2px solid #1a3a8a;border-radius:16px;padding:16px 18px;margin:18px 0 4px">
+    <div style="display:grid;grid-template-columns:auto 1fr;gap:20px;align-items:center">
+      <div style="text-align:center;padding-right:18px;border-right:1.5px dashed #b9c4e6">
+        <div style="font-size:13px;color:#1a3a8a;font-weight:900;letter-spacing:.06em">KDA 的效率账</div>
+        <div style="font-size:46px;line-height:1.05;font-weight:900;color:#1a3a8a;font-family:'SF Mono',monospace;margin:4px 0">≈1.83<span style="font-size:26px">×</span></div>
+        <div style="font-size:12.5px;color:#666;font-weight:700">占 2.5× 的 <b style="color:#c0392b">约 66%</b></div>
+      </div>
+      <div style="font-size:14.5px;line-height:1.7;color:#333">
+        <div><b style="color:#1a3a8a">1.68×（更便宜）× 1.09×（更聪明）≈ 1.83×。</b>前者来自把长上下文成本从平方压成近线性、同算力多训 1.68× 数据；后者来自细粒度门带来的更高学习效率。</div>
+        <div style="font-size:12.5px;color:#8a5a10;background:#fffaf0;border-left:3px solid #e0a040;padding:7px 11px;border-radius:0 8px 8px 0;margin-top:8px"><b>口径：</b>基于公开论文数据的<b>反推估算</b>（假设了偏长的训练分布），非官方消融——数量级判断，完整推导见文末 §⑧。</div>
+      </div>
+    </div>
+    <div style="display:grid;grid-template-columns:repeat(4,1fr);gap:8px;margin-top:12px">
+      <div style="text-align:center;background:#fff;border:1px solid #d7e2f2;border-radius:8px;padding:8px 4px"><div style="font-size:20px;font-weight:900;color:#1a3a8a">1.16×</div><div style="font-size:11px;color:#666">训练效率↑</div></div>
+      <div style="text-align:center;background:#fff;border:1px solid #d7e2f2;border-radius:8px;padding:8px 4px"><div style="font-size:20px;font-weight:900;color:#1a3a8a">−75%</div><div style="font-size:11px;color:#666">1M 显存↓</div></div>
+      <div style="text-align:center;background:#fff;border:1px solid #d7e2f2;border-radius:8px;padding:8px 4px"><div style="font-size:20px;font-weight:900;color:#1a3a8a">6.3×</div><div style="font-size:11px;color:#666">1M 解码↑</div></div>
+      <div style="text-align:center;background:#fff;border:1px solid #d7e2f2;border-radius:8px;padding:8px 4px"><div style="font-size:20px;font-weight:900;color:#1a3a8a">84.3</div><div style="font-size:11px;color:#666">长文检索分</div></div>
+    </div>
+    <div style="font-size:11.5px;color:#888;text-align:center;margin-top:6px">四个公开数字来自 Kimi Linear 受控对照（arXiv:2510.26692），验证 KDA 架构本身收益；K3 用同源架构，端到端数字官方未逐项公开。</div>
+  </div>
+
+  <!-- 因子 1：便宜 → 1.68×（直觉 + 推导合并） -->
+  <div class="mg-section" style="margin-top:16px">
+    <span class="mg-section-tag">① 为什么更便宜 → 1.68×</span>
+    <div class="note" style="margin:6px 0 0">
+      <strong>打个比方：</strong>传统注意力像每读一个新词都把<strong>整本书从头翻一遍</strong>——上下文越长每步越慢，成本随长度<strong>平方（$O(n^2)$）</strong>膨胀。KDA 换成随身带一个<strong>固定大小的笔记本</strong>，大多数时候只查笔记、偶尔翻回原书核对，于是<strong>上下文再长，每步成本几乎不变</strong>。
+    </div>
+
+    <p style="font-size:20px;line-height:1.75;color:#222;margin:14px 0 12px">给两种架构各写出<b>「单 token 成本」公式</b>，代入各档长度、按一个偏长的训练分布<b>加权平均</b>，两者一比就是 <b style="color:#c0392b;font-size:24px">1.68×</b>。</p>
+
+    <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px;margin:10px 0 12px">
+      <div style="background:#fff5f5;border:1.5px solid #c0392b;border-radius:10px;padding:10px 14px">
+        <div style="font-size:13px;font-weight:800;color:#c0392b;margin-bottom:4px">全注意力（成本随长度线性涨）</div>
+        <div style="text-align:center;font-size:15px">$c_{\rm MLA}(n)=1+\dfrac{n}{40\text{K}}$</div>
+      </div>
+      <div style="background:#eef0fb;border:1.5px solid #1a3a8a;border-radius:10px;padding:10px 14px">
+        <div style="font-size:13px;font-weight:800;color:#1a3a8a;margin-bottom:4px">KDA（斜率砍到 0.35，几乎压平）</div>
+        <div style="text-align:center;font-size:15px">$c_{\rm KDA}(n)=1+0.35\cdot\dfrac{n}{40\text{K}}$</div>
+      </div>
+    </div>
+    <div style="font-size:13.5px;line-height:1.9;color:#333;background:#fafafa;border:1px solid #e5e5e5;border-radius:8px;padding:10px 14px;margin:2px 0 12px">
+      <div><b style="color:#1a3a8a">$n$</b> ＝ 上下文长度</div>
+      <div><b style="color:#1a3a8a">40K</b> ＝「注意力开始主导」的临界长度</div>
+      <div><b style="color:#1a3a8a">0.35</b> ＝ KDA 只剩约 1/4 层保留平方复杂度的等效斜率系数</div>
+    </div>
+    <div style="display:grid;grid-template-columns:1fr 360px;gap:16px;align-items:center;margin:10px 0 12px">
+      <div>
+      <div style="font-size:16px;font-weight:800;color:#1a3a8a;margin-bottom:6px">按预训练数据长度配比，加权计算两种注意力的单 token 成本</div>
+      <table class="mg-table mg-compact" style="font-size:13px;margin:0">
+        <thead><tr><th>上下文长度</th><th>占比(假设)</th><th>全注意力成本</th><th>KDA 成本</th></tr></thead>
+        <tbody>
+          <tr><td>8K</td><td>40%</td><td>1.2</td><td>1.07</td></tr>
+          <tr><td>32K</td><td>42%</td><td>1.8</td><td>1.28</td></tr>
+          <tr><td>128K</td><td>15%</td><td>4.2</td><td>2.12</td></tr>
+          <tr><td>1M</td><td>3%</td><td>26</td><td>9.75</td></tr>
+          <tr style="background:#eef0fb;font-weight:800"><td>加权平均</td><td>100%</td><td>2.65</td><td>1.58</td></tr>
+        </tbody>
+      </table>
+      <div style="display:flex;align-items:center;gap:14px;background:#eef0fb;border:1.5px solid #1a3a8a;border-radius:12px;padding:12px 16px;margin:12px 0 0">
+        <div style="font-size:15px;font-family:'SF Mono',monospace;color:#1a3a8a;font-weight:800;white-space:nowrap">2.65 ÷ 1.58<br>≈ <span style="font-size:24px;color:#c0392b">1.68×</span></div>
+        <div style="font-size:13.5px;line-height:1.6;color:#333">全注意力平均每 token 成本 2.65，KDA 只要 1.58——<b>同样算力能多训 1.68× 的数据</b>。这是效率账的第一层（算力账）。</div>
+      </div>
+      </div>
+      <div class="figwrap" style="margin:0">
+        <img src="images/kimi-k3/fig1b_tpot.png" alt="Kimi Linear Fig1(b) TPOT vs 解码长度">
+        <div class="cap" style="font-size:12px">全注意力（虚线）随长度<b>爆炸式上升</b>，Kimi Linear（实线）几乎压平——1M 上下文<b>快 6.3×</b>。这是<b>推理</b>速度；训练侧同理。</div>
+      </div>
+    </div>
+  </div>
+
+  <!-- 因子 2：聪明（核心技术：细粒度对角门） -->
+  <div class="mg-section">
+    <span class="mg-section-tag">② 为什么便宜还不掉智商 → 再 ×1.09（核心技术）</span>
+    <div class="analogy" style="background:#fff5e8;border-left:4px solid #e0a040;padding:10px 14px;margin:10px 0;border-radius:0 8px 8px 0">便宜的记忆表通常「记不准」。KDA 的<strong>核心技术</strong>是把遗忘做到<strong>每个通道单独可调</strong>：前代（Gated DeltaNet）用<strong>一个标量</strong>遗忘门，整表统一衰减；KDA 换成<strong>对角门 Diag(α)</strong>——<strong>每个 key 通道各有自己的遗忘率</strong>，正在写的函数签名几乎不忘、无关旧上下文快速淡出。这就是「便宜也能记得准」的来源，也是 KDA 收敛更快、长上下文更稳的核心。</div>
+
+    <!-- VIZ 1: KDA 记忆表演示（保留） -->
+    <div style="margin:16px 0;background:linear-gradient(180deg,#f8fbff 0%,#fff 100%);border:1.5px solid #d7e2f2;border-radius:14px;padding:16px 14px 12px;box-shadow:0 6px 18px rgba(26,58,138,.06)">
+      <div style="text-align:center;font-size:13px;color:#888;letter-spacing:.08em;font-weight:700;margin-bottom:6px">一次 KDA 更新：记忆表怎么被改写（看格子变化即可，β=0.7 举例）</div>
+      <svg viewBox="0 0 766 300" style="width:100%;height:auto;display:block">
+        <defs>
+          <marker id="a0" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#e0a040"/></marker>
+          <marker id="a1" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#c0392b"/></marker>
+          <marker id="a2" markerWidth="9" markerHeight="9" refX="7" refY="4.5" orient="auto"><path d="M0,0 L9,4.5 L0,9 z" fill="#1e6b1e"/></marker>
+          <marker id="rl" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#888"/></marker>
+        </defs>
+        <text x="383" y="22" text-anchor="middle" font-family="PingFang SC" font-size="12" fill="#555">公式 <tspan font-family="STIX Two Text,serif">S<tspan font-size="9">t</tspan>=(I−βkkᵀ)·Diag(α)·S<tspan font-size="9">t-1</tspan>+βkvᵀ</tspan> 的三个算子，从右往左作用</text>
+        <text x="168.4" y="77" text-anchor="middle" font-family="STIX Two Text,serif" font-size="16" fill="#1a3a8a">S</text><text x="176.4" y="81" font-family="STIX Two Text,serif" font-size="10" fill="#1a3a8a">t</text><text x="206.0" y="77" text-anchor="middle" font-family="STIX Two Text,serif" font-size="16" fill="#333">=</text><rect x="228.0" y="56" width="106" height="32" rx="5" fill="#fff5f5" stroke="#c0392b" stroke-width="1.2"/><text x="281.0" y="77" text-anchor="middle" font-family="STIX Two Text,serif" font-size="16" fill="#c0392b">(I − β k kᵀ)</text><text x="281.0" y="52" text-anchor="middle" font-family="PingFang SC" font-size="12" font-weight="800" fill="#c0392b">②</text><text x="352.0" y="77" text-anchor="middle" font-family="STIX Two Text,serif" font-size="16" fill="#333">·</text><rect x="370.0" y="56" width="66" height="32" rx="5" fill="#fff7ed" stroke="#e0a040" stroke-width="1.2"/><text x="403.0" y="77" text-anchor="middle" font-family="STIX Two Text,serif" font-size="16" fill="#e0a040">Diag(α)</text><text x="403.0" y="52" text-anchor="middle" font-family="PingFang SC" font-size="12" font-weight="800" fill="#e0a040">①</text><text x="454.0" y="77" text-anchor="middle" font-family="STIX Two Text,serif" font-size="16" fill="#333">·</text><rect x="472.0" y="56" width="40" height="32" rx="5" fill="#eef0fb" stroke="#1a3a8a" stroke-width="1.2"/><text x="488.0" y="77" text-anchor="middle" font-family="STIX Two Text,serif" font-size="16" fill="#1a3a8a">S</text><text x="496.0" y="81" font-family="STIX Two Text,serif" font-size="10" fill="#1a3a8a">t-1</text><text x="532.0" y="77" text-anchor="middle" font-family="STIX Two Text,serif" font-size="16" fill="#333">+</text><rect x="552.0" y="56" width="56" height="32" rx="5" fill="#f1fbef" stroke="#1e6b1e" stroke-width="1.2"/><text x="580.0" y="77" text-anchor="middle" font-family="STIX Two Text,serif" font-size="16" fill="#1e6b1e">β k vᵀ</text><text x="580.0" y="52" text-anchor="middle" font-family="PingFang SC" font-size="12" font-weight="800" fill="#1e6b1e">③</text><path d="M281.0 94 Q342.0 106 403.0 94" fill="none" stroke="#888" stroke-width="1.2" marker-end="url(#rl)"/><text x="383" y="120" text-anchor="middle" font-family="PingFang SC" font-size="11" fill="#666">矩阵从右往左作用：<tspan fill="#e0a040" font-weight="800">①先遗忘</tspan> → <tspan fill="#c0392b" font-weight="800">②再擦除</tspan> → <tspan fill="#1e6b1e" font-weight="800">③后写入</tspan></text>
+        <line x1="40" y1="126" x2="726" y2="126" stroke="#e6ecf5" stroke-width="1"/>
+        <text x="91.0" y="144" text-anchor="middle" font-family="PingFang SC" font-size="13" font-weight="800" fill="#1a3a8a">旧笔记 S<tspan font-family="STIX Two Text,serif" font-size="9" font-style="italic">t-1</tspan></text><text x="91.0" y="248" text-anchor="middle" font-family="PingFang SC" font-size="10.5" fill="#1a3a8a">(当前状态)</text><text x="291.0" y="144" text-anchor="middle" font-family="PingFang SC" font-size="13" font-weight="800" fill="#7a4a00">① 细粒度遗忘</text><text x="291.0" y="248" text-anchor="middle" font-family="PingFang SC" font-size="10.5" fill="#7a4a00">每行按自己的 α 变淡</text><text x="491.0" y="144" text-anchor="middle" font-family="PingFang SC" font-size="13" font-weight="800" fill="#c0392b">② 按 β 比例擦除</text><text x="491.0" y="248" text-anchor="middle" font-family="PingFang SC" font-size="10.5" fill="#c0392b">k 那行 ×(1−β) 削弱，非清零</text><text x="691.0" y="144" text-anchor="middle" font-family="PingFang SC" font-size="13" font-weight="800" fill="#1e6b1e">③ 写入新值 = S<tspan font-family="STIX Two Text,serif" font-size="9" font-style="italic">t</tspan></text><text x="691.0" y="248" text-anchor="middle" font-family="PingFang SC" font-size="10.5" fill="#1e6b1e">残留 (1−β)旧 + β新，插值</text>
+        <line x1="144" y1="194.0" x2="232" y2="194.0" stroke="#e0a040" stroke-width="2.2" marker-end="url(#a0)"/><line x1="344" y1="194.0" x2="432" y2="194.0" stroke="#c0392b" stroke-width="2.2" marker-end="url(#a1)"/><line x1="544" y1="194.0" x2="632" y2="194.0" stroke="#1e6b1e" stroke-width="2.2" marker-end="url(#a2)"/>
+        <rect x="46" y="158" width="90" height="72" rx="3" fill="none" stroke="#c8d2e6" stroke-width="1"/><rect x="47" y="159" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.80"/>
+        <rect x="65" y="159" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.30"/>
+        <rect x="83" y="159" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.62"/>
+        <rect x="101" y="159" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.22"/>
+        <rect x="119" y="159" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.70"/>
+        <rect x="47" y="177" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.30"/>
+        <rect x="65" y="177" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.68"/>
+        <rect x="83" y="177" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.40"/>
+        <rect x="101" y="177" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.52"/>
+        <rect x="119" y="177" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.30"/>
+        <rect x="47" y="195" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.60"/>
+        <rect x="65" y="195" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.50"/>
+        <rect x="83" y="195" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.72"/>
+        <rect x="101" y="195" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.40"/>
+        <rect x="119" y="195" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.60"/>
+        <rect x="47" y="213" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.42"/>
+        <rect x="65" y="213" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.22"/>
+        <rect x="83" y="213" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.52"/>
+        <rect x="101" y="213" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.70"/>
+        <rect x="119" y="213" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.32"/><rect x="44" y="193" width="94" height="20" rx="3" fill="none" stroke="#e0a040" stroke-width="1.8"/><text x="38" y="207.0" text-anchor="end" font-family="STIX Two Text,serif" font-size="11" font-style="italic" fill="#b8860b">k</text><rect x="246" y="158" width="90" height="72" rx="3" fill="none" stroke="#c8d2e6" stroke-width="1"/><rect x="247" y="159" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.68"/>
+        <rect x="265" y="159" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.26"/>
+        <rect x="283" y="159" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.53"/>
+        <rect x="301" y="159" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.19"/>
+        <rect x="319" y="159" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.59"/>
+        <rect x="247" y="177" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.10"/>
+        <rect x="265" y="177" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.24"/>
+        <rect x="283" y="177" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.14"/>
+        <rect x="301" y="177" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.18"/>
+        <rect x="319" y="177" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.10"/>
+        <rect x="247" y="195" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.48"/>
+        <rect x="265" y="195" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.40"/>
+        <rect x="283" y="195" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.58"/>
+        <rect x="301" y="195" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.32"/>
+        <rect x="319" y="195" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.48"/>
+        <rect x="247" y="213" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.13"/>
+        <rect x="265" y="213" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.07"/>
+        <rect x="283" y="213" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.16"/>
+        <rect x="301" y="213" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.21"/>
+        <rect x="319" y="213" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.10"/><rect x="244" y="193" width="94" height="20" rx="3" fill="none" stroke="#e0a040" stroke-width="1.8"/><text x="238" y="207.0" text-anchor="end" font-family="STIX Two Text,serif" font-size="11" font-style="italic" fill="#b8860b">k</text><rect x="446" y="158" width="90" height="72" rx="3" fill="none" stroke="#c8d2e6" stroke-width="1"/><rect x="447" y="159" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.68"/>
+        <rect x="465" y="159" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.26"/>
+        <rect x="483" y="159" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.53"/>
+        <rect x="501" y="159" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.19"/>
+        <rect x="519" y="159" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.59"/>
+        <rect x="447" y="177" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.10"/>
+        <rect x="465" y="177" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.24"/>
+        <rect x="483" y="177" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.14"/>
+        <rect x="501" y="177" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.18"/>
+        <rect x="519" y="177" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.10"/>
+        <rect x="447" y="195" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.14"/>
+        <rect x="465" y="195" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.12"/>
+        <rect x="483" y="195" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.17"/>
+        <rect x="501" y="195" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.10"/>
+        <rect x="519" y="195" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.14"/>
+        <rect x="447" y="213" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.13"/>
+        <rect x="465" y="213" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.07"/>
+        <rect x="483" y="213" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.16"/>
+        <rect x="501" y="213" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.21"/>
+        <rect x="519" y="213" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.10"/><rect x="444" y="193" width="94" height="20" rx="3" fill="none" stroke="#e0a040" stroke-width="1.8"/><text x="438" y="207.0" text-anchor="end" font-family="STIX Two Text,serif" font-size="11" font-style="italic" fill="#b8860b">k</text><rect x="646" y="158" width="90" height="72" rx="3" fill="none" stroke="#c8d2e6" stroke-width="1"/><rect x="647" y="159" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.68"/>
+        <rect x="665" y="159" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.26"/>
+        <rect x="683" y="159" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.53"/>
+        <rect x="701" y="159" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.19"/>
+        <rect x="719" y="159" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.59"/>
+        <rect x="647" y="177" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.10"/>
+        <rect x="665" y="177" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.24"/>
+        <rect x="683" y="177" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.14"/>
+        <rect x="701" y="177" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.18"/>
+        <rect x="719" y="177" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.10"/>
+        <rect x="647" y="195" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.14"/>
+        <rect x="647" y="195" width="16" height="16" rx="2" fill="#1e6b1e" fill-opacity="0.50"/>
+        <rect x="665" y="195" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.12"/>
+        <rect x="665" y="195" width="16" height="16" rx="2" fill="#1e6b1e" fill-opacity="0.36"/>
+        <rect x="683" y="195" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.17"/>
+        <rect x="683" y="195" width="16" height="16" rx="2" fill="#1e6b1e" fill-opacity="0.57"/>
+        <rect x="701" y="195" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.10"/>
+        <rect x="701" y="195" width="16" height="16" rx="2" fill="#1e6b1e" fill-opacity="0.42"/>
+        <rect x="719" y="195" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.14"/>
+        <rect x="719" y="195" width="16" height="16" rx="2" fill="#1e6b1e" fill-opacity="0.50"/>
+        <rect x="647" y="213" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.13"/>
+        <rect x="665" y="213" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.07"/>
+        <rect x="683" y="213" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.16"/>
+        <rect x="701" y="213" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.21"/>
+        <rect x="719" y="213" width="16" height="16" rx="2" fill="#1a3a8a" fill-opacity="0.10"/><rect x="644" y="193" width="94" height="20" rx="3" fill="none" stroke="#e0a040" stroke-width="1.8"/><text x="638" y="207.0" text-anchor="end" font-family="STIX Two Text,serif" font-size="11" font-style="italic" fill="#b8860b">k</text>
+        <rect x="46" y="272" width="12" height="12" rx="2" fill="#1a3a8a" fill-opacity="0.7"/>
+        <text x="64" y="282" font-family="PingFang SC" font-size="10.5" fill="#555">已存旧关联（蓝）</text>
+        <rect x="196" y="272" width="12" height="12" rx="2" fill="#1e6b1e" fill-opacity="0.75"/>
+        <text x="214" y="282" font-family="PingFang SC" font-size="10.5" fill="#555">本步新写入（绿）</text>
+        <rect x="356" y="272" width="12" height="12" rx="2" fill="none" stroke="#e0a040" stroke-width="1.8"/>
+        <text x="374" y="282" font-family="PingFang SC" font-size="10.5" fill="#555">当前 key <tspan font-family="STIX Two Text,serif" font-style="italic">k</tspan> 指向的行</text>
+      </svg>
+      <div style="margin-top:8px;text-align:center;font-size:12.5px;color:#667085;line-height:1.55">图：每来一个 token，记忆表就走三步——① <b style="color:#7a4a00">每行按自己的率遗忘</b>（这就是「细粒度对角门」的直观样子）→ ② <b style="color:#c0392b">把当前 key 那行按 β 比例削弱</b>（残留 (1−β) 倍，不是清零）→ ③ <b style="color:#1e6b1e">写入新值</b>，该行成为「旧值 + 新值」的插值。全注意力要存下每个 token，KDA 只把这张<b>固定大小</b>的表原地改写一次。</div>
+    </div>
+  </div>
+
+</div>
+
+<div class="paper paper-grid">
+<h2 class="sec" id="sec-2">② AttnRes：让网络叠得更深还不糊 → 1.20×</h2>
+
+<div style="margin:16px 0;padding:18px 22px;border:2px solid #1a3a8a;border-radius:14px;background:linear-gradient(135deg,#eef3ff 0%,#f7faff 100%);display:grid;grid-template-columns:200px 1fr;gap:22px;align-items:center;">
+  <div style="text-align:center;border-right:1px solid #c9d6f0;">
+    <div style="font-size:40px;font-weight:800;color:#1a3a8a;line-height:1;">≈1.20×</div>
+    <div style="font-size:13px;color:#555;margin-top:6px;">等效算力增益<br>约占 K3 总提升的 <b style="color:#c0392b;">20%</b></div>
+  </div>
+  <div style="font-size:15px;color:#333;line-height:1.65;">
+    <strong style="color:#1a3a8a">打个比方：</strong>等权残差像一场不断加人的大会，每个新发言者都要把<b>前面所有人</b>的话等音量重播一遍——开到 100 层谁都听不清；AttnRes 给每层配个<b>主持人</b>，把有用的几层调大、没用的调小。
+    <div style="font-size:12px;color:#888;margin-top:8px;">口径：论文 scaling law 实测 gross 1.25×，与 KDA 部分重叠，保守折算净 1.20×。</div>
+  </div>
+</div>
+
+<div class="mg-section"><span class="mg-section-tag">病根：等权累加，越深越糊</span></div>
+<p>标准残差每层固定加一个单位权重：$h_l = h_{l-1} + f_l(\cdot)$，幅度随层数 $O(L)$ 无控增长，PreNorm 只能靠归一化<b>稀释早层</b>。佐证：很深的模型剪掉不少中间层往往掉点不明显——说明大量层其实"糊在一起"是冗余。</p>
+
+<div class="mg-section"><span class="mg-section-tag">核心：把"累加"换成"注意力"</span></div>
+<p>让每层对前面所有层做一次 softmax attention，自己决定听谁：</p>
+<p>$$h_l = \sum_{i&lt;l}\alpha_{i\to l}\,v_i,\qquad \alpha_{i\to l} = \mathrm{softmax}_i\!\left(w_l\cdot k_i\right)$$</p>
+<p>$w_l$ 是每层一个可学习的 pseudo-query（伪查询）——<b>额外开销仅此一项</b>，几乎不加参数，却把"被动等权继承"变成"主动按需检索历史"。</p>
+
+<div class="figwrap" style="max-width:720px;margin:12px auto">
+<svg viewBox="0 0 760 478" style="width:100%;height:auto;display:block">
+  <defs><marker id="sarr" markerWidth="8" markerHeight="8" refX="6" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#999"/></marker></defs>
+  <text x="380.0" y="33" text-anchor="middle" font-family="STIX Two Text,serif" font-size="23" fill="#243b6b">h<tspan font-size="15">4</tspan> = Σ<tspan font-size="16"> i</tspan> α<tspan font-size="15">i→4</tspan> v<tspan font-size="15">i</tspan> ,　α<tspan font-size="15">i→4</tspan> = softmax( w<tspan font-size="15">4</tspan> · k<tspan font-size="15">i</tspan> )</text>
+  <line x1="30" y1="52" x2="730" y2="52" stroke="#e6ecf5" stroke-width="1"/>
+  <text x="142" y="76" text-anchor="middle" font-family="PingFang SC" font-size="15" font-weight="800" fill="#888">① 每层的 k, v</text>
+  <text x="330" y="76" text-anchor="middle" font-family="PingFang SC" font-size="15" font-weight="800" fill="#888">② w₄·kᵢ 点积得分</text>
+  <text x="535" y="76" text-anchor="middle" font-family="PingFang SC" font-size="15" font-weight="800" fill="#888">③ softmax→αᵢ</text>
+  <text x="695" y="76" text-anchor="middle" font-family="PingFang SC" font-size="15" font-weight="800" fill="#888">④ Σαᵢvᵢ=h₄</text>
+  <text x="52" y="208" text-anchor="middle" font-family="STIX Two Text,serif" font-size="22" font-style="italic" fill="#1a3a8a">w<tspan font-size="15">4</tspan></text><rect x="34" y="228" width="16" height="16" fill="#1a3a8a" fill-opacity="0.77" stroke="#fff" stroke-width="0.8"/>
+<rect x="34" y="244" width="16" height="16" fill="#1a3a8a" fill-opacity="0.17" stroke="#fff" stroke-width="0.8"/>
+<rect x="34" y="260" width="16" height="16" fill="#1a3a8a" fill-opacity="0.59" stroke="#fff" stroke-width="0.8"/>
+<rect x="34" y="276" width="16" height="16" fill="#1a3a8a" fill-opacity="0.26" stroke="#fff" stroke-width="0.8"/>
+<rect x="34" y="228" width="16" height="64" fill="none" stroke="#1a3a8a" stroke-width="1.1"/><text x="42" y="306" text-anchor="middle" font-family="PingFang SC" font-size="12.5" fill="#888">第4层</text><text x="42" y="321" text-anchor="middle" font-family="PingFang SC" font-size="11.5" fill="#1a3a8a">pseudo-query</text><text x="126.0" y="105" text-anchor="middle" font-family="STIX Two Text,serif" font-size="16" font-style="italic" fill="#c0392b">k<tspan font-size="11">1</tspan></text><rect x="118" y="112" width="16" height="16" fill="#c0392b" fill-opacity="0.68" stroke="#fff" stroke-width="0.8"/>
+<rect x="118" y="128" width="16" height="16" fill="#c0392b" fill-opacity="0.17" stroke="#fff" stroke-width="0.8"/>
+<rect x="118" y="144" width="16" height="16" fill="#c0392b" fill-opacity="0.51" stroke="#fff" stroke-width="0.8"/>
+<rect x="118" y="160" width="16" height="16" fill="#c0392b" fill-opacity="0.26" stroke="#fff" stroke-width="0.8"/>
+<rect x="118" y="112" width="16" height="64" fill="none" stroke="#c0392b" stroke-width="1.1"/><text x="174.0" y="105" text-anchor="middle" font-family="STIX Two Text,serif" font-size="16" font-style="italic" fill="#c0392b">v<tspan font-size="11">1</tspan></text><rect x="166" y="112" width="16" height="16" fill="#c0392b" fill-opacity="0.77" stroke="#fff" stroke-width="0.8"/>
+<rect x="166" y="128" width="16" height="16" fill="#c0392b" fill-opacity="0.26" stroke="#fff" stroke-width="0.8"/>
+<rect x="166" y="144" width="16" height="16" fill="#c0392b" fill-opacity="0.59" stroke="#fff" stroke-width="0.8"/>
+<rect x="166" y="160" width="16" height="16" fill="#c0392b" fill-opacity="0.42" stroke="#fff" stroke-width="0.8"/>
+<rect x="166" y="112" width="16" height="64" fill="none" stroke="#c0392b" stroke-width="1.1"/><text x="104" y="148" text-anchor="end" font-family="PingFang SC" font-size="13" fill="#888">第1层</text><text x="222" y="148" text-anchor="end" font-family="STIX Two Text,serif" font-size="14" font-style="italic" fill="#1a3a8a">w<tspan font-size="10">4</tspan></text><rect x="228" y="136" width="15" height="15" fill="#1a3a8a" fill-opacity="0.77" stroke="#fff" stroke-width="0.7"/>
+<rect x="243" y="136" width="15" height="15" fill="#1a3a8a" fill-opacity="0.17" stroke="#fff" stroke-width="0.7"/>
+<rect x="258" y="136" width="15" height="15" fill="#1a3a8a" fill-opacity="0.59" stroke="#fff" stroke-width="0.7"/>
+<rect x="273" y="136" width="15" height="15" fill="#1a3a8a" fill-opacity="0.26" stroke="#fff" stroke-width="0.7"/>
+<rect x="228" y="136" width="60" height="15" fill="none" stroke="#1a3a8a" stroke-width="1"/><text x="301" y="152" text-anchor="middle" font-family="STIX Two Text,serif" font-size="24" font-weight="700" fill="#333">·</text><rect x="314" y="136" width="15" height="15" fill="#c0392b" fill-opacity="0.68" stroke="#fff" stroke-width="0.7"/>
+<rect x="329" y="136" width="15" height="15" fill="#c0392b" fill-opacity="0.17" stroke="#fff" stroke-width="0.7"/>
+<rect x="344" y="136" width="15" height="15" fill="#c0392b" fill-opacity="0.51" stroke="#fff" stroke-width="0.7"/>
+<rect x="359" y="136" width="15" height="15" fill="#c0392b" fill-opacity="0.26" stroke="#fff" stroke-width="0.7"/>
+<rect x="314" y="136" width="60" height="15" fill="none" stroke="#c0392b" stroke-width="1"/><text x="378" y="148" font-family="STIX Two Text,serif" font-size="14" font-style="italic" fill="#c0392b">k<tspan font-size="10">1</tspan></text><text x="301" y="178" text-anchor="middle" font-family="STIX Two Text,serif" font-size="20" fill="#555">= <tspan font-weight="700" fill="#c0392b" font-size="22">1.27</tspan></text><line x1="404" y1="144" x2="464" y2="144" stroke="#999" stroke-width="2.0" marker-end="url(#sarr)"/><text x="434" y="136" text-anchor="middle" font-family="PingFang SC" font-size="12" fill="#aaa">softmax</text><text x="520" y="150" text-anchor="end" font-family="STIX Two Text,serif" font-size="23" font-weight="700" fill="#c0392b">0.47</text><rect x="545" y="135" width="52" height="19" rx="3" fill="#c0392b" fill-opacity="0.8"/><text x="604" y="150" font-family="STIX Two Text,serif" font-size="16" fill="#c0392b">×v<tspan font-size="11">1</tspan></text><text x="126.0" y="201" text-anchor="middle" font-family="STIX Two Text,serif" font-size="16" font-style="italic" fill="#e0a040">k<tspan font-size="11">2</tspan></text><rect x="118" y="208" width="16" height="16" fill="#e0a040" fill-opacity="0.26" stroke="#fff" stroke-width="0.8"/>
+<rect x="118" y="224" width="16" height="16" fill="#e0a040" fill-opacity="0.59" stroke="#fff" stroke-width="0.8"/>
+<rect x="118" y="240" width="16" height="16" fill="#e0a040" fill-opacity="0.17" stroke="#fff" stroke-width="0.8"/>
+<rect x="118" y="256" width="16" height="16" fill="#e0a040" fill-opacity="0.42" stroke="#fff" stroke-width="0.8"/>
+<rect x="118" y="208" width="16" height="64" fill="none" stroke="#e0a040" stroke-width="1.1"/><text x="174.0" y="201" text-anchor="middle" font-family="STIX Two Text,serif" font-size="16" font-style="italic" fill="#e0a040">v<tspan font-size="11">2</tspan></text><rect x="166" y="208" width="16" height="16" fill="#e0a040" fill-opacity="0.34" stroke="#fff" stroke-width="0.8"/>
+<rect x="166" y="224" width="16" height="16" fill="#e0a040" fill-opacity="0.68" stroke="#fff" stroke-width="0.8"/>
+<rect x="166" y="240" width="16" height="16" fill="#e0a040" fill-opacity="0.26" stroke="#fff" stroke-width="0.8"/>
+<rect x="166" y="256" width="16" height="16" fill="#e0a040" fill-opacity="0.51" stroke="#fff" stroke-width="0.8"/>
+<rect x="166" y="208" width="16" height="64" fill="none" stroke="#e0a040" stroke-width="1.1"/><text x="104" y="244" text-anchor="end" font-family="PingFang SC" font-size="13" fill="#888">第2层</text><text x="222" y="244" text-anchor="end" font-family="STIX Two Text,serif" font-size="14" font-style="italic" fill="#1a3a8a">w<tspan font-size="10">4</tspan></text><rect x="228" y="232" width="15" height="15" fill="#1a3a8a" fill-opacity="0.77" stroke="#fff" stroke-width="0.7"/>
+<rect x="243" y="232" width="15" height="15" fill="#1a3a8a" fill-opacity="0.17" stroke="#fff" stroke-width="0.7"/>
+<rect x="258" y="232" width="15" height="15" fill="#1a3a8a" fill-opacity="0.59" stroke="#fff" stroke-width="0.7"/>
+<rect x="273" y="232" width="15" height="15" fill="#1a3a8a" fill-opacity="0.26" stroke="#fff" stroke-width="0.7"/>
+<rect x="228" y="232" width="60" height="15" fill="none" stroke="#1a3a8a" stroke-width="1"/><text x="301" y="248" text-anchor="middle" font-family="STIX Two Text,serif" font-size="24" font-weight="700" fill="#333">·</text><rect x="314" y="232" width="15" height="15" fill="#e0a040" fill-opacity="0.26" stroke="#fff" stroke-width="0.7"/>
+<rect x="329" y="232" width="15" height="15" fill="#e0a040" fill-opacity="0.59" stroke="#fff" stroke-width="0.7"/>
+<rect x="344" y="232" width="15" height="15" fill="#e0a040" fill-opacity="0.17" stroke="#fff" stroke-width="0.7"/>
+<rect x="359" y="232" width="15" height="15" fill="#e0a040" fill-opacity="0.42" stroke="#fff" stroke-width="0.7"/>
+<rect x="314" y="232" width="60" height="15" fill="none" stroke="#e0a040" stroke-width="1"/><text x="378" y="244" font-family="STIX Two Text,serif" font-size="14" font-style="italic" fill="#e0a040">k<tspan font-size="10">2</tspan></text><text x="301" y="274" text-anchor="middle" font-family="STIX Two Text,serif" font-size="20" fill="#555">= <tspan font-weight="700" fill="#e0a040" font-size="22">0.70</tspan></text><line x1="404" y1="240" x2="464" y2="240" stroke="#999" stroke-width="2.0" marker-end="url(#sarr)"/><text x="434" y="232" text-anchor="middle" font-family="PingFang SC" font-size="12" fill="#aaa">softmax</text><text x="520" y="246" text-anchor="end" font-family="STIX Two Text,serif" font-size="23" font-weight="700" fill="#1e6b1e">0.15</text><rect x="545" y="231" width="17" height="19" rx="3" fill="#e0a040" fill-opacity="0.8"/><text x="569" y="246" font-family="STIX Two Text,serif" font-size="16" fill="#e0a040">×v<tspan font-size="11">2</tspan></text><text x="126.0" y="297" text-anchor="middle" font-family="STIX Two Text,serif" font-size="16" font-style="italic" fill="#1e6b1e">k<tspan font-size="11">3</tspan></text><rect x="118" y="304" width="16" height="16" fill="#1e6b1e" fill-opacity="0.42" stroke="#fff" stroke-width="0.8"/>
+<rect x="118" y="320" width="16" height="16" fill="#1e6b1e" fill-opacity="0.42" stroke="#fff" stroke-width="0.8"/>
+<rect x="118" y="336" width="16" height="16" fill="#1e6b1e" fill-opacity="0.59" stroke="#fff" stroke-width="0.8"/>
+<rect x="118" y="352" width="16" height="16" fill="#1e6b1e" fill-opacity="0.34" stroke="#fff" stroke-width="0.8"/>
+<rect x="118" y="304" width="16" height="64" fill="none" stroke="#1e6b1e" stroke-width="1.1"/><text x="174.0" y="297" text-anchor="middle" font-family="STIX Two Text,serif" font-size="16" font-style="italic" fill="#1e6b1e">v<tspan font-size="11">3</tspan></text><rect x="166" y="304" width="16" height="16" fill="#1e6b1e" fill-opacity="0.51" stroke="#fff" stroke-width="0.8"/>
+<rect x="166" y="320" width="16" height="16" fill="#1e6b1e" fill-opacity="0.34" stroke="#fff" stroke-width="0.8"/>
+<rect x="166" y="336" width="16" height="16" fill="#1e6b1e" fill-opacity="0.68" stroke="#fff" stroke-width="0.8"/>
+<rect x="166" y="352" width="16" height="16" fill="#1e6b1e" fill-opacity="0.42" stroke="#fff" stroke-width="0.8"/>
+<rect x="166" y="304" width="16" height="64" fill="none" stroke="#1e6b1e" stroke-width="1.1"/><text x="104" y="340" text-anchor="end" font-family="PingFang SC" font-size="13" fill="#888">第3层</text><text x="222" y="340" text-anchor="end" font-family="STIX Two Text,serif" font-size="14" font-style="italic" fill="#1a3a8a">w<tspan font-size="10">4</tspan></text><rect x="228" y="328" width="15" height="15" fill="#1a3a8a" fill-opacity="0.77" stroke="#fff" stroke-width="0.7"/>
+<rect x="243" y="328" width="15" height="15" fill="#1a3a8a" fill-opacity="0.17" stroke="#fff" stroke-width="0.7"/>
+<rect x="258" y="328" width="15" height="15" fill="#1a3a8a" fill-opacity="0.59" stroke="#fff" stroke-width="0.7"/>
+<rect x="273" y="328" width="15" height="15" fill="#1a3a8a" fill-opacity="0.26" stroke="#fff" stroke-width="0.7"/>
+<rect x="228" y="328" width="60" height="15" fill="none" stroke="#1a3a8a" stroke-width="1"/><text x="301" y="344" text-anchor="middle" font-family="STIX Two Text,serif" font-size="24" font-weight="700" fill="#333">·</text><rect x="314" y="328" width="15" height="15" fill="#1e6b1e" fill-opacity="0.42" stroke="#fff" stroke-width="0.7"/>
+<rect x="329" y="328" width="15" height="15" fill="#1e6b1e" fill-opacity="0.42" stroke="#fff" stroke-width="0.7"/>
+<rect x="344" y="328" width="15" height="15" fill="#1e6b1e" fill-opacity="0.59" stroke="#fff" stroke-width="0.7"/>
+<rect x="359" y="328" width="15" height="15" fill="#1e6b1e" fill-opacity="0.34" stroke="#fff" stroke-width="0.7"/>
+<rect x="314" y="328" width="60" height="15" fill="none" stroke="#1e6b1e" stroke-width="1"/><text x="378" y="340" font-family="STIX Two Text,serif" font-size="14" font-style="italic" fill="#1e6b1e">k<tspan font-size="10">3</tspan></text><text x="301" y="370" text-anchor="middle" font-family="STIX Two Text,serif" font-size="20" fill="#555">= <tspan font-weight="700" fill="#1e6b1e" font-size="22">1.16</tspan></text><line x1="404" y1="336" x2="464" y2="336" stroke="#999" stroke-width="2.0" marker-end="url(#sarr)"/><text x="434" y="328" text-anchor="middle" font-family="PingFang SC" font-size="12" fill="#aaa">softmax</text><text x="520" y="342" text-anchor="end" font-family="STIX Two Text,serif" font-size="23" font-weight="700" fill="#b8860b">0.38</text><rect x="545" y="327" width="42" height="19" rx="3" fill="#1e6b1e" fill-opacity="0.8"/><text x="594" y="342" font-family="STIX Two Text,serif" font-size="16" fill="#1e6b1e">×v<tspan font-size="11">3</tspan></text><rect x="668" y="217.8" width="54" height="94.2" fill="#c0392b" fill-opacity="0.82" stroke="#fff" stroke-width="1"/><text x="695" y="269.9" text-anchor="middle" font-family="STIX Two Text,serif" font-size="13" fill="#fff">α<tspan font-size="9">1</tspan>v<tspan font-size="9">1</tspan></text><rect x="668" y="187.6" width="54" height="30.1" fill="#e0a040" fill-opacity="0.82" stroke="#fff" stroke-width="1"/><text x="695" y="207.7" text-anchor="middle" font-family="STIX Two Text,serif" font-size="13" fill="#fff">α<tspan font-size="9">2</tspan>v<tspan font-size="9">2</tspan></text><rect x="668" y="112.0" width="54" height="75.6" fill="#1e6b1e" fill-opacity="0.82" stroke="#fff" stroke-width="1"/><text x="695" y="154.8" text-anchor="middle" font-family="STIX Two Text,serif" font-size="13" fill="#fff">α<tspan font-size="9">3</tspan>v<tspan font-size="9">3</tspan></text><rect x="668" y="112" width="54" height="200" rx="4" fill="none" stroke="#1a3a8a" stroke-width="1.6"/><text x="695" y="336" text-anchor="middle" font-family="STIX Two Text,serif" font-size="21" font-weight="700" fill="#1a3a8a">h<tspan font-size="13">4</tspan></text>
+  <text x="380.0" y="451" text-anchor="middle" font-family="PingFang SC" font-size="15.5" fill="#555">同一个 pseudo-query <tspan font-family="STIX Two Text,serif" font-style="italic" fill="#1a3a8a">w₄</tspan> 分别与每层 <tspan font-family="STIX Two Text,serif" font-style="italic">kᵢ</tspan> 点积 → 得分 → softmax 成 α → 按 α 加权叠成 <tspan font-family="STIX Two Text,serif" font-style="italic" fill="#1a3a8a">h₄</tspan></text>
+  <text x="380.0" y="470" text-anchor="middle" font-family="PingFang SC" font-size="14.5" fill="#888">w₄ 是第4层唯一可学习的向量（pseudo-query），它决定「听哪层」；标准残差没有它，只能 α=1/L 等权</text>
+</svg>
+  <div class="cap">把公式 $h_l=\sum_i\alpha_{i\to l}v_i$、$\alpha_{i\to l}=\mathrm{softmax}_i(w_l\cdot k_i)$ 逐步算出来（$l=4$、前 3 层为例，数值示意）：$w_l$ 是每层一个可学习的 <b>pseudo-query</b>，与各层 $k_i$ 点积得分、softmax 成权重 α、再按 α 加权各 $v_i$ 得 $h_l$。</div>
+</div>
+
+<div class="mg-section"><span class="mg-section-tag">落地：Block 版本，drop-in 便宜替换</span></div>
+<div class="mg-pain">
+  <div class="mg-pain-box bad">
+    <div class="mg-section-tag">Full AttnRes</div>
+    每层都 attend 所有前层，内存/通信开销 $O(Ld)$——上百层时太贵，工程上跑不起。
+  </div>
+  <div class="mg-pain-box">
+    <div class="mg-section-tag">Block AttnRes（K3 采用）</div>
+    把层分成 N 块：块内走标准残差，只在 N 个<b>块摘要</b>之间做注意力，降到 $O(Nd)$。可直接替换原结构。
+  </div>
+</div>
+
+<div style="display:grid;grid-template-columns:1fr 1fr;gap:14px;align-items:start;margin:14px 0 16px">
+  <div class="figwrap" style="margin:0">
+    <img src="images/kimi-k3/attnres_arch.png" alt="AttnRes 架构：标准残差 / Full / Block" style="max-width:100%;">
+    <div class="cap">(a) 标准残差等权累加　(b) Full AttnRes 每层 attend 所有前层　(c) Block AttnRes 只在块摘要间做注意力</div>
+  </div>
+  <div class="figwrap" style="margin:0">
+    <img src="images/kimi-k3/attnres_scaling.png" alt="AttnRes scaling law 曲线" style="max-width:100%;">
+    <div class="cap">Scaling law（arXiv:2603.15031 Fig.4）：Block AttnRes loss 1.692 ≈ baseline 1.714 多花 1.25× 算力的效果。</div>
+  </div>
+</div>
+</div>
+
+<div class="paper paper-grid">
+  <h2 class="sec" id="sec-3">③ Stable LatentMoE</h2>
+
+  <div style="margin:18px 0 26px;padding:22px 26px;border:2px solid #1a3a8a;border-radius:16px;background:linear-gradient(135deg,#f4f7ff 0%,#eaf0ff 100%);display:grid;grid-template-columns:200px 1fr;gap:24px;align-items:center;">
+    <div style="text-align:center;border-right:1px dashed #b9c6e8;">
+      <div style="font-size:52px;font-weight:800;color:#1a3a8a;line-height:1;">≈1.08×</div>
+      <div style="font-size:13px;color:#666;margin-top:8px;">LatentMoE 结构红利<br>占 K3 综合 2.5× 的 <strong style="color:#e0a040;">约 8%</strong></div>
+    </div>
+    <div style="font-size:15px;line-height:1.7;color:#333;">
+      <strong style="color:#1a3a8a;">它从哪来：</strong>把专家计算搬到低维 latent 空间，同一算力预算能塞下更多专家、挂更高 top-k，换来「每 FLOP 更准」。<br>
+      <span style="font-size:13px;color:#888;">口径：稀疏度 + 低维/路由稳定收益反推估算，非官方消融。</span>
+    </div>
+  </div>
+
+  <p class="note"><strong>打个比方：</strong>K3 是一家有 <b>896 个专科门诊</b>的超级医院，总参 2.8T 是这栋大楼的规模。但每个病人（token）进来只挂 <b>16 个号</b>（Top-K=16）——楼盖得再大，单次问诊也只付 16 个专家的钱。<b>总参数 ≠ 每 token 的计算量</b>，这是它「养得起」的第一层原因。</p>
+
+  <div class="mg-section"><span class="mg-section-tag">核心技术：Stable LatentMoE（NVIDIA · arXiv:2601.18089）</span></div>
+
+  <p>普通 MoE 在完整隐藏维 $d_{model}$ 上又路由又算专家，专家一多就贵。LatentMoE 先把 token 压到更小的 latent 维 $\ell$ 再算、再投回：</p>
+
+  <p style="text-align:center;">$$d_{model}\;\to\;d_{latent}\;\to\;\text{Experts}\;\to\;d_{model}$$</p>
+
+  <p>按 $d/\ell$ 的比例，<b>all-to-all 通信、每专家 FLOP、激活传输、专家权重带宽</b>四头一起降。省下的预算换成「更多专家 + 更高 top-k」。NVIDIA 在 iso-FLOP / iso-param 下验证到 95B 参数、1T token，<b>每 FLOP 的准确率稳定优于标准 MoE</b>。K3 用的是 Stable 版，完整数学未公开。</p>
+
+  <div class="figwrap">
+<svg style="max-width:660px;width:100%;height:auto;display:block;margin:0 auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 470" font-family="PingFang SC, sans-serif">
+<rect x="0" y="0" width="760" height="470" fill="#ffffff"/>
+<defs><marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#555"/></marker></defs>
+<text x="380.0" y="32" text-anchor="middle" font-size="21" font-weight="700" fill="#1a3a8a">token 先压到低维再路由，省下的算力换更多专家 → ≈1.08×</text>
+<line x1="30" y1="52" x2="730" y2="52" stroke="#ccc" stroke-width="1"/>
+<text x="380.0" y="78" text-anchor="middle" font-size="16" font-family="STIX Two Text, serif"><tspan fill="#1a3a8a" font-style="italic">d_model</tspan><tspan fill="#888">  →  </tspan><tspan fill="#8a5aa8" font-style="italic">d_latent</tspan><tspan fill="#888">  →  </tspan><tspan fill="#e0a040">Experts(top-k)</tspan><tspan fill="#888">  →  </tspan><tspan fill="#1a3a8a" font-style="italic">d_model</tspan></text>
+<rect x="50" y="110" width="16" height="16" fill="#1a3a8a" fill-opacity="0.77" stroke="#fff" stroke-width="0.8"/>
+<rect x="50" y="126" width="16" height="16" fill="#1a3a8a" fill-opacity="0.30" stroke="#fff" stroke-width="0.8"/>
+<rect x="50" y="142" width="16" height="16" fill="#1a3a8a" fill-opacity="0.61" stroke="#fff" stroke-width="0.8"/>
+<rect x="50" y="158" width="16" height="16" fill="#1a3a8a" fill-opacity="0.42" stroke="#fff" stroke-width="0.8"/>
+<rect x="50" y="174" width="16" height="16" fill="#1a3a8a" fill-opacity="0.72" stroke="#fff" stroke-width="0.8"/>
+<rect x="50" y="190" width="16" height="16" fill="#1a3a8a" fill-opacity="0.19" stroke="#fff" stroke-width="0.8"/>
+<rect x="50" y="206" width="16" height="16" fill="#1a3a8a" fill-opacity="0.51" stroke="#fff" stroke-width="0.8"/>
+<rect x="50" y="222" width="16" height="16" fill="#1a3a8a" fill-opacity="0.36" stroke="#fff" stroke-width="0.8"/>
+<rect x="50" y="110" width="16" height="128" fill="none" stroke="#1a3a8a" stroke-width="1.1"/>
+<text x="58" y="104" text-anchor="middle" font-size="15" fill="#1a3a8a">①</text>
+<text x="58" y="252" text-anchor="middle" font-size="15" font-style="italic" font-family="STIX Two Text, serif" fill="#1a3a8a">x</text>
+<text x="58" y="268" text-anchor="middle" font-size="13" fill="#888">d_model=8</text>
+<line x1="70" y1="174" x2="120" y2="174" stroke="#555" stroke-width="2" marker-end="url(#ar)"/>
+<text x="95" y="166" text-anchor="middle" font-size="13" font-style="italic" font-family="STIX Two Text, serif" fill="#8a5aa8">W_d</text>
+<text x="95" y="192" text-anchor="middle" font-size="12" fill="#e0a040">×(ℓ/d)</text>
+<rect x="128" y="150" width="16" height="16" fill="#8a5aa8" fill-opacity="0.66" stroke="#fff" stroke-width="0.8"/>
+<rect x="128" y="166" width="16" height="16" fill="#8a5aa8" fill-opacity="0.34" stroke="#fff" stroke-width="0.8"/>
+<rect x="128" y="182" width="16" height="16" fill="#8a5aa8" fill-opacity="0.56" stroke="#fff" stroke-width="0.8"/>
+<rect x="128" y="150" width="16" height="48" fill="none" stroke="#8a5aa8" stroke-width="1.1"/>
+<text x="136" y="140" text-anchor="middle" font-size="15" fill="#8a5aa8">②</text>
+<text x="136" y="215" text-anchor="middle" font-size="14" font-style="italic" font-family="STIX Two Text, serif" fill="#8a5aa8">z=W_d·x</text>
+<text x="136" y="231" text-anchor="middle" font-size="13" fill="#888">d_latent=3</text>
+<line x1="148" y1="174" x2="196" y2="174" stroke="#555" stroke-width="2" marker-end="url(#ar)"/>
+<text x="172" y="166" text-anchor="middle" font-size="12" fill="#888">route</text>
+<rect x="204" y="106" width="22" height="16" fill="#888" fill-opacity="0.12" stroke="#888" stroke-width="1"/>
+<rect x="204" y="124" width="22" height="16" fill="#888" fill-opacity="0.12" stroke="#888" stroke-width="1"/>
+<rect x="204" y="142" width="22" height="16" fill="#e0a040" fill-opacity="0.55" stroke="#e0a040" stroke-width="2"/>
+<rect x="204" y="160" width="22" height="16" fill="#888" fill-opacity="0.12" stroke="#888" stroke-width="1"/>
+<rect x="204" y="178" width="22" height="16" fill="#888" fill-opacity="0.12" stroke="#888" stroke-width="1"/>
+<rect x="204" y="196" width="22" height="16" fill="#e0a040" fill-opacity="0.55" stroke="#e0a040" stroke-width="2"/>
+<rect x="204" y="214" width="22" height="16" fill="#888" fill-opacity="0.12" stroke="#888" stroke-width="1"/>
+<rect x="204" y="232" width="22" height="16" fill="#888" fill-opacity="0.12" stroke="#888" stroke-width="1"/>
+<rect x="232" y="142" width="14" height="14" fill="#8a5aa8" fill-opacity="0.60" stroke="#8a5aa8" stroke-width="1.1"/>
+<rect x="232" y="196" width="14" height="14" fill="#8a5aa8" fill-opacity="0.60" stroke="#8a5aa8" stroke-width="1.1"/>
+<text x="228" y="99" text-anchor="middle" font-size="12" font-weight="700" fill="#e0a040">③ top-k=16*</text>
+<text x="228" y="270" text-anchor="middle" font-size="11" fill="#888">④ 选中专家在 latent 算</text>
+<line x1="252" y1="174" x2="348" y2="174" stroke="#555" stroke-width="2" marker-end="url(#ar)"/>
+<text x="300" y="166" text-anchor="middle" font-size="13" font-style="italic" font-family="STIX Two Text, serif" fill="#1e6b1e">W_u</text>
+<text x="300" y="192" text-anchor="middle" font-size="12" fill="#888">latent→d_model</text>
+<rect x="356" y="110" width="16" height="16" fill="#1e6b1e" fill-opacity="0.75" stroke="#fff" stroke-width="0.8"/>
+<rect x="356" y="126" width="16" height="16" fill="#1e6b1e" fill-opacity="0.28" stroke="#fff" stroke-width="0.8"/>
+<rect x="356" y="142" width="16" height="16" fill="#1e6b1e" fill-opacity="0.59" stroke="#fff" stroke-width="0.8"/>
+<rect x="356" y="158" width="16" height="16" fill="#1e6b1e" fill-opacity="0.44" stroke="#fff" stroke-width="0.8"/>
+<rect x="356" y="174" width="16" height="16" fill="#1e6b1e" fill-opacity="0.70" stroke="#fff" stroke-width="0.8"/>
+<rect x="356" y="190" width="16" height="16" fill="#1e6b1e" fill-opacity="0.20" stroke="#fff" stroke-width="0.8"/>
+<rect x="356" y="206" width="16" height="16" fill="#1e6b1e" fill-opacity="0.49" stroke="#fff" stroke-width="0.8"/>
+<rect x="356" y="222" width="16" height="16" fill="#1e6b1e" fill-opacity="0.37" stroke="#fff" stroke-width="0.8"/>
+<rect x="356" y="110" width="16" height="128" fill="none" stroke="#1e6b1e" stroke-width="1.1"/>
+<text x="364" y="104" text-anchor="middle" font-size="15" fill="#1e6b1e">⑤</text>
+<text x="364" y="252" text-anchor="middle" font-size="15" font-style="italic" font-family="STIX Two Text, serif" fill="#1e6b1e">y</text>
+<text x="364" y="268" text-anchor="middle" font-size="13" fill="#888">d_model=8</text>
+<rect x="420" y="92" width="320" height="172" fill="#fafafa" stroke="#e5e5e5" stroke-width="1" rx="6"/>
+<text x="436" y="114" font-size="14" font-weight="700" fill="#1a3a8a">按 d/ℓ 因子同时降：</text>
+<text x="436" y="140" font-size="14" fill="#333">all-to-all 通信</text>
+<text x="596" y="140" font-size="14" font-weight="700" fill="#e0a040">×(ℓ/d)</text>
+<text x="436" y="164" font-size="14" fill="#333">每专家 FLOP</text>
+<text x="596" y="164" font-size="14" font-weight="700" fill="#e0a040">×(ℓ/d)</text>
+<text x="436" y="188" font-size="14" fill="#333">激活传输</text>
+<text x="596" y="188" font-size="14" font-weight="700" fill="#e0a040">×(ℓ/d)</text>
+<text x="436" y="212" font-size="14" fill="#333">专家权重带宽</text>
+<text x="596" y="212" font-size="14" font-weight="700" fill="#e0a040">×(ℓ/d)</text>
+<text x="436" y="248" font-size="14" font-weight="700" fill="#c0392b">省下预算 → 更多专家 + 更高 top-k</text>
+<line x1="30" y1="290" x2="730" y2="290" stroke="#ccc" stroke-width="1"/>
+<line x1="385" y1="300" x2="385" y2="400" stroke="#ddd" stroke-width="1"/>
+<text x="40" y="312" font-size="15" font-weight="700" fill="#888">标准 MoE：专家在 d_model 上算</text>
+<rect x="55" y="326" width="44" height="44" fill="#1a3a8a" fill-opacity="0.45" stroke="#1a3a8a" stroke-width="1.5"/>
+<text x="77" y="353" text-anchor="middle" font-size="12" fill="#fff">E1</text>
+<rect x="135" y="326" width="44" height="44" fill="#1a3a8a" fill-opacity="0.45" stroke="#1a3a8a" stroke-width="1.5"/>
+<text x="157" y="353" text-anchor="middle" font-size="12" fill="#fff">E2</text>
+<rect x="215" y="326" width="44" height="44" fill="#1a3a8a" fill-opacity="0.45" stroke="#1a3a8a" stroke-width="1.5"/>
+<text x="237" y="353" text-anchor="middle" font-size="12" fill="#fff">E3</text>
+<rect x="295" y="326" width="44" height="44" fill="#1a3a8a" fill-opacity="0.45" stroke="#1a3a8a" stroke-width="1.5"/>
+<text x="317" y="353" text-anchor="middle" font-size="12" fill="#fff">E4</text>
+<text x="40" y="392" font-size="13" fill="#333">每专家 FLOP ∝ d_model → 大算子，专家数受限</text>
+<text x="400" y="312" font-size="15" font-weight="700" fill="#888">LatentMoE：专家在 d_latent 上算 + 多养专家</text>
+<rect x="405" y="326" width="18" height="18" fill="#8a5aa8" fill-opacity="0.35" stroke="#8a5aa8" stroke-width="1.2"/>
+<rect x="427" y="326" width="18" height="18" fill="#e0a040" fill-opacity="0.6" stroke="#e0a040" stroke-width="1.2"/>
+<rect x="449" y="326" width="18" height="18" fill="#8a5aa8" fill-opacity="0.35" stroke="#8a5aa8" stroke-width="1.2"/>
+<rect x="471" y="326" width="18" height="18" fill="#8a5aa8" fill-opacity="0.35" stroke="#8a5aa8" stroke-width="1.2"/>
+<rect x="493" y="326" width="18" height="18" fill="#e0a040" fill-opacity="0.6" stroke="#e0a040" stroke-width="1.2"/>
+<rect x="515" y="326" width="18" height="18" fill="#8a5aa8" fill-opacity="0.35" stroke="#8a5aa8" stroke-width="1.2"/>
+<rect x="537" y="326" width="18" height="18" fill="#8a5aa8" fill-opacity="0.35" stroke="#8a5aa8" stroke-width="1.2"/>
+<rect x="559" y="326" width="18" height="18" fill="#e0a040" fill-opacity="0.6" stroke="#e0a040" stroke-width="1.2"/>
+<rect x="405" y="348" width="18" height="18" fill="#8a5aa8" fill-opacity="0.35" stroke="#8a5aa8" stroke-width="1.2"/>
+<rect x="427" y="348" width="18" height="18" fill="#8a5aa8" fill-opacity="0.35" stroke="#8a5aa8" stroke-width="1.2"/>
+<rect x="449" y="348" width="18" height="18" fill="#e0a040" fill-opacity="0.6" stroke="#e0a040" stroke-width="1.2"/>
+<rect x="471" y="348" width="18" height="18" fill="#8a5aa8" fill-opacity="0.35" stroke="#8a5aa8" stroke-width="1.2"/>
+<rect x="493" y="348" width="18" height="18" fill="#8a5aa8" fill-opacity="0.35" stroke="#8a5aa8" stroke-width="1.2"/>
+<rect x="515" y="348" width="18" height="18" fill="#e0a040" fill-opacity="0.6" stroke="#e0a040" stroke-width="1.2"/>
+<rect x="537" y="348" width="18" height="18" fill="#8a5aa8" fill-opacity="0.35" stroke="#8a5aa8" stroke-width="1.2"/>
+<rect x="559" y="348" width="18" height="18" fill="#8a5aa8" fill-opacity="0.35" stroke="#8a5aa8" stroke-width="1.2"/>
+<text x="400" y="392" font-size="13" fill="#333">每专家 FLOP ∝ d_latent → 小算子，同预算专家数↑ top-k↑</text>
+<line x1="30" y1="410" x2="730" y2="410" stroke="#eee" stroke-width="1"/>
+<text x="380.0" y="432" text-anchor="middle" font-size="14" fill="#333">iso-FLOP / iso-param 下 accuracy per FLOP 更优：省下的通信/带宽预算换更多专家与更高 top-k → ≈1.08×</text>
+<text x="380.0" y="452" text-anchor="middle" font-size="13" fill="#888">（ℓ=d_latent，d=d_model，ℓ/d&lt;1 是压缩比；arXiv:2601.18089，数值示意）</text>
+</svg>
+    <div class="cap">token 先降到低维 latent 再路由，专家在低维算，省下的通信/带宽换更多专家与更高 top-k。来源 arXiv:2601.18089。</div>
+  </div>
+
+  <div class="mg-pain" style="display:grid;grid-template-columns:1fr 1fr;gap:16px;">
+    <div class="mg-pain-box">
+      <strong>latent 化 = 净赚</strong><br>
+      稀疏度从 K2 的 $384/8{=}48$ 提到 K3 的 $896/16{=}56$，$(56/48)^{0.3}\approx1.047$；叠加低维计算、路由稳定、通信收益，取净 <b>≈1.08×</b>。同样的钱，专家更多、命中更准。
+    </div>
+    <div class="mg-pain-box bad">
+      <strong>别拿 50B 当激活量</strong><br>
+      $2.8T\times16/896\approx50B$ 只是「专家那部分」的粗算——还有注意力、共享层、公共投影都要计入。<b>官方从未公开真实激活量</b>，别把这个数当结论。
+    </div>
+  </div>
+</div>
+
+<div class="paper paper-grid">
+<h2 class="sec" id="sec-4">④ 896 选 16 为什么不崩：把纸面参数变成能用的参数</h2>
+
+<p class="note"><strong>打个比方：</strong>食堂开了 896 个窗口，每个学生只准去 16 个。结果全挤那几个网红窗口（<b>过载</b>），冷门师傅没人来、越干越生（<b>死专家</b>），队伍忽长忽短（<b>动态 shape</b>），谁先打完得等最慢那队（<b>空泡</b>）。K3 要做的，就是给它装一套智能调度。</p>
+
+<div class="figwrap">
+<svg style="max-width:660px;width:100%;height:auto;display:block;margin:0 auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 448" font-family="STIX Two Text, PingFang SC, serif">
+<rect x="0" y="0" width="760" height="448" fill="#ffffff"/>
+<defs><marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#333"/></marker></defs>
+<text x="380.0" y="32" text-anchor="middle" font-size="19" fill="#1a3a8a">极端稀疏 (896选16 <tspan font-style="italic">≈</tspan> 1.8%) 最怕负载失衡；五件套把它压平 → 保住理论容量</text>
+<line x1="20" y1="52" x2="740" y2="52" stroke="#888" stroke-width="1"/>
+<text x="180" y="76" text-anchor="middle" font-size="15" font-weight="bold" fill="#888">不均衡（会崩）</text>
+<text x="580" y="76" text-anchor="middle" font-size="15" font-weight="bold" fill="#888">均衡（K3，固定 shape）</text>
+<rect x="45" y="159.9" width="18" height="190.1" fill="#c0392b" fill-opacity="0.9" stroke="#fff" stroke-width="0.8"/>
+<text x="54.0" y="153.9" text-anchor="middle" font-size="11" fill="#c0392b">过载</text>
+<rect x="70" y="281.4" width="18" height="68.6" fill="#e0a040" fill-opacity="0.9" stroke="#fff" stroke-width="0.8"/>
+<rect x="95" y="173.6" width="18" height="176.4" fill="#c0392b" fill-opacity="0.9" stroke="#fff" stroke-width="0.8"/>
+<text x="104.0" y="167.6" text-anchor="middle" font-size="11" fill="#c0392b">过载</text>
+<rect x="120" y="340.2" width="18" height="9.8" fill="#888" fill-opacity="0.9" stroke="#fff" stroke-width="0.8"/>
+<text x="129.0" y="347.0" text-anchor="middle" font-size="11" fill="#888">死</text>
+<rect x="145" y="242.2" width="18" height="107.8" fill="#e0a040" fill-opacity="0.9" stroke="#fff" stroke-width="0.8"/>
+<rect x="170" y="177.5" width="18" height="172.5" fill="#c0392b" fill-opacity="0.9" stroke="#fff" stroke-width="0.8"/>
+<text x="179.0" y="171.5" text-anchor="middle" font-size="11" fill="#c0392b">过载</text>
+<rect x="195" y="267.7" width="18" height="82.3" fill="#e0a040" fill-opacity="0.9" stroke="#fff" stroke-width="0.8"/>
+<rect x="220" y="344.1" width="18" height="5.9" fill="#888" fill-opacity="0.9" stroke="#fff" stroke-width="0.8"/>
+<text x="229.0" y="347.0" text-anchor="middle" font-size="11" fill="#888">死</text>
+<rect x="245" y="228.5" width="18" height="121.5" fill="#e0a040" fill-opacity="0.9" stroke="#fff" stroke-width="0.8"/>
+<rect x="270" y="291.2" width="18" height="58.8" fill="#e0a040" fill-opacity="0.9" stroke="#fff" stroke-width="0.8"/>
+<rect x="295" y="252.0" width="18" height="98.0" fill="#e0a040" fill-opacity="0.9" stroke="#fff" stroke-width="0.8"/>
+<line x1="39" y1="350" x2="319" y2="350" stroke="#888" stroke-width="1.5"/>
+<text x="180" y="112" text-anchor="middle" font-size="13" fill="#c0392b">热点专家过载 · 死专家 load≈0</text>
+<text x="180" y="386" text-anchor="middle" font-size="13" fill="#888">每卡 token 数随机（动态 shape）</text>
+<line x1="322" y1="250" x2="438" y2="250" stroke="#333" stroke-width="2.0" marker-end="url(#ar)"/>
+<text x="380" y="232" text-anchor="middle" font-size="12" fill="#8a5aa8">五件套调度</text>
+<text x="380" y="272" text-anchor="middle" font-size="12" fill="#8a5aa8">Quantile Balancing 等</text>
+<rect x="445" y="236.3" width="18" height="113.7" fill="#1e6b1e" fill-opacity="0.9" stroke="#fff" stroke-width="0.8"/>
+<rect x="470" y="232.4" width="18" height="117.6" fill="#1e6b1e" fill-opacity="0.9" stroke="#fff" stroke-width="0.8"/>
+<rect x="495" y="242.2" width="18" height="107.8" fill="#1e6b1e" fill-opacity="0.9" stroke="#fff" stroke-width="0.8"/>
+<rect x="520" y="230.4" width="18" height="119.6" fill="#1e6b1e" fill-opacity="0.9" stroke="#fff" stroke-width="0.8"/>
+<rect x="545" y="238.3" width="18" height="111.7" fill="#1e6b1e" fill-opacity="0.9" stroke="#fff" stroke-width="0.8"/>
+<rect x="570" y="234.4" width="18" height="115.6" fill="#1e6b1e" fill-opacity="0.9" stroke="#fff" stroke-width="0.8"/>
+<rect x="595" y="240.2" width="18" height="109.8" fill="#1e6b1e" fill-opacity="0.9" stroke="#fff" stroke-width="0.8"/>
+<rect x="620" y="232.4" width="18" height="117.6" fill="#1e6b1e" fill-opacity="0.9" stroke="#fff" stroke-width="0.8"/>
+<rect x="645" y="236.3" width="18" height="113.7" fill="#1e6b1e" fill-opacity="0.9" stroke="#fff" stroke-width="0.8"/>
+<rect x="670" y="242.2" width="18" height="107.8" fill="#1e6b1e" fill-opacity="0.9" stroke="#fff" stroke-width="0.8"/>
+<rect x="695" y="232.4" width="18" height="117.6" fill="#1e6b1e" fill-opacity="0.9" stroke="#fff" stroke-width="0.8"/>
+<line x1="439" y1="350" x2="719" y2="350" stroke="#888" stroke-width="1.5"/>
+<text x="580" y="112" text-anchor="middle" font-size="13" fill="#1e6b1e">削峰填谷 · 高度近似均匀</text>
+<text x="580" y="386" text-anchor="middle" font-size="13" fill="#1e6b1e">无 straggler · 固定 shape</text>
+<line x1="20" y1="404" x2="740" y2="404" stroke="#888" stroke-width="0.7"/>
+<text x="380.0" y="426" text-anchor="middle" font-size="14" fill="#888">不产生新智能，但保证 2.8T 参数不因训练不稳 / 死专家 / 通信瓶颈而白白损失。</text>
+</svg>
+<div class="cap">同样一批 token，左边负载严重失衡（红=过载/死专家），右边经调度后各专家负载拉平——理论容量才真正用得上。</div>
+</div>
+
+<div class="mg-section-tag">五个崩溃点 · 一套解法</div>
+<table class="mg-table">
+<thead><tr><th>崩溃点</th><th>对应机制</th><th>一句直觉</th></tr></thead>
+<tbody>
+<tr><td>热门专家过载</td><td>Quantile&nbsp;Balancing</td><td>按 router 分数分位数分负载，削峰</td></tr>
+<tr><td>死专家（冷门训练不足）</td><td>Quantile&nbsp;Balancing</td><td>把富余流量填给冷门，人人有活干</td></tr>
+<tr><td>动态 shape（每卡 token 数飘）</td><td>全平衡专家并行</td><td>固定 shape，显存不再按最坏情况留</td></tr>
+<tr><td>路由需 Host 参与（CPU 卡顿）</td><td>全平衡专家并行</td><td>关键路径无 Host 同步，不等 CPU</td></tr>
+<tr><td>All-to-All 空泡（等最慢卡）</td><td>全平衡专家并行</td><td>负载均匀 → 没有拖后腿的 straggler</td></tr>
+</tbody>
+</table>
+<p class="note">前两件（Quantile Balancing + 全平衡专家并行）正面治这五个崩溃点；后三件——<b>SiTU</b>（控极稀疏激活稳定）、<b>Gated MLA</b>（注意力加门控）、<b>Per-Head Muon</b>（每个注意力头独立跑 Muon）——是保证 2.8T 长跑不发散的训练稳定配套。</p>
+
+</div>
+<div class="paper paper-grid">
+  <h2 class="sec" id="sec-6">⑥ 前端为什么特别强：它能"看见"自己写的页面</h2>
+
+  <div style="margin:18px 0 24px;padding:20px 24px;border:2px solid #1a3a8a;border-left:8px solid #1a3a8a;border-radius:12px;background:linear-gradient(135deg,#f4f7ff 0%,#eef2fc 100%);display:grid;grid-template-columns:200px 1fr;gap:22px;align-items:center;">
+    <div style="text-align:center;">
+      <div style="font-size:34px;font-weight:800;color:#1a3a8a;line-height:1.1;">WebDev<br>暂列 #1</div>
+      <div style="font-size:13px;color:#888;margin-top:8px;">Arena 1679 · 领先 Fable5</div>
+    </div>
+    <div style="font-size:15px;color:#333;line-height:1.6;">
+      <strong>关键结论：</strong>K3 的前端专项优势，来自它是<strong>原生多模态</strong>——能瞄一眼运行截图边看边改。这条"视觉—代码闭环"只在<strong>输出是给人看的界面</strong>时才生效，所以 WebDev 领先、综合智能并非第一。
+    </div>
+  </div>
+
+  <p class="note"><strong>打个比方：</strong>只会写代码、看不到屏幕的模型，像一个<strong>看不见显示器的前端工程师</strong>——语法一行不错，可页面挤成一坨、配色辣眼睛，它自己毫无察觉。K3 能瞄一眼截图，边看边调 padding、对齐和配色。</p>
+
+  <div class="figwrap" style="max-width:520px;margin:22px auto;">
+<svg style="max-width:660px;width:100%;height:auto;display:block;margin:0 auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 460" font-family="PingFang SC, STIX Two Text, serif">
+<rect x="0" y="0" width="760" height="460" fill="#ffffff"/>
+<defs>
+<marker id="aGrey" markerWidth="8" markerHeight="8" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#888"/></marker>
+<marker id="aBlue" markerWidth="8" markerHeight="8" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#1a3a8a"/></marker>
+<marker id="aGreen" markerWidth="8" markerHeight="8" refX="6.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#1e6b1e"/></marker>
+</defs>
+<text x="380" y="32" text-anchor="middle" font-size="21" font-weight="bold" fill="#111">前端 = 写<tspan fill="#888">→</tspan>跑<tspan fill="#888">→</tspan>看<tspan fill="#888">→</tspan>改 闭环，能否「看见」截图决定成败</text>
+<line x1="30" y1="52" x2="730" y2="52" stroke="#888" stroke-width="1"/>
+<text x="200" y="76" text-anchor="middle" font-size="15" font-weight="bold" fill="#888">传统 Coding 模型（无视觉）</text>
+<text x="560" y="76" text-anchor="middle" font-size="15" font-weight="bold" fill="#888">视觉 Agent · K3（多模态）</text>
+<line x1="380" y1="66" x2="380" y2="336" stroke="#ddd" stroke-width="1.2" stroke-dasharray="3,4"/>
+<line x1="182" y1="135" x2="218" y2="135" stroke="#1a3a8a" stroke-width="2.0" marker-end="url(#aBlue)"/>
+<line x1="270" y1="155" x2="270" y2="278" stroke="#888" stroke-width="2.0" marker-end="url(#aGrey)" stroke-dasharray="6,5"/>
+<line x1="257" y1="204" x2="283" y2="230" stroke="#c0392b" stroke-width="3.2"/>
+<line x1="257" y1="230" x2="283" y2="204" stroke="#c0392b" stroke-width="3.2"/>
+<line x1="218" y1="300" x2="182" y2="300" stroke="#888" stroke-width="2.0" marker-end="url(#aGrey)" stroke-dasharray="6,5"/>
+<line x1="130" y1="278" x2="130" y2="157" stroke="#888" stroke-width="2.0" marker-end="url(#aGrey)" stroke-dasharray="6,5"/>
+<path d="M255,120 Q200,100 145,120" fill="none" stroke="#1a3a8a" stroke-width="1.6" marker-end="url(#aBlue)" stroke-dasharray="3,3"/>
+<rect x="78" y="115" width="104" height="40" rx="9" fill="#eef2fb" stroke="#1a3a8a" stroke-width="1.8"/>
+<circle cx="78" cy="115" r="9" fill="#1a3a8a"/>
+<text x="78" y="119" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">1</text>
+<text x="130" y="140" text-anchor="middle" font-size="15" fill="#1a3a8a" font-weight="bold">写代码</text>
+<rect x="218" y="115" width="104" height="40" rx="9" fill="#eef2fb" stroke="#1a3a8a" stroke-width="1.8"/>
+<circle cx="218" cy="115" r="9" fill="#1a3a8a"/>
+<text x="218" y="119" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">2</text>
+<text x="270" y="140" text-anchor="middle" font-size="15" fill="#1a3a8a" font-weight="bold">运行</text>
+<rect x="218" y="280" width="104" height="40" rx="9" fill="#f0f0f0" stroke="#888" stroke-width="1.8" stroke-dasharray="5,4"/>
+<circle cx="218" cy="280" r="9" fill="#888"/>
+<text x="218" y="284" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">3</text>
+<text x="270" y="305" text-anchor="middle" font-size="15" fill="#888" font-weight="bold">看截图</text>
+<rect x="78" y="280" width="104" height="40" rx="9" fill="#f0f0f0" stroke="#888" stroke-width="1.8" stroke-dasharray="5,4"/>
+<circle cx="78" cy="280" r="9" fill="#888"/>
+<text x="78" y="284" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">4</text>
+<text x="130" y="305" text-anchor="middle" font-size="15" fill="#888" font-weight="bold">改</text>
+<text x="200" y="205" text-anchor="middle" font-size="14" fill="#c0392b" font-weight="bold">环断开</text>
+<text x="200" y="225" text-anchor="middle" font-size="12.5" fill="#888">只优化「能不能跑」</text>
+<text x="200" y="128" text-anchor="middle" font-size="11.5" fill="#1a3a8a">可跑通</text>
+<text x="300" y="220" text-anchor="start" font-size="11.5" fill="#c0392b">看不见</text>
+<line x1="542" y1="135" x2="578" y2="135" stroke="#1e6b1e" stroke-width="2.0" marker-end="url(#aGreen)"/>
+<line x1="630" y1="155" x2="630" y2="278" stroke="#1e6b1e" stroke-width="2.0" marker-end="url(#aGreen)"/>
+<line x1="578" y1="300" x2="542" y2="300" stroke="#1e6b1e" stroke-width="2.0" marker-end="url(#aGreen)"/>
+<line x1="490" y1="278" x2="490" y2="157" stroke="#1e6b1e" stroke-width="2.0" marker-end="url(#aGreen)"/>
+<rect x="438" y="115" width="104" height="40" rx="9" fill="#eaf3ea" stroke="#1e6b1e" stroke-width="1.8"/>
+<circle cx="438" cy="115" r="9" fill="#1e6b1e"/>
+<text x="438" y="119" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">1</text>
+<text x="490" y="140" text-anchor="middle" font-size="15" fill="#1e6b1e" font-weight="bold">写代码</text>
+<rect x="578" y="115" width="104" height="40" rx="9" fill="#eaf3ea" stroke="#1e6b1e" stroke-width="1.8"/>
+<circle cx="578" cy="115" r="9" fill="#1e6b1e"/>
+<text x="578" y="119" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">2</text>
+<text x="630" y="140" text-anchor="middle" font-size="15" fill="#1e6b1e" font-weight="bold">运行</text>
+<rect x="578" y="280" width="104" height="40" rx="9" fill="#1e6b1e" stroke="#1e6b1e" stroke-width="1.8"/>
+<circle cx="578" cy="280" r="9" fill="#1e6b1e"/>
+<text x="578" y="284" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">3</text>
+<text x="630" y="305" text-anchor="middle" font-size="15" fill="#ffffff" font-weight="bold">看截图</text>
+<rect x="438" y="280" width="104" height="40" rx="9" fill="#eaf3ea" stroke="#1e6b1e" stroke-width="1.8"/>
+<circle cx="438" cy="280" r="9" fill="#1e6b1e"/>
+<text x="438" y="284" text-anchor="middle" font-size="11" fill="#fff" font-weight="bold">4</text>
+<text x="490" y="305" text-anchor="middle" font-size="15" fill="#1e6b1e" font-weight="bold">发现问题·改</text>
+<text x="560" y="205" text-anchor="middle" font-size="14" fill="#1e6b1e" font-weight="bold">闭环</text>
+<text x="560" y="225" text-anchor="middle" font-size="12.5" fill="#1e6b1e">优化「好不好看」</text>
+<text x="700" y="303" text-anchor="start" font-size="11.5" fill="#1e6b1e" font-weight="bold">多模态</text>
+<text x="700" y="318" text-anchor="start" font-size="11.5" fill="#1e6b1e">看得见</text>
+<text x="560" y="128" text-anchor="middle" font-size="11.5" fill="#1e6b1e">布局/审美</text>
+<line x1="30" y1="340" x2="730" y2="340" stroke="#888" stroke-width="1"/>
+<text x="45" y="366" font-size="13" fill="#333">WebDev Arena（前端竞技场）</text>
+<rect x="250" y="356" width="340" height="14" rx="3" fill="#e0a040"/>
+<text x="598" y="367" font-size="13" font-weight="bold" fill="#e0a040">1679 · 暂#1</text>
+<text x="45" y="392" font-size="13" fill="#333">综合 Intelligence（综合智力）</text>
+<rect x="250" y="382" width="150" height="14" rx="3" fill="#888"/>
+<text x="408" y="393" font-size="13" font-weight="bold" fill="#888">≈57 · 约#4</text>
+<text x="45" y="411" font-size="12" fill="#8a5aa8">专项强 · 综合非第一</text>
+<text x="380" y="436" text-anchor="middle" font-size="14.5" fill="#222">多模态让「看截图」这一步可执行，视觉闭环成立 = 前端专项强的直接来源。</text>
+<text x="380" y="454" text-anchor="middle" font-size="13.5" fill="#888">传统模型在③断开，只能循环①②验证「能跑」；K3 闭合①→②→③→④，可迭代「好看」。</text>
+</svg>
+    <div class="cap">写→跑→看→改闭环："看截图"这步是关键。看不见屏幕，环就断在这里。K2.5 已披露大规模视觉—文本联合训练与"看着截图调代码"的视觉调试。</div>
+  </div>
+
+  <div class="mg-pain">
+    <div class="mg-pain-box bad">
+      <strong>传统 Coding：只优化"能不能跑"</strong>
+      <p>编译过、单测过 = 任务完成。它没有截图这条反馈通道，看不到成品长什么样。</p>
+    </div>
+    <div class="mg-pain-box">
+      <strong>视觉 Agent：在能跑之上还优化"好不好看"</strong>
+      <p>读一眼截图判断布局、留白、审美是否舒服，再回头改代码。这正是前端好坏的分水岭。</p>
+    </div>
+  </div>
+
+</div>
+
+<div class="paper paper-grid">
+<h2 class="sec" id="sec-7">⑦ 高分里有多少是"推理预算"堆出来的</h2>
+
+<div style="margin:18px 0;padding:22px 26px;border:2px solid #1a3a8a;border-radius:16px;background:linear-gradient(135deg,#eef3ff 0%,#f7faff 100%);display:grid;grid-template-columns:1fr 1.35fr;gap:22px;align-items:center;">
+  <div style="text-align:center;">
+    <div style="font-size:30px;font-weight:800;color:#1a3a8a;line-height:1.2;">分数 = 能力打底 + 推理预算 + Harness 层层叠高</div>
+    <div style="font-size:14px;color:#666;margin-top:8px;">三个乘数，权重只是第一个</div>
+  </div>
+  <div style="font-size:16px;color:#333;line-height:1.6;">
+    <strong style="color:#c0392b;">打个比方：</strong>同一场考试，K3 用了近 <b>2 倍的草稿纸</b>（更长思考）、被允许<b>查资料</b>（工具调用）、手里还有好用的<b>答题模板</b>（Agent Harness）。最后分高——一部分是真本事，一部分是别人没这待遇。要把这两块拆开看。
+  </div>
+</div>
+
+<div class="mg-section"><span class="mg-section-tag">证据：一次评测烧掉多少 token</span></div>
+<div class="metric-grid">
+  <div class="metric-card"><div class="val" style="color:#c0392b;">~130–132M</div><div class="lab">K3 单次评测输出 token（默认 max reasoning）</div></div>
+  <div class="metric-card"><div class="val" style="color:#888;">~63M</div><div class="lab">同类模型中位数输出 token</div></div>
+  <div class="metric-card"><div class="val" style="color:#1a3a8a;">≈2×</div><div class="lab">K3 的"草稿纸"用量（AA 统计）</div></div>
+</div>
+
+<div class="figwrap">
+<svg style="max-width:660px;width:100%;height:auto;display:block;margin:0 auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 760 400" font-family="STIX Two Text, serif">
+<rect x="0" y="0" width="760" height="460" fill="#ffffff"/>
+<defs><marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#333"/></marker></defs>
+<text x="30" y="32" font-size="22" font-family="PingFang SC, sans-serif" font-weight="700" fill="#222">高分 = 能力 <tspan font-family="STIX Two Text, Times New Roman, serif" fill="#c0392b">+</tspan> 推理预算 <tspan font-family="STIX Two Text, Times New Roman, serif" fill="#c0392b">+</tspan> Harness 层层叠加，权重只是最底一层</text>
+<line x1="30" y1="52" x2="730" y2="52" stroke="#ccc" stroke-width="1.2"/>
+<text x="150" y="76" font-size="15" font-family="PingFang SC, sans-serif" font-weight="700" fill="#888">benchmark 分数 <tspan font-family="STIX Two Text, Times New Roman, serif" font-style="italic">S</tspan> = 5 层堆叠</text>
+<text x="520" y="76" font-size="15" font-family="PingFang SC, sans-serif" font-weight="700" fill="#888">单次评测输出 token 量 <tspan font-family="STIX Two Text, Times New Roman, serif" font-style="italic">T</tspan></text>
+<rect x="110" y="270" width="95" height="120" fill="#1a3a8a" fill-opacity="1.00" stroke="#fff" stroke-width="1.2"/>
+<line x1="205" y1="330.0" x2="223" y2="330.0" stroke="#888" stroke-width="1.2"/>
+<text x="227" y="335.0" font-size="14" font-family="PingFang SC, sans-serif" fill="#333">模型本身能力（权重）</text>
+<rect x="110" y="222" width="95" height="48" fill="#1a3a8a" fill-opacity="0.55" stroke="#fff" stroke-width="1.2"/>
+<line x1="205" y1="246.0" x2="223" y2="246.0" stroke="#888" stroke-width="1.2"/>
+<text x="227" y="251.0" font-size="14" font-family="PingFang SC, sans-serif" fill="#333">更长思考</text>
+<rect x="110" y="180" width="95" height="42" fill="#1a3a8a" fill-opacity="0.40" stroke="#fff" stroke-width="1.2"/>
+<line x1="205" y1="201.0" x2="223" y2="201.0" stroke="#888" stroke-width="1.2"/>
+<text x="227" y="206.0" font-size="14" font-family="PingFang SC, sans-serif" fill="#333">更多工具调用</text>
+<rect x="110" y="140" width="95" height="40" fill="#1a3a8a" fill-opacity="0.28" stroke="#fff" stroke-width="1.2"/>
+<line x1="205" y1="160.0" x2="223" y2="160.0" stroke="#888" stroke-width="1.2"/>
+<text x="227" y="165.0" font-size="14" font-family="PingFang SC, sans-serif" fill="#333">更长上下文</text>
+<rect x="110" y="110" width="95" height="30" fill="#e0a040" fill-opacity="1.00" stroke="#fff" stroke-width="1.2"/>
+<line x1="205" y1="125.0" x2="223" y2="125.0" stroke="#888" stroke-width="1.2"/>
+<text x="227" y="130.0" font-size="14" font-family="PingFang SC, sans-serif" fill="#333">Agent Harness</text>
+<rect x="110" y="110" width="95" height="280" fill="none" stroke="#1a3a8a" stroke-width="1.3"/>
+<text x="227" y="352" font-size="13" font-family="PingFang SC, sans-serif" fill="#1a3a8a" font-weight="700">← 这才是权重底子</text>
+<path d="M100,110 q-10,0 -10,10 L90,180.0 q0,10 -8,10 q8,0 8,10 L90,260 q0,10 10,10" fill="none" stroke="#e0a040" stroke-width="1.6"/>
+<text x="76" y="176.0" font-size="13" font-family="PingFang SC, sans-serif" fill="#e0a040" font-weight="700" text-anchor="end">推理</text>
+<text x="76" y="194.0" font-size="13" font-family="PingFang SC, sans-serif" fill="#e0a040" font-weight="700" text-anchor="end">预算</text>
+<text x="76" y="212.0" font-size="13" font-family="PingFang SC, sans-serif" fill="#e0a040" font-weight="700" text-anchor="end">+Harness</text>
+<rect x="540" y="160.0" width="58" height="230.0" fill="#1a3a8a" fill-opacity="0.85" stroke="#1a3a8a" stroke-width="1.2"/>
+<text x="569.0" y="136.0" font-size="19" font-family="STIX Two Text, Times New Roman, serif" fill="#1a3a8a" font-weight="700" text-anchor="middle">~131M</text>
+<text x="569.0" y="152.0" font-size="13" font-family="PingFang SC, sans-serif" fill="#1a3a8a" text-anchor="middle">Kimi-K3</text>
+<rect x="645" y="279.3893129770992" width="58" height="110.61068702290076" fill="#888" fill-opacity="0.55" stroke="#888" stroke-width="1.2"/>
+<text x="674.0" y="255.38931297709922" font-size="19" font-family="STIX Two Text, Times New Roman, serif" fill="#555" font-weight="700" text-anchor="middle">~63M</text>
+<text x="674.0" y="271.3893129770992" font-size="13" font-family="PingFang SC, sans-serif" fill="#555" text-anchor="middle">同类中位数</text>
+<line x1="528" y1="390" x2="715" y2="390" stroke="#333" stroke-width="1.4"/>
+<text x="621.5" y="233.38931297709922" font-size="20" font-family="STIX Two Text, Times New Roman, serif" fill="#c0392b" font-weight="700" text-anchor="middle">≈ 2×</text>
+<line x1="569.0" y1="120.0" x2="674.0" y2="120.0" stroke="#c0392b" stroke-width="1.6" marker-start="url(#ar)" marker-end="url(#ar)"/></svg></div>
+
+<div class="mg-pain">
+  <div class="mg-pain-box">
+    <strong style="color:#1e6b1e;">✓ 正面：效率真的涨了</strong><br>
+    AA 显示 K3 比 K2.6 <b>少用约 21% 输出 token</b>，Intelligence 反而<b>升了 13 分</b>。单位 token 更高效。
+  </div>
+  <div class="mg-pain-box bad">
+    <strong style="color:#c0392b;">✗ 反面：横向比要打折</strong><br>
+    官方测试<b>混用 KimiCode / Claude Code / Codex 不同 Harness</b>，部分模型还 fallback。
+  </div>
+</div>
+
+</div>
+
+<div class="paper paper-grid">
+<h2 class="sec" id="sec-summary">蒸馏传闻与最终判断</h2>
+
+<div class="mg-section">
+<div class="mg-section-tag">① 蒸馏传闻：准确的表述是什么</div>
+<div class="punchline">有较强证据证明月之暗面曾大规模获取 Claude 输出，重点提取 Agent、编程、工具调用和视觉能力；美国官员进一步声称这些数据被用于 K3、且教师模型包括 Fable。但目前没有任何公开训练数据、技术审计或权重分析，能证明 K3 的多少能力来自蒸馏。</div>
+</div>
+
+<div class="mg-section">
+<div class="mg-section-tag">② 据称具体蒸馏了什么</div>
+<p>Anthropic 披露最具体：称月之暗面通过数百个账号产生超过 <strong>340 万次 Claude 交互</strong>，集中在六类高价值数据。核心不是「最终答案」，而是 Agent 的<strong>行为策略</strong> $\pi(a_t\mid s_t)$——在当前上下文、工具结果与任务状态下，下一步该采取什么动作。</p>
+<table class="mg-table">
+<thead><tr><th>类别</th><th>提取的核心</th></tr></thead>
+<tbody>
+<tr><td>Agentic reasoning</td><td>拆解复杂任务、何时调工具、按结果改计划、失败重试恢复、连续执行几十到几百步。</td></tr>
+<tr><td>工具调用与编排</td><td>工具选择、参数构造、多工具顺序、并行/串行调度、错误处理、结果汇总——完整轨迹比单条回复更值钱。</td></tr>
+<tr><td>Coding 与数据分析</td><td>代码库理解、Bug 定位修复、Patch 生成、跑测试改报错、数据清洗可视化、长程软件工程。</td></tr>
+<tr><td>Computer-use Agent</td><td>理解屏幕界面、决定点击/输入/滚动、按页面变化续行、跨应用完成工作流。</td></tr>
+<tr><td>Computer Vision</td><td>截图理解、UI/网页视觉分析、图像信息提取、视觉反馈驱动改代码、可能含视频到代码。</td></tr>
+<tr><td>Claude 推理轨迹</td><td>后期用更针对性的方式「重建 reasoning traces」：让 Claude 补写推理、解释动作、复盘失败，把隐式策略转成可监督文本，用于 Process SFT 或 RL 初始策略。</td></tr>
+</tbody>
+</table>
+<p style="font-size:15px;color:#888">对应的训练数据可能形如：$\text{任务}\to\text{计划}\to\text{工具调用}\to\text{观察}\to\text{修正计划}\to\text{最终答案}$。</p>
+</div>
+
+<div class="mg-section">
+<div class="mg-section-tag">③ 这些数据可能怎么进入 K3（推断，非证实）</div>
+<p>目前没有 K3 训练配方披露，以下是按行业通行方法推断的可能流水线，<strong>不是已证实事实</strong>：</p>
+<ol class="readable">
+<li><strong>教师生成任务</strong>：让 Claude/Fable 批量生成困难任务（复杂改码、多工具研究、浏览器操作、数据分析、视觉 Coding、长程 Agent）——先蒸馏的不是答案，而是「什么任务能训练出能力」。</li>
+<li><strong>教师生成成功轨迹</strong>：教师在环境中完成任务，收集 Planning / Tool calls / Observations / 中间决策 / Error recovery / Patch-Test 循环 / Final answer，再用测试、编译器或环境反馈筛掉失败轨迹。</li>
+<li><strong>SFT 学习教师策略</strong>：用成功轨迹训练 K3，$\mathcal L_{\text{SFT}}=-\sum_t\log\pi_\theta(a_t\mid s_t)$，学生主要学「怎么拆任务、用工具、写码验证、出错回退、组织长程任务」。</li>
+<li><strong>Rejection Sampling</strong>：同题生成多条 K3 轨迹，用规则/测试/教师择优 $y^*=\arg\max_{y_i}R(x,y_i)$，高质量轨迹回流训练。</li>
+<li><strong>教师充当 Judge / Reward Model</strong>：Pairwise 比较、按 Rubric 打分、判错因、给改进版、产生过程奖励。Anthropic 曾披露其他中国实验室用 Claude 当 RM，但无材料证明月之暗面在 K3 上具体采用了哪种 RM 流程——只能标为推测。</li>
+<li><strong>再做可验证 RL</strong>：继续用环境奖励 $R=R_{\text{test}}+R_{\text{tool}}+R_{\text{task}}+R_{\text{format}}$ 训练，目标从「模仿 Claude」变成「在环境里完成任务」，学生可在窄任务上超过教师。</li>
+</ol>
+</div>
+
+<div class="mg-section">
+<div class="mg-section-tag">④ 目前有哪些直接证据</div>
+<table class="mg-table">
+<thead><tr><th>证据</th><th>能说明什么</th><th>不能说明什么</th></tr></thead>
+<tbody>
+<tr><td>Anthropic 检测到 &gt;340 万次交互</td><td>月之暗面确实被指大规模提取 Claude 的 Agent、Coding、视觉能力</td><td>没直接说明哪些数据进入了 K3</td></tr>
+<tr><td>请求元数据、IP 和账号网络</td><td>Anthropic 称能高置信度归因到月之暗面</td><td>原始取证数据没完整公开</td></tr>
+<tr><td>后期尝试重建 Claude 推理轨迹</td><td>蒸馏不只最终答案，还涉及推理和 Agent 过程</td><td>不知道轨迹数量和训练权重</td></tr>
+<tr><td>白宫官员称 Fable 用于 K3</td><td>把此前泛指「Kimi 模型」的指控具体落到 K3</td><td>官员尚未公开技术证据和审计结果</td></tr>
+<tr><td>K3 偶尔自称 Claude</td><td>可能存在身份泄漏或 Claude 相关训练数据</td><td>单独无法证明蒸馏，更不能证明「套壳」</td></tr>
+<tr><td>K3 与 Claude 行为相似</td><td>可作行为层面的旁证</td><td>相似也可能来自公开数据、相同 Harness 和共同训练范式</td></tr>
+</tbody>
+</table>
+<p>2026-07-22，白宫科技政策负责人 Michael Kratsios 表示，美方掌握的信息显示月之暗面蒸馏了 Anthropic Fable 用于开发 K3，并称其建立了可在多种访问方式间切换的内部平台。但美方目前未公开：提示词与输出样本、Fable 数据量、K3 数据混合比例、模型行为指纹报告、水印检测方法、独立第三方审计。<strong>它是一个严肃的政府指控，但还不是公开可复核的技术结论。</strong></p>
+</div>
+
+<div class="mg-section">
+<div class="mg-section-tag">⑤「K3 自称 Claude」能否证明蒸馏</div>
+<div class="mg-pain">
+<div class="mg-pain-box"><strong>✓ 官方解释在技术上成立</strong><br/>月之暗面对 K2.5 的解释：预训练上采样了较新互联网编程数据，这些内容与「Claude」token 高度关联；缺正确 System Prompt 时模型身份本就未定义。公开编程数据里确实充斥 Claude Code 教程、Claude 生成的代码/README、「Generated with Claude」标记、系统提示词与对话、Anthropic API 代码。</div>
+<div class="mg-pain-box bad"><strong>✗ 真正的蒸馏实锤需要同时出现</strong><br/>高频身份泄漏、非公开模型标识符复现、特有措辞高度一致、相同的罕见错误、相同的拒答边界、相同的推理与工具调用轨迹、可统计复现的输出分布相似性。</div>
+</div>
+<div class="punchline">所以「自称 Claude」是弱旁证，不是实锤。</div>
+</div>
+
+<div class="mg-section">
+<div class="mg-section-tag">⑥ 蒸馏能否解释 K3 的全部能力</div>
+<p>不能。更合理的判断是：<strong>蒸馏若存在，主要提升 K3 的后训练策略与 Agent 行为；基座能力、架构、长上下文与训练稳定性，不可能仅靠 Claude 输出得到。</strong>无法通过输出蒸馏直接复制的部分包括——</p>
+<ol class="readable">
+<li>2.8T MoE 基座参数、Kimi Delta Attention、Attention Residuals、Stable LatentMoE；</li>
+<li>Quantile Balancing、Per-Head Muon、Gated MLA、SiTU；</li>
+<li>1M 上下文基础设施、大规模预训练形成的世界知识与底层表征。</li>
+</ol>
+<p>这些来自模型架构、预训练数据、优化器、Scaling 和训练系统。月之暗面业务负责人也否认 K3 是对现有模型的蒸馏复刻，称性能提升主要来自底层架构创新。</p>
+</div>
+
+<div class="mg-section">
+<div class="mg-section-tag">⑦ 340 万次交互，多不多</div>
+<p>相对预训练 token 不算大，相对高质量 Agent 后训练数据则非常大。设一次交互平均 5K～20K token：</p>
+$$3.4\text{M}\times(5\text{K}\sim20\text{K})=17\text{B}\sim68\text{B}\ \text{token}$$
+<p>这可能远小于 K3 的数十万亿级预训练数据，但这些 token <strong>来自前沿教师、专门针对高价值能力、含长程推理与工具轨迹、可被环境验证、适合 SFT/RFT/RL Bootstrap</strong>——占比很低，却对后训练能力有很高杠杆。</p>
+</div>
+</div>
+
+<div class="paper paper-grid">
+<h2 class="sec">最终判断：一条工程主线</h2>
+<p style="font-size:19px;line-height:1.7;margin:10px 0 4px">把前面所有拆解合起来看，K3 的强是一条清晰主线：<strong>先用架构三件套把 2.8T 容量「训得起、部署得起」，再把容量灌进 Agent 训练闭环，最后在推理阶段放大一档。</strong>2.8T 只是容量基础，真正让它「特别能干活」的，是 Agent 数据与整套训练闭环，而非参数量本身。</p>
+
+<div class="figwrap">
+<svg style="max-width:920px;width:100%;height:auto;display:block;margin:0 auto" xmlns="http://www.w3.org/2000/svg" viewBox="0 0 920 560" font-family="PingFang SC, STIX Two Text, serif">
+<rect x="0" y="0" width="920" height="560" fill="#ffffff"/>
+
+<text x="140" y="34" text-anchor="middle" font-size="16" font-weight="800" fill="#1a3a8a">① 架构三件套</text>
+<text x="410" y="34" text-anchor="middle" font-size="16" font-weight="800" fill="#c0392b">② 2.8T 容量</text>
+<text x="660" y="34" text-anchor="middle" font-size="16" font-weight="800" fill="#1e6b1e">③ Agent 训练闭环</text>
+<text x="850" y="34" text-anchor="middle" font-size="16" font-weight="800" fill="#8a5aa8">④ 推理放大</text>
+
+<g>
+<rect x="40" y="60" width="200" height="70" rx="10" fill="#eef0fb" stroke="#1a3a8a" stroke-width="1.6"/>
+<text x="140" y="88" text-anchor="middle" font-size="15" font-weight="800" fill="#1a3a8a">KDA · 解序列</text>
+<text x="140" y="112" text-anchor="middle" font-size="12.5" fill="#555">线性注意力压住长上下文开销</text>
+<rect x="40" y="140" width="200" height="70" rx="10" fill="#eef0fb" stroke="#1a3a8a" stroke-width="1.6"/>
+<text x="140" y="168" text-anchor="middle" font-size="15" font-weight="800" fill="#1a3a8a">AttnRes · 解深度</text>
+<text x="140" y="192" text-anchor="middle" font-size="12.5" fill="#555">残差让极深网络稳定训</text>
+<rect x="40" y="220" width="200" height="70" rx="10" fill="#eef0fb" stroke="#1a3a8a" stroke-width="1.6"/>
+<text x="140" y="248" text-anchor="middle" font-size="15" font-weight="800" fill="#1a3a8a">Stable LatentMoE · 解宽度</text>
+<text x="140" y="272" text-anchor="middle" font-size="12.5" fill="#555">2.8T 参数稳定摊开</text>
+</g>
+
+<path d="M248 175 L296 175" stroke="#999" stroke-width="2.4" marker-end="url(#ar)"/>
+
+<g>
+<rect x="310" y="95" width="200" height="160" rx="16" fill="#fdeeee" stroke="#c0392b" stroke-width="2"/>
+<text x="410" y="150" text-anchor="middle" font-size="40" font-weight="900" fill="#c0392b" font-family="STIX Two Text, serif">2.8T</text>
+<text x="410" y="180" text-anchor="middle" font-size="14" fill="#7a2727">MoE 容量池</text>
+<text x="410" y="212" text-anchor="middle" font-size="12.5" fill="#a06">896 选 16 · 训得起 / 部署得起</text>
+<text x="410" y="236" text-anchor="middle" font-size="12" fill="#c0392b">必要条件，不是充分条件</text>
+</g>
+
+<path d="M518 175 L560 175" stroke="#999" stroke-width="2.4" marker-end="url(#ar)"/>
+
+<g>
+<circle cx="660" cy="175" r="92" fill="none" stroke="#1e6b1e" stroke-width="2" stroke-dasharray="6 5"/>
+<text x="660" y="100" text-anchor="middle" font-size="13" font-weight="800" fill="#1e6b1e">执行任务</text>
+<text x="738" y="180" text-anchor="middle" font-size="13" font-weight="800" fill="#1e6b1e">环境验证</text>
+<text x="660" y="258" text-anchor="middle" font-size="13" font-weight="800" fill="#1e6b1e">SFT / RL</text>
+<text x="582" y="180" text-anchor="middle" font-size="13" font-weight="800" fill="#1e6b1e">筛选轨迹</text>
+<text x="660" y="184" text-anchor="middle" font-size="30" fill="#1e6b1e" font-weight="900">↻</text>
+<path d="M726 122 A92 92 0 0 1 726 228" fill="none" stroke="#1e6b1e" stroke-width="2" marker-end="url(#arg)"/>
+</g>
+
+<path d="M756 175 L800 175" stroke="#999" stroke-width="2.4" marker-end="url(#ar)"/>
+
+<g>
+<rect x="808" y="200" width="72" height="30" rx="5" fill="#f2ecfa" stroke="#8a5aa8" stroke-width="1.4"/>
+<rect x="818" y="160" width="72" height="30" rx="5" fill="#e9dff5" stroke="#8a5aa8" stroke-width="1.4"/>
+<rect x="828" y="120" width="72" height="30" rx="5" fill="#dcccef" stroke="#8a5aa8" stroke-width="1.6"/>
+<text x="864" y="140" text-anchor="middle" font-size="11.5" font-weight="800" fill="#5b2a82">max reasoning</text>
+<text x="854" y="180" text-anchor="middle" font-size="11.5" font-weight="800" fill="#5b2a82">Agent Harness</text>
+<text x="844" y="220" text-anchor="middle" font-size="11.5" fill="#5b2a82">推理预算</text>
+</g>
+
+<line x1="40" y1="330" x2="880" y2="330" stroke="#e0e0e0" stroke-width="1"/>
+<g>
+<rect x="40" y="352" width="270" height="180" rx="10" fill="#f7faff" stroke="#1a3a8a" stroke-width="1.4"/>
+<text x="58" y="382" font-size="15" font-weight="800" fill="#1a3a8a">① 架构三件套</text>
+<foreignObject x="58" y="396" width="238" height="128">
+<div xmlns="http://www.w3.org/1999/xhtml" style="font-size:14px;line-height:1.55;color:#333;font-family:PingFang SC,sans-serif">KDA / AttnRes / Stable LatentMoE 让 2.8T「训得起、部署得起」——是<b>必要条件</b>，不是充分条件。</div>
+</foreignObject>
+</g>
+<g>
+<rect x="325" y="352" width="270" height="180" rx="10" fill="#f1fbef" stroke="#1e6b1e" stroke-width="1.4"/>
+<text x="343" y="382" font-size="15" font-weight="800" fill="#1e6b1e">② 会干活的来源</text>
+<foreignObject x="343" y="396" width="238" height="128">
+<div xmlns="http://www.w3.org/1999/xhtml" style="font-size:14px;line-height:1.55;color:#333;font-family:PingFang SC,sans-serif">让它「特别能干活」的是 <b>Agent 数据闭环 + 环境验证 + 长轨迹 RL + 视觉-代码闭环</b>，而非单纯参数规模。</div>
+</foreignObject>
+</g>
+<g>
+<rect x="610" y="352" width="270" height="180" rx="10" fill="#fffaf0" stroke="#e0a040" stroke-width="1.4"/>
+<text x="628" y="382" font-size="15" font-weight="800" fill="#8a5a10">③ 读数要打折</text>
+<foreignObject x="628" y="396" width="238" height="128">
+<div xmlns="http://www.w3.org/1999/xhtml" style="font-size:14px;line-height:1.55;color:#333;font-family:PingFang SC,sans-serif">评测高分含<b>高推理预算</b>成分，且多数结构数字是反推 / 第三方口径；官方消融未出前，对单一归因保持审慎。</div>
+</foreignObject>
+</g>
+
+<defs>
+<marker id="ar" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#999"/></marker>
+<marker id="arg" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0 0 L8 4 L0 8 z" fill="#1e6b1e"/></marker>
+</defs>
+</svg>
+<div class="cap">图：K3 的工程主线——三件套撑起 2.8T 容量 → Agent 闭环把容量变成产能 → 推理阶段再放大。底层容量抄不来，真正的护城河是中间那个自我加速的训练闭环。</div>
+</div>
+</div>
+
+  <div style="margin-top:36px;text-align:center;color:#999;font-size:14px;border-top:1px solid #e6e6e6;padding-top:20px">
+    Source · <a href="https://www.kimi.com/blog/kimi-k3" target="_blank" style="color:#666">Kimi K3 博客</a> ·
+    <a href="https://arxiv.org/abs/2510.26692" target="_blank" style="color:#666">Kimi Linear (2510.26692)</a> ·
+    <a href="https://arxiv.org/abs/2603.15031" target="_blank" style="color:#666">Attention Residuals (2603.15031)</a> ·
+    <a href="https://arxiv.org/abs/2601.18089" target="_blank" style="color:#666">LatentMoE (2601.18089)</a>
+    <div style="margin-top:8px;font-size:13px;color:#aaa">注：本文含大量“反推/估算”，凡非官方数字均已标注口径。截至 2026-07-21，K3 权重与完整技术报告尚未发布。</div>
+  </div>
+
+</div></body></html>
