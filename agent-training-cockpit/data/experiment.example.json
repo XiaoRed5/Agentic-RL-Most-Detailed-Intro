@@ -1,0 +1,149 @@
+{
+  "version": 1,
+  "meta": {
+    "name": "qualitative-demo",
+    "baselineLabel": "匿名基线",
+    "candidateLabel": "匿名候选",
+    "defaultMode": "qualitative",
+    "valueNote": "公开示例使用归一化示意数据，不对应任何真实实验"
+  },
+  "verdict": {
+    "title": "候选方案略有收益，但额外开销更高，当前仍不足以证明“更划算”。",
+    "description": "示例只保留收益、成本和不确定性的关系。导入自己的 JSON 后，可在本机切换到精确模式查看数值。",
+    "status": "继续验证",
+    "nextStep": "使用相同配置做多次独立复现；只有收益方向稳定，才值得继续优化工具调用和计算开销。"
+  },
+  "metrics": [
+    {
+      "id": "quality",
+      "label": "离线评测",
+      "baseline": 100,
+      "candidate": 106,
+      "unit": "指数",
+      "precision": 0,
+      "higherIsBetter": true,
+      "qualitative": "略有改善",
+      "deltaLabel": "方向为正",
+      "note": "公开模式不显示精确得分"
+    },
+    {
+      "id": "tool-cost",
+      "label": "工具调用",
+      "baseline": 100,
+      "candidate": 135,
+      "unit": "指数",
+      "precision": 0,
+      "higherIsBetter": false,
+      "qualitative": "明显增加",
+      "deltaLabel": "成本上升",
+      "note": "公开模式不显示调用次数"
+    },
+    {
+      "id": "interaction-cost",
+      "label": "交互长度",
+      "baseline": 100,
+      "candidate": 122,
+      "unit": "指数",
+      "precision": 0,
+      "higherIsBetter": false,
+      "qualitative": "有所增加",
+      "deltaLabel": "成本上升",
+      "note": "公开模式不显示对话轮数"
+    },
+    {
+      "id": "user-burden",
+      "label": "用户模拟负担",
+      "baseline": 100,
+      "candidate": 94,
+      "unit": "指数",
+      "precision": 0,
+      "higherIsBetter": false,
+      "qualitative": "略有降低",
+      "deltaLabel": "方向为正",
+      "note": "公开模式不显示精确均值"
+    }
+  ],
+  "trends": [
+    {
+      "id": "quality",
+      "label": "训练表现",
+      "title": "整体表现趋势",
+      "unit": "指数",
+      "precision": 0,
+      "baseline": [100, 103, 102, 106, 108, 107, 111, 109, 114, 112, 116, 118],
+      "candidate": [101, 105, 104, 108, 112, 110, 116, 113, 119, 117, 121, 124],
+      "relation": "候选末段略高",
+      "note": "候选方案后段略有改善，但过程仍有波动。"
+    },
+    {
+      "id": "feedback",
+      "label": "连续反馈",
+      "title": "连续反馈趋势",
+      "unit": "指数",
+      "precision": 0,
+      "baseline": [100, 102, 105, 104, 108, 109, 111, 113, 115, 116, 118, 120],
+      "candidate": [99, 102, 103, 106, 107, 110, 110, 112, 114, 115, 117, 119],
+      "relation": "两组基本接近",
+      "note": "两组连续反馈走势接近，没有稳定拉开差距。"
+    },
+    {
+      "id": "weighted-signal",
+      "label": "加权信号",
+      "title": "加权训练信号",
+      "unit": "指数",
+      "precision": 0,
+      "baseline": [100, 103, 99, 106, 104, 109, 106, 111, 109, 113, 112, 115],
+      "candidate": [111, 114, 110, 117, 115, 120, 117, 122, 119, 124, 122, 126],
+      "relation": "候选信号更强",
+      "note": "候选方案的加权训练通道整体更强。"
+    },
+    {
+      "id": "exploration",
+      "label": "策略探索",
+      "title": "策略探索趋势",
+      "unit": "指数",
+      "precision": 0,
+      "baseline": [120, 118, 117, 115, 113, 111, 110, 108, 107, 105, 104, 103],
+      "candidate": [122, 119, 117, 114, 112, 109, 107, 105, 103, 101, 99, 97],
+      "relation": "候选收敛更快",
+      "note": "候选策略更快变得确定，需要关注探索是否过早收缩。"
+    },
+    {
+      "id": "compute",
+      "label": "训练开销",
+      "title": "相对计算开销",
+      "unit": "指数",
+      "precision": 0,
+      "baseline": [100, 102, 101, 103, 100, 102, 101, 103, 102, 101, 103, 102],
+      "candidate": [110, 112, 109, 113, 110, 112, 111, 114, 112, 111, 113, 112],
+      "relation": "候选开销略高",
+      "note": "候选方案需要更多计算资源。"
+    }
+  ],
+  "evidence": [
+    {
+      "title": "评测方向小幅改善",
+      "note": "尚需重复验证",
+      "tag": "收益",
+      "tone": "positive"
+    },
+    {
+      "title": "训练末段略高",
+      "note": "过程中存在波动",
+      "tag": "收益",
+      "tone": "positive"
+    },
+    {
+      "title": "工具使用明显增加",
+      "note": "交互成本更高",
+      "tag": "成本",
+      "tone": "negative"
+    },
+    {
+      "title": "训练与推理开销增加",
+      "note": "效率存在回退",
+      "tag": "成本",
+      "tone": "negative"
+    }
+  ]
+}

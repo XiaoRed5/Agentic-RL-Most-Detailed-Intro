@@ -23,26 +23,33 @@ async function render() {
   );
 }
 
-test("server-renders the qualitative experiment demo", async () => {
+test("server-renders the importable experiment demo", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>Agent Forge · 定性实验看板 Demo<\/title>/i);
+  assert.match(html, /<title>Agent Forge · 可导入数据的实验看板<\/title>/i);
   assert.match(html, /结论总览/);
   assert.match(html, /趋势对比/);
   assert.match(html, /评测画像/);
   assert.match(html, /定性图集/);
+  assert.match(html, /导入数据/);
   assert.match(html, /数值已隐藏/);
 });
 
-test("keeps only qualitative conclusions in the public source", async () => {
+test("supports local JSON import without exposing the original experiment", async () => {
   const page = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
+  const sample = JSON.parse(
+    await readFile(new URL("../data/experiment.example.json", import.meta.url), "utf8"),
+  );
 
-  assert.match(page, /type View = "overview" \| "curves" \| "evaluation" \| "figures"/);
-  assert.match(page, /匿名基线/);
-  assert.match(page, /匿名候选/);
-  assert.match(page, /只保留方向和权衡/);
-  assert.doesNotMatch(page, /from "\.\/data\/|toFixed\(/);
+  assert.match(page, /type View = "overview" \| "curves" \| "evaluation" \| "figures" \| "guide"/);
+  assert.match(page, /parseExperimentData/);
+  assert.match(page, /window\.localStorage/);
+  assert.match(page, /选择本地 JSON/);
+  assert.equal(sample.meta.defaultMode, "qualitative");
+  assert.equal(sample.meta.valueNote, "公开示例使用归一化示意数据，不对应任何真实实验");
+  assert.ok(sample.metrics.length >= 1);
+  assert.ok(sample.trends.length >= 1);
 });

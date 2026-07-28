@@ -40,3 +40,7 @@ next-env.d.ts
 /.wrangler/
 /outputs/
 /work/
+.qianwenai-deploy.local
+
+# local experiment files
+/data/*.local.json

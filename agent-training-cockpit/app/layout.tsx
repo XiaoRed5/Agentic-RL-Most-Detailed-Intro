@@ -25,17 +25,17 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     metadataBase: new URL(`${protocol}://${host}`),
-    title: "Agent Forge · 定性实验看板 Demo",
-    description: "不公开具体数值，只展示 Agent 实验的收益、成本与不确定性。",
+    title: "Agent Forge · 可导入数据的实验看板",
+    description: "在浏览器本机导入实验 JSON，对比 Agent 训练的效果、趋势与成本。",
     openGraph: {
-      title: "Agent Forge · 定性实验看板 Demo",
-      description: "不公开具体数值，只展示 Agent 实验的收益、成本与不确定性",
+      title: "Agent Forge · 可导入数据的实验看板",
+      description: "在浏览器本机导入实验 JSON，对比 Agent 训练的效果、趋势与成本",
       type: "website",
     },
     twitter: {
       card: "summary",
-      title: "Agent Forge · 定性实验看板 Demo",
-      description: "不公开具体数值，只展示 Agent 实验的收益、成本与不确定性",
+      title: "Agent Forge · 可导入数据的实验看板",
+      description: "在浏览器本机导入实验 JSON，对比 Agent 训练的效果、趋势与成本",
     },
   };
 }
