@@ -6,9 +6,9 @@
 
 欢迎关注我的小红书：[小red](https://xhslink.com/m/2dKOxmxjYcC)，后续会继续更新 Agentic RL、基座模型后训练和算法工程师转行相关内容。
 
-## 两个项目方向
+## 三个项目方向
 
-本仓库目前沿着两个方向持续更新：一个用于分析自己的实验，一个用于系统阅读 Agentic RL 技术论文。
+本仓库目前沿着三个方向持续更新：实验可视化、Agentic RL 代码实战，以及 Agentic RL 技术论文阅读。
 
 ### 1️⃣ Agent Forge：Agent / RL 实验可视化
 
@@ -16,9 +16,13 @@
 
 **[进入可视化项目](<./Agent Forge：Agent ／ RL 实验可视化/>)** · **[查看完整使用说明](<./Agent Forge：Agent ／ RL 实验可视化/docs/USAGE.md>)** · **[下载数据模板](<./Agent Forge：Agent ／ RL 实验可视化/data/experiment.example.json>)**
 
-[![Agent Forge 实验可视化看板](<./Agent Forge：Agent ／ RL 实验可视化/docs/screenshots/01-overview.png>)](<./Agent Forge：Agent ／ RL 实验可视化/>)
+### 2️⃣ agentic-tau-rl 代码实战
 
-### 2️⃣ Agentic RL 技术论文阅读
+一套可运行、可单测的 Agentic RL 实现，覆盖多轮 rollout、信用分配、策略优化和行为塑形，并提供从离线验证迁移到真实模型训练的完整说明。
+
+**[进入代码实战项目](<./agentic-tau-rl代码实战/>)** · **[阅读技术报告](<./agentic-tau-rl代码实战/技术报告.html>)** · **[查看真机迁移指南](<./agentic-tau-rl代码实战/docs/MIGRATION.md>)**
+
+### 3️⃣ Agentic RL 技术论文阅读
 
 从基础概念、信用分配和多轮工具调用，到 LongCat、GLM 与 Kimi 等代表性工作，持续整理 Agentic RL 论文与技术实践。
 
