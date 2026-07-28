@@ -6,7 +6,11 @@
 
 欢迎关注我的小红书：[小red](https://xhslink.com/m/2dKOxmxjYcC)，后续会继续更新 Agentic RL、基座模型后训练和算法工程师转行相关内容。
 
-## ⭐ Agent Forge：Agent / RL 实验可视化看板
+## 两个项目方向
+
+本仓库目前沿着两个方向持续更新：一个用于分析自己的实验，一个用于系统阅读 Agentic RL 技术论文。
+
+### 1️⃣ Agent Forge：Agent / RL 实验可视化
 
 这是本仓库重点推荐的可视化项目：把两组 Agent / RL 实验的训练趋势、离线评测、工具调用成本和证据强度放进同一个交互式看板。
 
@@ -14,9 +18,12 @@
 
 [![Agent Forge 实验可视化看板](./agent-training-cockpit/docs/screenshots/01-overview.png)](./agent-training-cockpit/)
 
-## 在线阅读
+### 2️⃣ Agentic RL 技术论文阅读
 
-- [在线入口页](https://xiaored5.github.io/Agentic-RL-Most-Detailed-Intro/)
+从基础概念、信用分配和多轮工具调用，到 LongCat、GLM 与 Kimi 等代表性工作，持续整理 Agentic RL 论文与技术实践。
+
+**[进入技术论文在线阅读](https://xiaored5.github.io/Agentic-RL-Most-Detailed-Intro/)**
+
 - [Agentic RL入门1：基础、代码](https://xiaored5.github.io/Agentic-RL-Most-Detailed-Intro/Agentic%20RL%E5%85%A5%E9%97%A81%EF%BC%9A%E5%9F%BA%E7%A1%80%E3%80%81%E4%BB%A3%E7%A0%81.html)
 - [Agentic RL入门2：信用分配](https://xiaored5.github.io/Agentic-RL-Most-Detailed-Intro/Agentic%20RL%E5%85%A5%E9%97%A82%EF%BC%9A%E4%BF%A1%E7%94%A8%E5%88%86%E9%85%8D.html)
 - [Agentic RL入门3：transformer 架构](https://xiaored5.github.io/Agentic-RL-Most-Detailed-Intro/Agentic%20RL%E5%85%A5%E9%97%A83%EF%BC%9Atransformer%E6%9E%B6%E6%9E%84.html)
