@@ -25,19 +25,17 @@ export async function generateMetadata(): Promise<Metadata> {
 
   return {
     metadataBase: new URL(`${protocol}://${host}`),
-    title: "Agent Forge · 训练驾驶舱",
-    description: "看清 Agent 每一次行动、错误与进步的训练工作台。",
+    title: "Agent Forge · 定性实验看板 Demo",
+    description: "不公开具体数值，只展示 Agent 实验的收益、成本与不确定性。",
     openGraph: {
-      title: "Agent Forge · 训练驾驶舱",
-      description: "看清 Agent 每一次行动、错误与进步",
+      title: "Agent Forge · 定性实验看板 Demo",
+      description: "不公开具体数值，只展示 Agent 实验的收益、成本与不确定性",
       type: "website",
-      images: [{ url: "/og.png", width: 1792, height: 909, alt: "Agent Forge 训练驾驶舱" }],
     },
     twitter: {
-      card: "summary_large_image",
-      title: "Agent Forge · 训练驾驶舱",
-      description: "看清 Agent 每一次行动、错误与进步",
-      images: ["/og.png"],
+      card: "summary",
+      title: "Agent Forge · 定性实验看板 Demo",
+      description: "不公开具体数值，只展示 Agent 实验的收益、成本与不确定性",
     },
   };
 }

@@ -23,26 +23,26 @@ async function render() {
   );
 }
 
-test("server-renders the Agent Forge cockpit", async () => {
+test("server-renders the qualitative experiment demo", async () => {
   const response = await render();
   assert.equal(response.status, 200);
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>Agent Forge · 训练驾驶舱<\/title>/i);
-  assert.match(html, /训练总览/);
-  assert.match(html, /轨迹回放/);
-  assert.match(html, /错误地图/);
-  assert.match(html, /版本对比/);
-  assert.match(html, /任务成功率/);
+  assert.match(html, /<title>Agent Forge · 定性实验看板 Demo<\/title>/i);
+  assert.match(html, /结论总览/);
+  assert.match(html, /趋势对比/);
+  assert.match(html, /评测画像/);
+  assert.match(html, /定性图集/);
+  assert.match(html, /数值已隐藏/);
 });
 
-test("keeps the four cockpit views in the client source", async () => {
+test("keeps only qualitative conclusions in the public source", async () => {
   const page = await readFile(new URL("../app/page.tsx", import.meta.url), "utf8");
 
-  assert.match(page, /type View = "overview" \| "traces" \| "errors" \| "compare"/);
-  assert.match(page, /agent-research-v2\.8/);
-  assert.match(page, /最近任务轨迹/);
-  assert.match(page, /错误类型分布/);
-  assert.match(page, /核心指标对比/);
+  assert.match(page, /type View = "overview" \| "curves" \| "evaluation" \| "figures"/);
+  assert.match(page, /匿名基线/);
+  assert.match(page, /匿名候选/);
+  assert.match(page, /只保留方向和权衡/);
+  assert.doesNotMatch(page, /from "\.\/data\/|toFixed\(/);
 });
