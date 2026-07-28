@@ -14,23 +14,6 @@
 
 [![Agent Forge 实验可视化看板](./agent-training-cockpit/docs/screenshots/01-overview.png)](./agent-training-cockpit/)
 
-### 你可以用它做什么
-
-- 导入自己的 JSON，同时比较基线实验和候选实验；
-- 可视化 Reward、Advantage、成功率、工具调用、对话轮数和耗时等指标；
-- 在“脱敏”和“精确”模式之间切换，方便本地分析与公开分享；
-- 数据只在浏览器本机读取，不会上传到服务器。
-
-### 快速开始
-
-```bash
-cd agent-training-cockpit
-npm install
-npm run dev
-```
-
-然后打开 `http://localhost:3000`，点击左侧第一项“导入数据”。
-
 ## 在线阅读
 
 - [在线入口页](https://xiaored5.github.io/Agentic-RL-Most-Detailed-Intro/)
