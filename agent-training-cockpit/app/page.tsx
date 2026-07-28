@@ -20,11 +20,11 @@ const COLORS = {
 };
 
 const navItems: { id: View; label: string; short: string }[] = [
+  { id: "guide", label: "导入数据", short: "入" },
   { id: "overview", label: "结论总览", short: "总" },
   { id: "curves", label: "趋势对比", short: "线" },
   { id: "evaluation", label: "评测画像", short: "测" },
   { id: "figures", label: "定性图集", short: "图" },
-  { id: "guide", label: "导入数据", short: "入" },
 ];
 
 const viewCopy: Record<View, { eyebrow: string; title: string; subtitle: string }> = {

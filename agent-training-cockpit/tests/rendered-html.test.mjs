@@ -36,6 +36,7 @@ test("server-renders the importable experiment demo", async () => {
   assert.match(html, /定性图集/);
   assert.match(html, /导入数据/);
   assert.match(html, /数值已隐藏/);
+  assert.ok(html.indexOf("导入数据") < html.indexOf("结论总览"));
 });
 
 test("supports local JSON import without exposing the original experiment", async () => {
