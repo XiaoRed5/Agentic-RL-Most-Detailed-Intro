@@ -14,9 +14,9 @@
 
 这是本仓库重点推荐的可视化项目：把两组 Agent / RL 实验的训练趋势、离线评测、工具调用成本和证据强度放进同一个交互式看板。
 
-**[进入可视化项目](./agent-training-cockpit/)** · **[查看完整使用说明](./agent-training-cockpit/docs/USAGE.md)** · **[下载数据模板](./agent-training-cockpit/data/experiment.example.json)**
+**[进入可视化项目](<./Agent Forge：Agent ／ RL 实验可视化/>)** · **[查看完整使用说明](<./Agent Forge：Agent ／ RL 实验可视化/docs/USAGE.md>)** · **[下载数据模板](<./Agent Forge：Agent ／ RL 实验可视化/data/experiment.example.json>)**
 
-[![Agent Forge 实验可视化看板](./agent-training-cockpit/docs/screenshots/01-overview.png)](./agent-training-cockpit/)
+[![Agent Forge 实验可视化看板](<./Agent Forge：Agent ／ RL 实验可视化/docs/screenshots/01-overview.png>)](<./Agent Forge：Agent ／ RL 实验可视化/>)
 
 ### 2️⃣ Agentic RL 技术论文阅读
 
