@@ -37,7 +37,7 @@
 - [如何在 5 万张国产芯片训练出 1.6T 万亿参数模型？](https://xiaored5.github.io/Agentic-RL-Most-Detailed-Intro/longcat-2.0/如何在%205%20万张国产芯片训练出%201.6T%20万亿参数模型？.html)
 - [GLM-5.2 长程任务的 RL 怎么做？](https://xiaored5.github.io/Agentic-RL-Most-Detailed-Intro/glm-5.2-longhorizon-rl/GLM-5.2%20%E9%95%BF%E7%A8%8B%E4%BB%BB%E5%8A%A1%E7%9A%84%20RL%20%E6%80%8E%E4%B9%88%E5%81%9A%EF%BC%9F.html)
 - [Kimi-K3 为什么这么强？](https://xiaored5.github.io/Agentic-RL-Most-Detailed-Intro/Kimi-K3%20%E4%B8%BA%E4%BB%80%E4%B9%88%E8%BF%99%E4%B9%88%E5%BC%BA%EF%BC%9F.html)
-- [Kimi K3 后训练：9 个专家蒸馏成 1 个](https://xiaored5.github.io/Agentic-RL-Most-Detailed-Intro/kimi-k3-report-posttraining-xhs.html)
+- [Kimi K3 百万token的agentic RL怎么做？](https://xiaored5.github.io/Agentic-RL-Most-Detailed-Intro/kimi-k3-report-posttraining-xhs.html)
 
 ## 本地预览
 
