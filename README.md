@@ -10,11 +10,11 @@
 
 本仓库目前沿着三个方向持续更新：实验可视化、Agentic RL 代码实战，以及 Agentic RL 技术论文阅读。
 
-### 1️⃣ Agent Forge：Agent / RL 实验可视化
+### 1️⃣ Agent Forge: Agent/RL Experiment Visualization
 
 这是本仓库重点推荐的可视化项目：把两组 Agent / RL 实验的训练趋势、离线评测、工具调用成本和证据强度放进同一个交互式看板。
 
-**[进入可视化项目](<./Agent Forge：Agent ／ RL 实验可视化/>)** · **[查看完整使用说明](<./Agent Forge：Agent ／ RL 实验可视化/docs/USAGE.md>)** · **[下载数据模板](<./Agent Forge：Agent ／ RL 实验可视化/data/experiment.example.json>)**
+**[进入可视化项目](./agent-forge/)** · **[查看完整使用说明](./agent-forge/docs/USAGE.md)** · **[下载数据模板](./agent-forge/data/experiment.example.json)**
 
 ### 2️⃣ agentic-tau-rl 代码实战
 

@@ -168,7 +168,7 @@ function Sidebar({
     <aside className="sidebar">
       <div className="brand">
         <span className="brand-mark">A</span>
-        <div><strong>Agent Forge</strong><small>实验分析台</small></div>
+        <div><strong>Agent Forge</strong><small>Experiment Analytics</small></div>
       </div>
       <nav className="main-nav" aria-label="主要导航">
         <p className="nav-label">当前实验</p>

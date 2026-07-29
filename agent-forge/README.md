@@ -1,4 +1,4 @@
-# Agent Training Cockpit Demo
+# Agent Forge
 
 一个用于比较两次 Agent / RL 训练实验的交互式看板 Demo。用户可以直接导入自己的 JSON 数据，不需要修改页面代码。
 

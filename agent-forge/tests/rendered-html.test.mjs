@@ -29,7 +29,7 @@ test("server-renders the importable experiment demo", async () => {
   assert.match(response.headers.get("content-type") ?? "", /^text\/html\b/i);
 
   const html = await response.text();
-  assert.match(html, /<title>Agent Forge · 可导入数据的实验看板<\/title>/i);
+  assert.match(html, /<title>Agent Forge · Agent\/RL Experiment Dashboard<\/title>/i);
   assert.match(html, /结论总览/);
   assert.match(html, /趋势对比/);
   assert.match(html, /评测画像/);
