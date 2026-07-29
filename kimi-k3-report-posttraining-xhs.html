@@ -1,0 +1,1405 @@
+<!DOCTYPE html>
+<html lang="zh-CN"><head><meta charset="UTF-8"><meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Kimi K3 后训练：9 个专家蒸馏成 1 个</title>
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.css">
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/katex.min.js"></script>
+<script defer src="https://cdn.jsdelivr.net/npm/katex@0.16.9/dist/contrib/auto-render.min.js"
+  onload="renderMathInElement(document.body,{delimiters:[{left:'$$',right:'$$',display:true},{left:'$',right:'$',display:false}],throwOnError:false});"></script>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+html,body{background:#f3f3f3}
+body{font-family:'PingFang SC','Hiragino Sans GB','Microsoft YaHei','Noto Sans CJK SC',sans-serif;color:#222;font-size:21px;line-height:1.65}
+.xhs-canvas{width:1080px;margin:0 auto;background:#fff;padding:40px 44px 72px}
+code{font-family:'SF Mono','Fira Code','Consolas',monospace;font-size:.9em;background:#f3f4f6;padding:1px 6px;border-radius:4px;color:#d04040}
+
+/* KaTeX */
+.katex-display{margin:14px 0!important;padding:14px 18px;background:#faf9ff;border-left:4px solid #8b5cf6;border-radius:0 8px 8px 0;overflow-x:auto;font-size:20px}
+.katex-display>.katex{font-size:1.0em}
+.katex{font-size:1.0em;white-space:nowrap;display:inline-block}
+.katex-mathml{position:absolute!important;clip:rect(1px,1px,1px,1px)!important;padding:0!important;border:0!important;height:1px!important;width:1px!important;overflow:hidden!important}
+
+/* Headings */
+h1{font-size:42px;font-weight:800;letter-spacing:-0.5px;line-height:1.3;color:#111;margin:0 0 14px}
+h1 .hl{color:#c0392b}
+.lede{color:#444;font-size:22px;line-height:1.62;margin:6px 0 10px}
+.lede b{color:#1a3a8a;font-weight:800}
+.src{color:#777;font-size:17px;margin:14px 0 8px;border-top:1px solid #e6e6e6;padding-top:12px}
+.src b{color:#1a3a8a}
+p{margin:6px 0;text-align:left;overflow-wrap:break-word}
+strong{font-weight:800;color:#1a3a8a}
+
+/* section 分节标签 */
+.mg-section{margin:22px 0 18px}
+.mg-section-tag{display:inline-block;background:#1a3a8a;color:#fff;font-size:16px;font-weight:800;padding:6px 16px;border-radius:6px;margin-bottom:12px;letter-spacing:.03em}
+
+/* Paper card */
+.paper{background:#fff;border:1px solid #e6e6e6;border-radius:16px;padding:26px 28px;margin:26px 0;box-shadow:0 2px 14px rgba(0,0,0,.05)}
+.paper h4{font-size:30px;font-weight:800;color:#000;line-height:1.32;margin-bottom:6px;letter-spacing:-0.3px}
+.paper .subtitle{color:#666;font-size:20px;margin:2px 0 14px;font-weight:500}
+.paper p{font-size:20px;color:#333;line-height:1.66;margin:8px 0}
+.tag{display:inline-block;font-size:16px;background:#f1fbef;border:1px solid #bfe8b8;color:#1e6b1e;padding:2px 10px;border-radius:6px;margin:2px 4px 2px 0;font-weight:700;vertical-align:middle}
+.tag-star{background:#ffe9b8;border-color:#e0a040;color:#7a4a00}
+
+/* punchline 橙条 */
+.punchline{background:#fffaf0;border-left:4px solid #e0a040;color:#5a4a18;font-size:21px;font-weight:700;padding:14px 18px;border-radius:0 10px 10px 0;display:block;margin:10px 0 16px;line-height:1.55}
+.punchline em{font-style:normal;color:#c0392b;background:linear-gradient(180deg,transparent 62%,#ffe082 62%);padding:0 3px}
+
+/* note 比方块 */
+.note{background:#fff5e8;border:1px solid #efd5ac;border-radius:12px;padding:16px 20px;margin:16px 0;font-size:20px;line-height:1.62;color:#5a3a18}
+.note strong{font-weight:800;color:#7a4a00}
+.note b{color:#7a4a00;font-weight:800}
+.note em{font-style:normal;color:#c0392b;font-weight:700}
+
+/* highlight 蓝条洞察 */
+.highlight{background:#eef2fb;border-left:4px solid #1a3a8a;color:#22314f;font-size:20px;padding:14px 18px;border-radius:0 10px 10px 0;margin:14px 0;line-height:1.6}
+.highlight strong,.highlight b{color:#1a3a8a;font-weight:800}
+.highlight em{font-style:normal;color:#c0392b;font-weight:700}
+
+/* bullet 要点 */
+ul.pts,ol.pts{margin:10px 0 10px 2px;list-style:none;counter-reset:pt}
+ul.pts li,ol.pts li{font-size:19px;color:#2c2c2c;line-height:1.62;padding-left:28px;position:relative;margin-bottom:10px}
+ul.pts li::before{content:"▸";position:absolute;left:4px;color:#1a3a8a;font-weight:800;font-size:20px}
+ol.pts li::before{counter-increment:pt;content:counter(pt);position:absolute;left:0;top:1px;width:20px;height:20px;background:#1a3a8a;color:#fff;border-radius:50%;font-size:13px;font-weight:800;text-align:center;line-height:20px}
+ul.pts li b,ol.pts li b{color:#1a3a8a;font-weight:800}
+ul.pts li em,ol.pts li em{font-style:normal;color:#c0392b;background:linear-gradient(180deg,transparent 62%,#ffe082 62%);padding:0 3px}
+
+/* SVG viz 容器 */
+.viz{margin:16px 0 8px;background:#fff;border:1.5px dashed #1a3a8a;border-radius:12px;padding:16px 14px;overflow-x:auto}
+.viz svg{width:100%;height:auto;display:block;min-width:700px}
+.viz-cap{font-size:16px;color:#5a6b7a;line-height:1.6;margin-top:10px;font-style:italic}
+
+/* 论文原图 */
+.figure-box{background:#fff;border:1px solid #e6e6e6;border-radius:12px;padding:16px;text-align:center;margin:18px 0}
+.figure-box img{max-width:100%;border-radius:6px}
+.figure-box .caption{font-size:16px;color:#555;margin-top:10px;font-style:italic;line-height:1.6}
+
+/* 三线表 */
+table{width:100%;border-collapse:collapse;margin:16px 0;font-size:18px;background:#fff;border-radius:10px;overflow:hidden}
+th{background:#1a3a8a;color:#fff;padding:11px 13px;text-align:left;font-weight:800;font-size:17px;letter-spacing:.02em}
+td{border:1px solid #e6e6e6;padding:10px 13px;line-height:1.55;color:#333;vertical-align:top}
+td strong{color:#1a3a8a}
+
+/* 折叠公式 */
+details{margin-top:16px;background:#f7f7f9;border:1px solid #d8d8d8;border-radius:10px;padding:14px 18px;font-size:18px}
+details summary{cursor:pointer;color:#1a3a8a;font-weight:800;font-size:18px}
+details p{margin:10px 0;line-height:1.66;font-size:18px}
+details b{color:#1a3a8a}
+.formula-legend{margin:8px 0 6px;list-style:none;font-size:17px}
+.formula-legend li{margin-bottom:5px;padding-left:10px;border-left:2px solid #d8d8d8;line-height:1.6;color:#444}
+.formula-legend li b{color:#1a3a8a}
+
+/* code block */
+pre{background:#f7f7f9;border:1px solid #e0e0e0;border-left:3px solid #1a3a8a;border-radius:0 8px 8px 0;padding:14px 16px;font-family:'SF Mono','Fira Code',monospace;font-size:15px;overflow-x:auto;line-height:1.55;margin:14px 0}
+pre code{background:none;padding:0;color:#2c2c2c;font-size:15px}
+
+/* flow steps 三步走 */
+.flow-steps{display:grid;grid-template-columns:1fr 40px 1fr 40px 1fr;gap:8px;align-items:stretch;margin:18px 0}
+.flow-step{background:#eef2fb;border:1.5px solid #1a3a8a;border-radius:12px;padding:16px 16px;font-size:17px;line-height:1.55;color:#2c2c2c}
+.flow-step strong{display:block;color:#1a3a8a;font-size:20px;font-weight:800;margin-bottom:8px}
+.flow-arrow{display:flex;align-items:center;justify-content:center;font-size:28px;color:#1a3a8a;font-weight:800}
+
+/* 收尾深蓝块 */
+.closing{background:#1a3a8a;border-radius:16px;padding:28px 30px;color:#f4f7fc;margin-top:26px}
+.closing h3{font-size:24px;font-weight:800;margin-bottom:14px;color:#fff}
+.closing p{font-size:20px;color:#dbe4f2;line-height:1.68;margin-bottom:12px}
+.closing p b{color:#ffe082;font-weight:800}
+.foot{margin-top:22px;text-align:center;font-size:15px;color:#9a9a9a}
+
+@media (max-width:1120px){.xhs-canvas{width:100%;padding:24px 18px 60px}}
+@media (max-width:780px){
+  h1{font-size:30px}
+  .paper h4{font-size:24px}
+  .flow-steps{grid-template-columns:1fr}
+  .flow-arrow{transform:rotate(90deg)}
+}
+</style></head><body><div class="xhs-canvas">
+
+<h1>Kimi K3 <span class="hl">1M 上下文 RL</span> 如何做？</h1>
+
+<!-- ================= 首屏：三步走全局 ================= -->
+<div class="paper">
+  <h4>第一步 · SFT 冷启动：给 RL 打一个高质量地基</h4>
+
+  <p>K3 在前代 Kimi 的 SFT pipeline 基础上<b>扩大数据集</b>，大幅拓宽了对<b>复杂 agentic 任务</b>的覆盖。</p>
+  <ol class="pts">
+    <li><b>合成数据轨迹。</b>用前代 Kimi 系列的 <em>domain-specialized 模型</em>（各领域专门模型）批量合成 agentic 交互轨迹——让"已经很强的老模型"当数据生产者，快速铺出覆盖广、难度够的训练轨迹。</li>
+    <li><b>多阶段验证 + human-in-the-loop 标注。</b>合成的轨迹不是直接用，而是过<em>多阶段自动验证</em>筛掉低质量样本，再叠<em>人在环</em>的人工标注把关，保证轨迹的正确性与可用性。</li>
+    <li><b>XTML 统一序列化。</b>复杂 agentic 轨迹（多轮 reasoning + 工具调用 + 观测回灌）结构杂、难对齐，K3 用自研 <b>XTML</b> chat template（eXtensible Token Markup Language，可扩展 token 标记语言，详见论文 §F）把所有数据<em>统一序列化成一致格式</em>，让训练能稳定地喂进这些异构轨迹。</li>
+    <li><b>从 SFT 起就上 QAT。</b>从 SFT 阶段开始就做<em>量化感知训练</em>（QAT）：<b>MXFP4 权重 / MXFP8 激活</b>——训练时看到的就是上线时的低精度数值分布，从根上消除"训练用高精度、推理用低精度"的 train-inference mismatch。</li>
+  </ol>
+  <div class="highlight">四步合起来，产出一个<b>大规模 instruction dataset</b>，赋予 K3 三样冷启动能力：<b>自适应推理</b>（adaptive reasoning）、<b>精准工具调用</b>（precise tool calling）、<b>长程 agentic 场景的稳健执行</b>。</div>
+</div>
+
+<div class="paper">
+  <h4>第二步 · 百万 Token RL</h4>
+  <div class="punchline" style="background:#eef2fb;border-left:4px solid #1a3a8a;color:#22314f">
+  <b style="color:#1a3a8a">核心决策：</b>不为每个单独任务各训一个专门 RL 模型（❌ per-task specialized RL），而是把 RL <b>跨三大广域 domain 一起 scale</b>，每个 domain × 每档 reasoning effort 只训 <b>1 个 expert</b> —— <b style="color:#c0392b">3 domain × 3 effort = 9 个 expert</b>。
+</div>
+<table style="table-layout:fixed">
+  <colgroup><col style="width:34%"><col style="width:22%"><col style="width:22%"><col style="width:22%"></colgroup>
+  <thead>
+    <tr>
+      <th>3 大 domain（含全部子任务模块）</th>
+      <th style="text-align:center">low effort</th>
+      <th style="text-align:center">high effort</th>
+      <th style="text-align:center">max effort</th>
+    </tr>
+  </thead>
+  <tbody>
+    <tr>
+      <td style="background:#eef2f7"><b style="color:#1a3a8a;font-size:19px">通用 general</b><br><span style="color:#26406e">通用体验 · 视觉 · 推理 · 忠实性 faithfulness · 搜索 · 知识工作</span></td>
+      <td style="text-align:center;background:#f5f8fc"><b style="font-size:22px;color:#1a3a8a">E1</b><br><span style="color:#26406e">gen · low</span></td>
+      <td style="text-align:center;background:#e3ecf7"><b style="font-size:22px;color:#1a3a8a">E2</b><br><span style="color:#26406e">gen · high</span></td>
+      <td style="text-align:center;background:#cfddef"><b style="font-size:22px;color:#1a3a8a">E3</b><br><span style="color:#26406e">gen · max</span></td>
+    </tr>
+    <tr>
+      <td style="background:#fff5e8"><b style="color:#6e4c0f;font-size:19px">通用 agent general agents</b><br><span style="color:#6e4c0f">长程助手 long-horizon · 深度研究 deep research · 段落级写作</span></td>
+      <td style="text-align:center;background:#fdf3e0"><b style="font-size:22px;color:#6e4c0f">E4</b><br><span style="color:#6e4c0f">ag · low</span></td>
+      <td style="text-align:center;background:#f7e3bd"><b style="font-size:22px;color:#6e4c0f">E5</b><br><span style="color:#6e4c0f">ag · high</span></td>
+      <td style="text-align:center;background:#f0d199"><b style="font-size:22px;color:#6e4c0f">E6</b><br><span style="color:#6e4c0f">ag · max</span></td>
+    </tr>
+    <tr>
+      <td style="background:#eaf5ea"><b style="color:#1e6b1e;font-size:19px">编程 agent coding agents</b><br><span style="color:#256b25">软件工程 SWE · 编程体验 · 算子内核 kernel · Web 开发</span></td>
+      <td style="text-align:center;background:#f0f8f0"><b style="font-size:22px;color:#1e6b1e">E7</b><br><span style="color:#256b25">code · low</span></td>
+      <td style="text-align:center;background:#dcefdc"><b style="font-size:22px;color:#1e6b1e">E8</b><br><span style="color:#256b25">code · high</span></td>
+      <td style="text-align:center;background:#c4e3c4"><b style="font-size:22px;color:#1e6b1e">E9</b><br><span style="color:#256b25">code · max</span></td>
+    </tr>
+  </tbody>
+</table>
+  <p>随 <b>RL FLOPs</b> 增加，这三大 domain 在 knowledge / reasoning / vision / general agent / coding 上<b>一致提升</b>，平均 tool-call 步数也持续上升——<b>"多花算力做 RL"确实换来"更会用工具、更强"</b>。</p>
+
+  <div class="figure-box"><img src="images/kimi-k3-report/fig8_rlflows_v2.png" alt="Figure 8"></div>
+</div>
+
+<!-- ================= RL 算法四件套 ================= -->
+<div class="paper">
+  <h4>RL 阶段的四件套算法</h4>
+  <div class="subtitle">partial rollout · Reasoning-Effort RL · Agentic GRM · MOPD 蒸馏</div>
+
+  <!-- ① partial rollout -->
+  <div class="mg-section">
+    <span class="mg-section-tag">① RL 算法：partial rollout</span>
+    <div class="note">
+      long-horizon 任务（比如一个 deep research 要调几十次工具）最大的痛点是<strong>拖尾</strong>：一批任务里总有几条特别慢，你若非等它们全跑完才更新策略，GPU 就一直空等那几个"钉子户"。partial rollout 的思路很朴素——<em>跑完一大半就先开饭，剩下没跑完的下顿接着热</em>。
+    </div>
+    <!-- FIG1: partial-rollout -->
+    <div class="viz">
+  <svg viewBox="0 0 760 420" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang SC',sans-serif">
+    <defs>
+      <marker id="pr-arr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#1e6b1e"/></marker>
+      <marker id="pr-arr-r" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#c0392b"/></marker>
+      <marker id="pr-arr-g" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#e0a040"/></marker>
+    </defs>
+
+    <text x="28" y="30" font-size="16" font-weight="bold" fill="#1a3a8a">图1 · Partial Rollout｜跑完一大半先开饭</text>
+
+    <!-- 左：并行轨迹 + 闸门 -->
+    <rect x="24" y="48" width="220" height="214" rx="8" fill="#eef2f7" stroke="#d8d8d8" stroke-width="1.3"/>
+    <text x="134" y="66" font-size="12.5" fill="#1a3a8a" text-anchor="middle">N prompt × K 轨迹并行生成</text>
+
+    <!-- 轨迹小长条：绿=完成 金=未完成 -->
+    <rect x="38" y="80"  width="172" height="12" rx="3" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.3"/>
+    <rect x="38" y="108" width="112" height="12" rx="3" fill="#f7d9a8" stroke="#e0a040" stroke-width="1.3"/>
+    <rect x="38" y="136" width="175" height="12" rx="3" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.3"/>
+    <rect x="38" y="164" width="94"  height="12" rx="3" fill="#f7d9a8" stroke="#e0a040" stroke-width="1.3"/>
+    <rect x="38" y="192" width="170" height="12" rx="3" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.3"/>
+    <rect x="38" y="220" width="120" height="12" rx="3" fill="#f7d9a8" stroke="#e0a040" stroke-width="1.3"/>
+
+    <!-- 暂停闸门 -->
+    <line x1="205" y1="72" x2="205" y2="248" stroke="#c0392b" stroke-width="2" stroke-dasharray="5,4"/>
+    <text x="228" y="160" font-size="11" fill="#c0392b" text-anchor="middle" transform="rotate(-90 228 160)">暂停闸门 λ完成即停</text>
+
+    <!-- 绿支路：已完成 → policy -->
+    <text x="337" y="104" font-size="11" fill="#256b25" text-anchor="middle">已完成 λNK 条</text>
+    <line x1="246" y1="112" x2="426" y2="120" stroke="#1e6b1e" stroke-width="1.6" marker-end="url(#pr-arr)"/>
+    <rect x="430" y="94" width="160" height="52" rx="7" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.4"/>
+    <text x="510" y="116" font-size="13" fill="#256b25" text-anchor="middle">policy 优化 · 先开饭</text>
+    <text x="510" y="134" font-size="11" fill="#555" text-anchor="middle">prompt 的 K 条凑齐整组 dispatch (K2.5)</text>
+
+    <!-- 红支路：未完成 → 入队 -->
+    <text x="335" y="198" font-size="11" fill="#9f2e2e" text-anchor="middle">未完成 (1-λ)NK</text>
+    <line x1="246" y1="205" x2="426" y2="216" stroke="#c0392b" stroke-width="1.6" marker-end="url(#pr-arr-r)"/>
+    <rect x="430" y="192" width="160" height="52" rx="7" fill="#fff5e8" stroke="#e0a040" stroke-width="1.4"/>
+    <text x="510" y="214" font-size="13" fill="#6e4c0f" text-anchor="middle">未完成入队</text>
+    <text x="510" y="232" font-size="11" fill="#555" text-anchor="middle">sandbox 存现场</text>
+
+    <!-- 回环：下一轮优先恢复接着跑 -->
+    <path d="M510,244 C 470,300 260,300 136,266" fill="none" stroke="#e0a040" stroke-width="1.8" marker-end="url(#pr-arr-g)"/>
+    <text x="322" y="274" font-size="11" fill="#6e4c0f" text-anchor="middle">下一轮优先恢复，接着跑</text>
+
+    <!-- 后果：off-policy -->
+    <rect x="24" y="298" width="712" height="40" rx="6" fill="#fdecec" stroke="#c0392b" stroke-width="1.4"/>
+    <text x="380" y="323" font-size="13" fill="#9f2e2e" text-anchor="middle">long-horizon 轨迹横跨多个 iteration 才跑完 ⇒ 数据极端 off-policy（陈旧）</text>
+
+    <!-- K3 解法 -->
+    <rect x="24" y="346" width="712" height="54" rx="6" fill="#fff5e8" stroke="#e0a040" stroke-width="1.4"/>
+    <text x="380" y="368" font-size="13.5" font-weight="bold" fill="#6e4c0f" text-anchor="middle">K3 解法 · per-token 邻域约束</text>
+    <text x="380" y="388" font-size="12" fill="#555" text-anchor="middle">每步更新只允许在旧策略局部邻域内小步走 —— 用「每步小步走」的稳定换「不必等齐」的吞吐</text>
+  </svg>
+  <div class="viz-cap">不拖尾的代价是吞下极端 off-policy：λ 一到就开饭、未完成回队接着跑，靠 per-token 邻域正则兜住稳定。</div>
+</div>
+    <ol class="pts">
+      <li>每个 iteration 取 $N$ 个 prompt，每个 prompt 采 $K$ 条轨迹（completion），一共 $N\times K$ 条活跃轨迹并行生成；</li>
+      <li>不等全部结束——一旦有 $\lambda\in(0,1)$ 比例（即 $\lambda NK$ 条）轨迹完成，生成阶段就<b>暂停</b>，让 policy optimization 先跑起来，<em>不被 execution straggler 拖住</em>；</li>
+      <li><b>但 dispatch 的粒度是 prompt，不是单条轨迹</b>：某个 prompt 的<em>全部 $K$ 条 response 一旦都完成，就立即整组打包送去策略优化</em>（这一步遵循 Kimi K2.5 的算法）——保证同一 prompt 的 $K$ 条能凑成一组做组内比较，而不是零散地喂；</li>
+      <li>被暂停（没跑完）的 rollout 入队，下一轮<b>优先恢复</b>接着跑，靠 sandbox 基础设施（§5.3.2）保存现场；</li>
+      <li>后果：一条 long-horizon 轨迹横跨好几个 iteration 才生成完，等它跑完时当初那版策略早已更新了很多步——数据变得极端 <em>off-policy（陈旧）</em>。</li>
+    </ol>
+  </div>
+
+  <!-- ② Reasoning-Effort RL -->
+  <div class="mg-section">
+    <span class="mg-section-tag">② Reasoning-Effort RL</span>
+    <div class="note">
+      同一道题，有人两句话答完，有人写满三页草稿。reasoning effort 就是"允许模型想多久"这个旋钮。K3 的洞察是：别让模型自由发挥，而是<strong>给每题定一个 token 预算</strong>，超支就扣分，从而把"想的深浅"训练成一个可控维度。
+    </div>
+    <!-- FIG2: reasoning-effort -->
+    <div class="viz">
+  <svg viewBox="0 0 760 366" xmlns="http://www.w3.org/2000/svg">
+    <defs>
+      <marker id="re-arr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto">
+        <path d="M0,0 L7,3 L0,6 Z" fill="#1a3a8a"/>
+      </marker>
+    </defs>
+    <style>
+      text{font-family:'PingFang SC',sans-serif;}
+    </style>
+
+    <!-- 标题 -->
+    <text x="20" y="22" font-size="16" font-weight="700" fill="#1a3a8a">图2 · Reasoning-Effort RL：把「想多深」训成可控维度</text>
+
+    <!-- ===== Band2 主线 ===== -->
+    <!-- 输入 -->
+    <rect x="20" y="90" width="78" height="46" rx="7" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.4"/>
+    <text x="59" y="118" font-size="13.5" font-weight="600" fill="#1a3a8a" text-anchor="middle">问题 x</text>
+    <line x1="98" y1="113" x2="126" y2="113" stroke="#1a3a8a" stroke-width="1.5" marker-end="url(#re-arr)"/>
+
+    <!-- 冷启动模型 -->
+    <rect x="128" y="86" width="118" height="54" rx="7" fill="#dbe7f3" stroke="#1a3a8a" stroke-width="1.4"/>
+    <text x="187" y="106" font-size="12.5" fill="#1a3a8a" text-anchor="middle">冷启动模型</text>
+    <text x="187" y="123" font-size="12.5" font-weight="600" fill="#1a3a8a" text-anchor="middle">估预算 b₀(x)</text>
+    <line x1="246" y1="113" x2="292" y2="113" stroke="#1a3a8a" stroke-width="1.5" marker-end="url(#re-arr)"/>
+
+    <!-- 预算尺 / rollout -->
+    <text x="470" y="58" font-size="13" font-weight="600" fill="#1a3a8a" text-anchor="middle">候选 rollout · 话痨程度不同</text>
+
+    <!-- 超阈值红区 -->
+    <rect x="540" y="80" width="112" height="96" rx="4" fill="#fdecec"/>
+    <!-- 阈值线 -->
+    <line x1="540" y1="74" x2="540" y2="178" stroke="#c0392b" stroke-width="1.6" stroke-dasharray="5 4"/>
+    <text x="540" y="70" font-size="12" font-weight="600" fill="#9f2e2e" text-anchor="middle">阈值 τ·b₀(x)</text>
+
+    <!-- 轨迹条 -->
+    <text x="294" y="98" font-size="12" fill="#555" text-anchor="end">y₁</text>
+    <rect x="300" y="88" width="150" height="15" rx="3" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.3"/>
+    <text x="462" y="99" font-size="12.5" fill="#256b25" text-anchor="start">✓</text>
+
+    <text x="294" y="124" font-size="12" fill="#555" text-anchor="end">y₂</text>
+    <rect x="300" y="114" width="212" height="15" rx="3" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.3"/>
+    <text x="522" y="125" font-size="12.5" fill="#256b25" text-anchor="start">✓</text>
+
+    <text x="294" y="150" font-size="12" fill="#555" text-anchor="end">y₃</text>
+    <rect x="300" y="140" width="332" height="15" rx="3" fill="#f3b6b6" stroke="#c0392b" stroke-width="1.4"/>
+
+    <!-- reward = -1 覆盖 -->
+    <line x1="596" y1="155" x2="596" y2="162" stroke="#c0392b" stroke-width="1.5" marker-end="url(#re-arr)"/>
+    <rect x="546" y="163" width="102" height="22" rx="6" fill="#c0392b"/>
+    <text x="597" y="178" font-size="12.5" font-weight="700" fill="#fff" text-anchor="middle">reward = −1</text>
+
+    <!-- 图例 -->
+    <rect x="300" y="196" width="12" height="12" rx="2" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.2"/>
+    <text x="318" y="206" font-size="11" fill="#256b25" text-anchor="start">未超阈值 → 正常给分</text>
+    <rect x="470" y="196" width="12" height="12" rx="2" fill="#f3b6b6" stroke="#c0392b" stroke-width="1.2"/>
+    <text x="488" y="206" font-size="11" fill="#9f2e2e" text-anchor="start">超阈值 → 话痨即罚 −1</text>
+
+    <!-- ===== Band3 口径 + 公式 ===== -->
+    <text x="380" y="234" font-size="13.5" font-weight="700" fill="#9f2e2e" text-anchor="middle">reward(y) = −1  if  T(y) &gt; τ·b₀(x)</text>
+    <rect x="66" y="244" width="290" height="26" rx="6" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.2"/>
+    <text x="211" y="261" font-size="12" fill="#1a3a8a" text-anchor="middle">T(y) general：数 thinking token</text>
+    <rect x="404" y="244" width="290" height="26" rx="6" fill="#fff5e8" stroke="#e0a040" stroke-width="1.2"/>
+    <text x="549" y="261" font-size="12" fill="#6e4c0f" text-anchor="middle">T(y) agentic：数累积输出 token</text>
+
+    <!-- ===== Band4 stage-wise 退火课程 ===== -->
+    <text x="380" y="292" font-size="13" font-weight="600" fill="#1a3a8a" text-anchor="middle">stage-wise 退火课程：τ 由宽松逐步收紧 → 分档蒸馏三档 effort 专家</text>
+
+    <rect x="60" y="304" width="180" height="50" rx="7" fill="#fff5e8" stroke="#e0a040" stroke-width="1.4"/>
+    <text x="150" y="324" font-size="12.5" font-weight="600" fill="#6e4c0f" text-anchor="middle">max-budget 专家</text>
+    <text x="150" y="342" font-size="11.5" fill="#6e4c0f" text-anchor="middle">τ 宽松（想很深）</text>
+
+    <line x1="244" y1="329" x2="286" y2="329" stroke="#1a3a8a" stroke-width="1.5" marker-end="url(#re-arr)"/>
+
+    <rect x="290" y="304" width="180" height="50" rx="7" fill="#f7d9a8" stroke="#e0a040" stroke-width="1.4"/>
+    <text x="380" y="324" font-size="12.5" font-weight="600" fill="#6e4c0f" text-anchor="middle">high-effort 专家</text>
+    <text x="380" y="342" font-size="11.5" fill="#6e4c0f" text-anchor="middle">τ 收紧</text>
+
+    <line x1="474" y1="329" x2="516" y2="329" stroke="#1a3a8a" stroke-width="1.5" marker-end="url(#re-arr)"/>
+
+    <rect x="520" y="304" width="180" height="50" rx="7" fill="#e0a040" stroke="#6e4c0f" stroke-width="1.4"/>
+    <text x="610" y="324" font-size="12.5" font-weight="700" fill="#fff" text-anchor="middle">low-effort 专家</text>
+    <text x="610" y="342" font-size="11.5" fill="#fff5e8" text-anchor="middle">τ 最紧（想很浅）</text>
+  </svg>
+  <div class="viz-cap">per-problem 预算 b₀(x) + 超支一律罚 −1 + τ 退火，把 effort 从不可控副作用变成能分档蒸馏的显式控制轴。</div>
+</div>
+    <ol class="pts">
+      <li>对每个问题 $x$，由冷启动模型估一个初始 token 预算 $b_0(x)$（这题大概该花多少 token）；</li>
+      <li>某条轨迹实际花的总 budget $T(y)$ 若超过阈值 $\tau\cdot b_0(x)$，就把它的 reward 直接<em>覆盖为 $-1$</em>（不管对不对，话痨就罚）；</li>
+      <li>$T(y)$ 口径分场景：general 数 <b>thinking token</b>，agentic 数 <b>累积输出 token</b>（含 reasoning + tool-call 参数）；</li>
+      <li>stage-wise curriculum：先用<b>大 $\tau$</b>（宽松预算）训 max-budget 变体，再逐步<b>退火 $\tau$</b>（收紧）得到 high / low effort 专家。</li>
+    </ol>
+    <div class="punchline">reward$(y) = -1 \ $ if $\ T(y) \gt \tau\cdot b_0(x)$ —— <em>话痨判负</em></div>
+  </div>
+
+  <!-- ③ Agentic GRM -->
+  <div class="mg-section">
+    <span class="mg-section-tag">③ Agentic GRM：不可验证任务怎么打分</span>
+    <div class="note">
+      写作、deep research 这类任务没有标准答案对拍，没法像数学题那样自动判对错。K3 沿用 K2.5 的<strong>锦标赛式二元比较</strong>：让一个 judge 模型两两 PK 候选答案。但裁判本身会犯懒——容易"谁写得长判谁赢"，于是要给裁判上<strong>强制协议</strong>和<strong>话痨预算</strong>。
+    </div>
+    <!-- FIG3: agentic-grm -->
+    <div class="viz">
+  <svg viewBox="0 0 760 335" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang SC',sans-serif">
+    <defs>
+      <marker id="grm-arr" markerWidth="9" markerHeight="9" refX="7.5" refY="3.2" orient="auto">
+        <path d="M0,0 L7.5,3.2 L0,6.4 Z" fill="#1a3a8a"/>
+      </marker>
+      <marker id="grm-arr-red" markerWidth="9" markerHeight="9" refX="7.5" refY="3.2" orient="auto">
+        <path d="M0,0 L7.5,3.2 L0,6.4 Z" fill="#c0392b"/>
+      </marker>
+    </defs>
+
+    <text x="380" y="28" text-anchor="middle" font-size="16" font-weight="700" fill="#1a3a8a">图3 · Agentic GRM：不可验证任务怎么打分</text>
+
+    <!-- ===== 锦标赛·二元比较 ===== -->
+    <text x="70" y="56" text-anchor="middle" font-size="12.5" fill="#1a3a8a" font-weight="600">锦标赛·二元比较</text>
+
+    <rect x="30" y="70" width="80" height="42" rx="6" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.4"/>
+    <text x="70" y="87" text-anchor="middle" font-size="13" fill="#1a3a8a" font-weight="600">候选 A</text>
+    <text x="70" y="103" text-anchor="middle" font-size="11" fill="#666">(无标答)</text>
+
+    <rect x="30" y="160" width="80" height="42" rx="6" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.4"/>
+    <text x="70" y="177" text-anchor="middle" font-size="13" fill="#1a3a8a" font-weight="600">候选 B</text>
+    <text x="70" y="193" text-anchor="middle" font-size="11" fill="#666">(无标答)</text>
+
+    <text x="70" y="141" text-anchor="middle" font-size="14" font-weight="700" fill="#555">vs</text>
+
+    <rect x="134" y="104" width="90" height="64" rx="7" fill="#fff5e8" stroke="#e0a040" stroke-width="1.5"/>
+    <text x="179" y="129" text-anchor="middle" font-size="12.5" fill="#6e4c0f" font-weight="700">Judge 模型</text>
+    <text x="179" y="147" text-anchor="middle" font-size="12" fill="#6e4c0f">两两 PK</text>
+
+    <line x1="110" y1="95" x2="132" y2="120" stroke="#1a3a8a" stroke-width="1.4" marker-end="url(#grm-arr)"/>
+    <line x1="110" y1="177" x2="132" y2="152" stroke="#1a3a8a" stroke-width="1.4" marker-end="url(#grm-arr)"/>
+
+    <!-- ===== 四步 rubric-scorepad 协议 ===== -->
+    <text x="352" y="58" text-anchor="middle" font-size="13" fill="#1a3a8a" font-weight="700">四步 rubric-scorepad 协议（强制）</text>
+
+    <rect x="252" y="68" width="200" height="44" rx="6" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.4"/>
+    <text x="352" y="87" text-anchor="middle" font-size="13" fill="#1a3a8a" font-weight="600">① 读产出</text>
+    <text x="352" y="104" text-anchor="middle" font-size="11.5" fill="#555">完整读候选</text>
+
+    <rect x="252" y="124" width="200" height="44" rx="6" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.4"/>
+    <text x="352" y="143" text-anchor="middle" font-size="13" fill="#1a3a8a" font-weight="600">② 生成 rubric</text>
+    <text x="352" y="160" text-anchor="middle" font-size="11.5" fill="#555">现场列评分细则</text>
+
+    <rect x="252" y="180" width="200" height="44" rx="6" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.4"/>
+    <text x="352" y="199" text-anchor="middle" font-size="13" fill="#1a3a8a" font-weight="600">③ 逐条打分</text>
+    <text x="352" y="216" text-anchor="middle" font-size="11.5" fill="#555">按 rubric 每条评</text>
+
+    <rect x="252" y="236" width="200" height="44" rx="6" fill="#f7d9a8" stroke="#e0a040" stroke-width="1.5"/>
+    <text x="352" y="255" text-anchor="middle" font-size="13" fill="#6e4c0f" font-weight="700">④ 记入 scorepad</text>
+    <text x="352" y="272" text-anchor="middle" font-size="11.5" fill="#6e4c0f">据此判胜负</text>
+
+    <line x1="223" y1="130" x2="250" y2="89" stroke="#1a3a8a" stroke-width="1.4" marker-end="url(#grm-arr)"/>
+    <line x1="352" y1="112" x2="352" y2="123" stroke="#1a3a8a" stroke-width="1.4" marker-end="url(#grm-arr)"/>
+    <line x1="352" y1="168" x2="352" y2="179" stroke="#1a3a8a" stroke-width="1.4" marker-end="url(#grm-arr)"/>
+    <line x1="352" y1="224" x2="352" y2="235" stroke="#1a3a8a" stroke-width="1.4" marker-end="url(#grm-arr)"/>
+
+    <!-- ===== verbosity 闸门 ===== -->
+    <text x="621" y="56" text-anchor="middle" font-size="13" fill="#9f2e2e" font-weight="700">verbosity 闸门 · 反 hacking</text>
+
+    <rect x="496" y="68" width="250" height="118" rx="8" fill="#fdecec" stroke="#c0392b" stroke-width="1.5"/>
+    <text x="621" y="93" text-anchor="middle" font-size="13" fill="#9f2e2e" font-weight="700">长度超限 → 自动判负</text>
+    <rect x="546" y="106" width="150" height="32" rx="5" fill="#fff" stroke="#c0392b" stroke-width="1.3"/>
+    <text x="621" y="127" text-anchor="middle" font-size="13" fill="#9f2e2e" font-weight="600">len &gt; σ·ℓ0</text>
+    <text x="621" y="160" text-anchor="middle" font-size="13.5" fill="#c0392b" font-weight="700">→ 判负 ✗</text>
+    <text x="621" y="179" text-anchor="middle" font-size="10.5" fill="#666">ℓ0 基线长度 · σ 倍率上限</text>
+
+    <!-- ===== 结果 ===== -->
+    <rect x="520" y="252" width="200" height="50" rx="7" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.5"/>
+    <text x="620" y="272" text-anchor="middle" font-size="13" fill="#256b25" font-weight="700">本场胜者</text>
+    <text x="620" y="289" text-anchor="middle" font-size="11" fill="#256b25">(据 scorepad)</text>
+
+    <line x1="453" y1="258" x2="516" y2="273" stroke="#1a3a8a" stroke-width="1.4" marker-end="url(#grm-arr)"/>
+    <line x1="620" y1="187" x2="620" y2="249" stroke="#c0392b" stroke-width="1.5" stroke-dasharray="5,3" marker-end="url(#grm-arr-red)"/>
+    <text x="628" y="224" text-anchor="start" font-size="11" fill="#c0392b" font-weight="600">超限则否决</text>
+  </svg>
+  <div class="viz-cap">裁判必须先立 rubric 再逐条打分，且谁话超过 σ·ℓ0 直接取消资格，从制度上堵死"堆字取胜"。</div>
+</div>
+    <p>judge 被强制走四步 <b>rubric-scorepad</b> 协议：<b>①读产出</b>（先完整读候选）→ <b>②生成 rubric</b>（现场列评分细则）→ <b>③按 rubric 打分</b>（逐条对着细则打）→ <b>④记入 scorepad</b>（据此判胜负）。防 reward hacking：引入 <em>verbosity 预算控制</em>——某输出长度超过 $\sigma\cdot\ell_0$ 就<b>自动输掉</b>这场比较，不给它靠堆字取胜的机会。</p>
+  </div>
+
+  <!-- ④ MOPD -->
+  <div class="mg-section">
+    <span class="mg-section-tag">④ MOPD 蒸馏：9 个 teacher → 1 个 student</span>
+    <div class="note">
+      现在手里有 9 个专家（3 domain × 3 effort），但上线只能部署一个模型。MOPD（Multi-Teacher On-Policy Distillation）让一个 student 同时拜这 9 位师傅：当前采样属于哪个 domain $d$、哪档 effort $e$，就<strong>听对应那位老师</strong> $\pi_{teacher}^{(d,e)}$ 的。整个过程 on-policy（用 student 自己当前生成的轨迹），蒸馏信号做成 <strong>per-token 的 dense reward</strong>，直接塞进现成 RL 框架，兼容前面的 partial rollout。
+    </div>
+    <div class="punchline">$r_{opd}^{d}(y_t \mid e, x, y_{\lt t}) = \mathrm{clip}\!\left(\mathrm{sg}\!\left(\log \frac{\pi_{teacher}(y_t \mid x, y_{\lt t})}{\pi_\theta(y_t \mid e, x, y_{\lt t})}\right), -R_{max}, R_{max}\right)$</div>
+    <ul class="formula-legend">
+      <li><b>$r_{opd}^{d}$</b>：domain $d$ 上的 on-policy distillation per-token reward（逐 token 发放）；</li>
+      <li><b>$\log \frac{\pi_{teacher}}{\pi_\theta}$</b>：teacher 与 student 的对数概率比——teacher 觉得更该出的 token，值为正，变正向奖励；</li>
+      <li><b>$\mathrm{sg}(\cdot)$</b>：stop-gradient，只当数值奖励用，不让梯度从这里回传；</li>
+      <li><b>$\mathrm{clip}(\cdot,-R_{max},R_{max})$</b>：裁掉极端 log-ratio 造成的巨大 advantage，防训练打飞。</li>
+    </ul>
+    <div class="highlight"><strong>本质：</strong>让 student 在"teacher 高概率、自己却低概率"的 token 上被推着对齐——把 log 概率比当每个 token 的 dense reward，分歧越大奖励越强，一 token 一 token 地学到 teacher 的行为。</div>
+    <details>
+      <summary>▸ MOPD 一步的最小骨架（论文未放代码，按 Eq.15 复现 reward 计算）</summary>
+      <p>主线：采样属于哪个 (domain, effort) → 选对应 teacher → 逐 token log-ratio 当 dense reward → 喂进 RL。</p>
+      <pre><code>d, e = sample_domain_and_effort()        # 采样域 d 与 effort 档 e ∈ {low,high,max}
+teacher = EXPERTS[(d, e)]                 # 9 个专家里选对应那位, 冻结
+y = student.generate(x, effort=e)         # on-policy: 用 student 自己当前生成轨迹
+
+rewards = []
+for t in range(len(y)):
+    logp_teacher = teacher.logprob(y[t], x, y[:t])      # teacher 在该前缀下的 log 概率
+    logp_student = student.logprob(y[t], x, y[:t], e)   # student 在同前缀 + effort 下
+    r = stop_gradient(logp_teacher - logp_student)      # sg(log(π_teacher/π_θ))
+    r = clip(r, -R_MAX, R_MAX)                          # 裁掉极端 advantage 稳训
+    rewards.append(r)                                   # per-token dense reward
+
+loss = policy_gradient_loss(student, y, rewards)        # 兼容 partial rollout</code></pre>
+      <p>三处关键：(1) <code>EXPERTS[(d,e)]</code> 体现"多 teacher"，每步只用一位；(2) <code>stop_gradient</code> 是 Eq.15 的 sg，log-ratio 只当数值奖励；(3) <code>rewards</code> 是 per-token——这正是它能"无缝接进 RL + 兼容 partial rollout"的原因。作者试过更精细的 <b>top-k distillation</b>（对齐 top-k 分布），但没有明显收益，遂保留这个更简洁的单 token log-ratio 方案。</p>
+    </details>
+  </div>
+</div>
+
+<!-- ================= Environment Scaling 重头戏 ================= -->
+<div class="paper">
+  <h4>Environment Scaling — RL 真正的护城河</h4>
+  <div class="subtitle">任务与环境怎么"造"出来：(A) 用什么壳跑 → (B) 任务从哪来 → (C) 拿什么打分</div>
+
+  <div class="note">
+    前面 partial rollout / reasoning-effort / MOPD 都是"<strong>怎么训</strong>"的招式。但 agentic RL 有个比算法更卡脖子的问题：<strong>训练信号从哪来</strong>？数学题有标准答案可对拍，可"帮我把这个 3D 相机维修系统复刻成网页""做一次尽职调查写份投行报告"这类长任务，既没现成数据集，也没有一个函数能告诉你"做对了没有"。K3 花整整一章（§4.2）讲一件事：<em>如何大规模地"制造"可验证、够多样、难度可控的任务与环境</em>——与其说 K3 赢在模型，不如说赢在<strong>能把环境本身 scale 起来</strong>。
+  </div>
+
+  <div class="highlight">这套环境工程拆成三层看：<strong>(A) 用什么壳跑</strong>（统一 white-box 环境）→ <strong>(B) 任务从哪来</strong>（知识图谱驱动合成）→ <strong>(C) 拿什么打分</strong>（五类可验证环境 + 反 hacking）。下面每一层各配一张机制图，逐层拆开看。</div>
+
+  <!-- (A) -->
+  <div class="mg-section">
+    <span class="mg-section-tag">(A) 统一 White-Box RL 环境 — 不让模型过拟合单一 agent 壳</span>
+    <div class="viz">
+  <svg viewBox="0 0 760 330" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang SC',sans-serif">
+    <defs>
+      <marker id="ea-arr" markerWidth="9" markerHeight="9" refX="7.5" refY="3.2" orient="auto">
+        <path d="M0,0 L7.6,3.2 L0,6.4 Z" fill="#1a3a8a"/>
+      </marker>
+    </defs>
+
+    <text x="16" y="30" font-size="15.5" font-weight="bold" fill="#1a3a8a">图4A · Environment Scaling (A)：统一 white-box 环境</text>
+
+    <!-- 左：模块池 -->
+    <text x="121" y="52" font-size="12" fill="#555" text-anchor="middle">agent harness → 可组合模块</text>
+    <rect x="16" y="60" width="210" height="196" rx="8" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.4"/>
+
+    <rect x="24" y="78" width="92" height="48" rx="6" fill="#fff" stroke="#1a3a8a" stroke-width="1.2"/>
+    <text x="70" y="107" font-size="13" fill="#1a3a8a" text-anchor="middle">工具接口</text>
+    <rect x="124" y="78" width="92" height="48" rx="6" fill="#fff" stroke="#1a3a8a" stroke-width="1.2"/>
+    <text x="170" y="99" font-size="12.5" fill="#1a3a8a" text-anchor="middle">system</text>
+    <text x="170" y="115" font-size="12.5" fill="#1a3a8a" text-anchor="middle">prompt</text>
+
+    <rect x="24" y="138" width="92" height="48" rx="6" fill="#fff" stroke="#1a3a8a" stroke-width="1.2"/>
+    <text x="70" y="167" font-size="13" fill="#1a3a8a" text-anchor="middle">上下文管理</text>
+    <rect x="124" y="138" width="92" height="48" rx="6" fill="#fff" stroke="#1a3a8a" stroke-width="1.2"/>
+    <text x="170" y="167" font-size="13" fill="#1a3a8a" text-anchor="middle">skills</text>
+
+    <rect x="24" y="198" width="92" height="48" rx="6" fill="#fff" stroke="#1a3a8a" stroke-width="1.2"/>
+    <text x="70" y="227" font-size="13" fill="#1a3a8a" text-anchor="middle">memories</text>
+    <rect x="124" y="198" width="92" height="48" rx="6" fill="#fff" stroke="#1a3a8a" stroke-width="1.2"/>
+    <text x="170" y="227" font-size="13" fill="#1a3a8a" text-anchor="middle">subagents</text>
+
+    <!-- 汇聚箭头 → 组合算子 -->
+    <line x1="226" y1="104" x2="243" y2="150" stroke="#1a3a8a" stroke-width="1.3" marker-end="url(#ea-arr)"/>
+    <line x1="226" y1="160" x2="242" y2="158" stroke="#1a3a8a" stroke-width="1.3" marker-end="url(#ea-arr)"/>
+    <line x1="226" y1="220" x2="243" y2="167" stroke="#1a3a8a" stroke-width="1.3" marker-end="url(#ea-arr)"/>
+
+    <!-- 中：组合/配置算子 -->
+    <circle cx="270" cy="158" r="27" fill="#f7d9a8" stroke="#e0a040" stroke-width="1.5"/>
+    <text x="270" y="154" font-size="12" fill="#6e4c0f" text-anchor="middle">组合</text>
+    <text x="270" y="170" font-size="12" fill="#6e4c0f" text-anchor="middle">配置</text>
+
+    <line x1="298" y1="158" x2="314" y2="158" stroke="#1a3a8a" stroke-width="1.3" marker-end="url(#ea-arr)"/>
+
+    <!-- 中：主流壳 -->
+    <text x="391" y="52" font-size="12" fill="#555" text-anchor="middle">配置实例化 → 主流壳</text>
+    <rect x="316" y="60" width="150" height="196" rx="8" fill="#fff5e8" stroke="#e0a040" stroke-width="1.4"/>
+    <rect x="328" y="68" width="126" height="28" rx="5" fill="#f7d9a8" stroke="#e0a040" stroke-width="1.2"/>
+    <text x="391" y="87" font-size="13" fill="#6e4c0f" text-anchor="middle">Kimi Code</text>
+    <rect x="328" y="107" width="126" height="28" rx="5" fill="#f7d9a8" stroke="#e0a040" stroke-width="1.2"/>
+    <text x="391" y="126" font-size="13" fill="#6e4c0f" text-anchor="middle">Claude Code</text>
+    <rect x="328" y="146" width="126" height="28" rx="5" fill="#f7d9a8" stroke="#e0a040" stroke-width="1.2"/>
+    <text x="391" y="165" font-size="13" fill="#6e4c0f" text-anchor="middle">Codex</text>
+    <rect x="328" y="185" width="126" height="28" rx="5" fill="#f7d9a8" stroke="#e0a040" stroke-width="1.2"/>
+    <text x="391" y="204" font-size="13" fill="#6e4c0f" text-anchor="middle">OpenClaw</text>
+    <rect x="328" y="224" width="126" height="28" rx="5" fill="#f7d9a8" stroke="#e0a040" stroke-width="1.2"/>
+    <text x="391" y="243" font-size="13" fill="#6e4c0f" text-anchor="middle">Hermes</text>
+
+    <text x="391" y="272" font-size="11" fill="#6e4c0f" text-anchor="middle">也能拼出全新的壳</text>
+
+    <line x1="468" y1="150" x2="500" y2="150" stroke="#1a3a8a" stroke-width="1.3" marker-end="url(#ea-arr)"/>
+
+    <!-- 右：训练时动态换壳 -->
+    <rect x="502" y="60" width="240" height="150" rx="8" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.5"/>
+    <text x="622" y="86" font-size="14" font-weight="bold" fill="#256b25" text-anchor="middle">训练时动态换壳</text>
+    <text x="622" y="118" font-size="13" fill="#256b25" text-anchor="middle">逼模型学「通用</text>
+    <text x="622" y="140" font-size="13" fill="#256b25" text-anchor="middle">agent 能力」</text>
+    <text x="622" y="172" font-size="11.5" fill="#555" text-anchor="middle">而非某个壳的肌肉记忆</text>
+
+    <rect x="502" y="220" width="240" height="42" rx="6" fill="#fdecec" stroke="#c0392b" stroke-width="1.4"/>
+    <text x="622" y="238" font-size="12.5" font-weight="bold" fill="#9f2e2e" text-anchor="middle">⚠ 防过拟合</text>
+    <text x="622" y="255" font-size="11" fill="#9f2e2e" text-anchor="middle">固定单壳 → 过拟合那套习惯</text>
+
+    <!-- 循环：换壳 → 绕回模块池不断重组 -->
+    <path d="M622,262 C 622,308 140,308 140,260" fill="none" stroke="#1a3a8a" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#ea-arr)"/>
+    <rect x="300" y="292" width="196" height="18" rx="4" fill="#fff"/>
+    <text x="398" y="305" font-size="11.5" fill="#1a3a8a" text-anchor="middle">训练中不断重组、动态重配</text>
+  </svg>
+  <div class="viz-cap">harness 拆成可组合模块，按配置拼各种主流壳，训练时动态换壳——逼模型学通用 agent 能力而非过拟合单一壳。</div>
+</div>
+    <div class="note" style="background:#fdecec;border-color:#e2b8b8;color:#7a2727"><strong style="color:#9f2e2e">踩过的坑：</strong>如果 RL 全程只用<b style="color:#9f2e2e">一种固定的 agent harness</b>（工具 schema、system prompt、上下文管理、交互协议都写死），模型会<b style="color:#9f2e2e">过拟合到这套壳的习惯</b>——换个 harness 就变笨。这在 agentic RL 里是隐性但致命的问题。</div>
+    <ol class="pts">
+      <li><b>把 harness 拆成可配置模块。</b>K3 把一个 agent harness 抽象成一堆<b>可组合模块</b>：工具接口、system prompt、上下文管理策略、skills、memories、subagents 等。</li>
+      <li><b>靠配置实例化主流壳。</b>把模块按不同方式组合，就能拼出 <code>Kimi Code</code>、<code>Claude Code</code>、<code>Codex</code>、<code>OpenClaw</code>、<code>Hermes</code> 等主流 harness，也能拼全新的壳。</li>
+      <li><b>训练时动态换壳。</b>RL 中给不同任务组<b>动态构造不同 harness 配置</b>，逼 K3 学"通用 agent 能力"而非"某个壳的肌肉记忆"。</li>
+    </ol>
+  </div>
+
+  <!-- (B) -->
+  <div class="mg-section">
+    <span class="mg-section-tag">(B) 知识图谱驱动的任务合成 — 广度与深度都可控</span>
+    <div class="viz">
+  <svg viewBox="0 0 760 372" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang SC',sans-serif">
+    <defs>
+      <marker id="eb-arr" markerWidth="9" markerHeight="9" refX="7.5" refY="3.2" orient="auto">
+        <path d="M0,0 L7.5,3.2 L0,6.4 Z" fill="#1a3a8a"/>
+      </marker>
+      <marker id="eb-arrg" markerWidth="9" markerHeight="9" refX="7.5" refY="3.2" orient="auto">
+        <path d="M0,0 L7.5,3.2 L0,6.4 Z" fill="#6e4c0f"/>
+      </marker>
+      <marker id="eb-arrn" markerWidth="9" markerHeight="9" refX="7.5" refY="3.2" orient="auto">
+        <path d="M0,0 L7.5,3.2 L0,6.4 Z" fill="#256b25"/>
+      </marker>
+    </defs>
+
+    <text x="380" y="24" text-anchor="middle" font-size="16" fill="#1a3a8a" font-weight="700">图4B · Environment Scaling (B)：任务从哪来 · 知识图谱驱动合成</text>
+
+    <!-- recursion dashed arc over DAG -->
+    <path d="M61,167 C 56,78 152,52 241,76" fill="none" stroke="#6e4c0f" stroke-width="1.4" stroke-dasharray="5,4" marker-end="url(#eb-arrg)"/>
+    <text x="150" y="70" text-anchor="middle" font-size="11" fill="#6e4c0f">agent 递归深挖 · 逛图复用等价概念</text>
+
+    <!-- DAG edges (coarse -> fine) -->
+    <line x1="97" y1="181" x2="120" y2="122" stroke="#1a3a8a" stroke-width="1.3" marker-end="url(#eb-arr)"/>
+    <line x1="97" y1="181" x2="120" y2="238" stroke="#1a3a8a" stroke-width="1.3" marker-end="url(#eb-arr)"/>
+    <line x1="184" y1="120" x2="205" y2="92" stroke="#1a3a8a" stroke-width="1.3" marker-end="url(#eb-arr)"/>
+    <line x1="184" y1="120" x2="205" y2="150" stroke="#1a3a8a" stroke-width="1.3" marker-end="url(#eb-arr)"/>
+    <line x1="184" y1="240" x2="205" y2="210" stroke="#1a3a8a" stroke-width="1.3" marker-end="url(#eb-arr)"/>
+
+    <!-- DAG nodes -->
+    <rect x="25" y="167" width="72" height="28" rx="6" fill="#dbe7f3" stroke="#1a3a8a" stroke-width="1.4"/>
+    <text x="61" y="185" text-anchor="middle" font-size="12.5" fill="#1a3a8a" font-weight="700">种子 / 领域</text>
+
+    <rect x="120" y="107" width="64" height="26" rx="6" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.3"/>
+    <text x="152" y="124" text-anchor="middle" font-size="12.5" fill="#1a3a8a">主题 A</text>
+    <rect x="120" y="227" width="64" height="26" rx="6" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.3"/>
+    <text x="152" y="244" text-anchor="middle" font-size="12.5" fill="#1a3a8a">主题 B</text>
+
+    <rect x="203" y="78" width="76" height="24" rx="5" fill="#fff" stroke="#1a3a8a" stroke-width="1.2"/>
+    <text x="241" y="94" text-anchor="middle" font-size="12" fill="#1a3a8a">RoPE</text>
+    <rect x="203" y="138" width="76" height="24" rx="5" fill="#fff" stroke="#1a3a8a" stroke-width="1.2"/>
+    <text x="241" y="154" text-anchor="middle" font-size="11.5" fill="#1a3a8a">GPU kernel</text>
+    <rect x="203" y="198" width="76" height="24" rx="5" fill="#fff" stroke="#1a3a8a" stroke-width="1.2"/>
+    <text x="241" y="214" text-anchor="middle" font-size="11.5" fill="#1a3a8a">attention</text>
+
+    <text x="150" y="308" text-anchor="middle" font-size="11" fill="#666">边：粗概念 → 细概念（coarse → fine）</text>
+
+    <!-- sampling arrow to keyword set -->
+    <line x1="279" y1="150" x2="300" y2="176" stroke="#1a3a8a" stroke-width="1.4" marker-end="url(#eb-arr)"/>
+    <text x="292" y="146" text-anchor="middle" font-size="11" fill="#1a3a8a">采样</text>
+
+    <!-- keyword set -->
+    <rect x="300" y="155" width="155" height="44" rx="7" fill="#fff5e8" stroke="#e0a040" stroke-width="1.5"/>
+    <text x="377" y="173" text-anchor="middle" font-size="12.5" fill="#6e4c0f" font-weight="700">keyword set</text>
+    <text x="377" y="190" text-anchor="middle" font-size="11.5" fill="#6e4c0f">{ RoPE · GPU kernel }</text>
+    <text x="377" y="215" text-anchor="middle" font-size="11" fill="#6e4c0f">+ 祖先节点上下文</text>
+
+    <!-- arrow keyword -> retrieval -->
+    <line x1="455" y1="172" x2="480" y2="122" stroke="#1a3a8a" stroke-width="1.4" marker-end="url(#eb-arr)"/>
+    <text x="470" y="152" text-anchor="middle" font-size="10.5" fill="#555">拼 query</text>
+
+    <!-- retrieval -->
+    <rect x="480" y="90" width="165" height="54" rx="7" fill="#fff" stroke="#d8d8d8" stroke-width="1.5"/>
+    <text x="562" y="112" text-anchor="middle" font-size="12" fill="#1a3a8a" font-weight="700">web query → 互联网检索</text>
+    <text x="562" y="132" text-anchor="middle" font-size="10.5" fill="#555">学术文章 · 博客 · 代码库</text>
+
+    <!-- retrieval -> synthesis -->
+    <line x1="562" y1="144" x2="565" y2="180" stroke="#1a3a8a" stroke-width="1.4" marker-end="url(#eb-arr)"/>
+
+    <!-- synthesis agent -->
+    <rect x="490" y="182" width="150" height="44" rx="7" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.5"/>
+    <text x="565" y="203" text-anchor="middle" font-size="12.5" fill="#256b25" font-weight="700">合成 agent</text>
+    <text x="565" y="219" text-anchor="middle" font-size="11" fill="#256b25">产各类任务</text>
+
+    <!-- synth -> tasks -->
+    <line x1="565" y1="226" x2="524" y2="260" stroke="#1e6b1e" stroke-width="1.3" marker-end="url(#eb-arrn)"/>
+    <line x1="565" y1="226" x2="623" y2="260" stroke="#1e6b1e" stroke-width="1.3" marker-end="url(#eb-arrn)"/>
+    <line x1="565" y1="226" x2="710" y2="260" stroke="#1e6b1e" stroke-width="1.3" marker-end="url(#eb-arrn)"/>
+
+    <rect x="483" y="262" width="82" height="30" rx="6" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.3"/>
+    <text x="524" y="281" text-anchor="middle" font-size="12" fill="#1a3a8a">Coding</text>
+    <rect x="576" y="262" width="94" height="30" rx="6" fill="#fff5e8" stroke="#e0a040" stroke-width="1.3"/>
+    <text x="623" y="281" text-anchor="middle" font-size="12" fill="#6e4c0f">Knowledge</text>
+    <rect x="680" y="262" width="70" height="30" rx="6" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.3"/>
+    <text x="715" y="281" text-anchor="middle" font-size="12" fill="#256b25">Vision</text>
+
+    <!-- step captions -->
+    <text x="150" y="345" text-anchor="middle" font-size="11" fill="#888">① agent 自建概念树</text>
+    <text x="377" y="345" text-anchor="middle" font-size="11" fill="#888">② 分层采样 keyword</text>
+    <text x="600" y="345" text-anchor="middle" font-size="11" fill="#888">③ 检索真实材料 · 合成</text>
+  </svg>
+  <div class="viz-cap">让 agent 自己长出一棵不断扩张的概念树，从不同粒度采样节点去检索真实材料合成任务——把"任务从哪来"变成可无限扩张、粒度可调、覆盖可控的自动流水线。</div>
+</div>
+    <div class="note">任务的质量和多样性，本质由<strong>源材料</strong>决定。K3 的思路：与其人肉找素材，不如<em>让 agent 自己长出一棵不断扩张的"概念树"</em>，再从树上采样概念去检索真实材料、合成任务。<b>细粒度</b>概念能挖到专业、冷门知识；<b>跨概念</b>采样保证领域覆盖广。</div>
+    <div class="figure-box"><img src="images/kimi-k3-report/fig9_tasksynth.png" alt="Figure 9"><div class="caption"><b>Figure 9.</b> 层级化知识图谱把概念从粗（领域）到细（细粒度概念）组织；采样相关节点组成 keyword set（如 RoPE / GPU kernel），去互联网检索公开材料（学术文章 / 博客 / 代码库），每个合成实例再选一种任务类型（Coding / Knowledge / Vision …）合成对应任务。</div></div>
+    <ol class="pts">
+      <li><b>建图：agent 递归自演化。</b>知识图谱是一张<b>有向无环图（DAG）</b>，从粗粒度<b>种子节点</b>出发。每个节点派一个 agent 做多轮 web search 深挖；加新节点前先<b>逛一遍现有图</b>找等价/相关概念、尽量复用。边永远<b>粗概念→细概念</b>，节点<b>足够原子</b>就停止分裂。</li>
+      <li><b>采样：控制粒度与覆盖。</b>为命中目标的领域/任务类型分布，在<b>不同粒度层</b>采样节点——可单独采，也可采一组相关节点。</li>
+      <li><b>检索 + 合成。</b>用采样节点关键词 + 其在图中<b>祖先节点上下文</b>拼 web query 抓真实材料；合成 agent 据此产出各类任务。</li>
+    </ol>
+    <div class="highlight"><strong>为什么这招关键：</strong>它把"任务从哪来"从<b>人工出题</b>变成<b>可无限扩张、粒度可调、覆盖可控</b>的自动流水线——<em>图越长越大，能造的任务就越多越专</em>。这是 environment scaling 的引擎。</div>
+  </div>
+
+  <!-- (C) -->
+  <div class="mg-section">
+    <span class="mg-section-tag">(C) 五类可验证环境 — 每一类都自带"裁判"</span>
+    <p>有了壳和任务，还得有<b>可靠的 reward</b>。K3 针对不同能力造了五类专门环境（§4.2.3–4.2.7），核心原则贯穿始终：<em>reward 必须 robustly verifiable，且防得住 reward hacking</em>。（注：low/high/max reasoning-effort 是叠加在这些环境之上的"想多深"维度，不是独立环境类型。）下面逐类拆开详讲。</p>
+
+    <h4 style="font-style:normal;color:#1a3a8a;margin-top:22px">① 可验证 agentic 问题（§4.2.3）</h4>
+    <p>三类任务共性是产出<b>可验证答案</b>：<b>多步复杂信息搜索</b>（model 规划 research、逐步从 web 搜证据、产出可对拍的 verifiable answer）；<b>专业日常工作</b>（投行 / 数据分析 / 法律——把复杂请求分解、在 sandbox 里操作领域工具、跨几十到几百步完成一份 deliverable）；<b>多步视觉推理</b>（STEM 题 / 视觉谜题 / 图表理解）。视觉推理尤其精巧：在带 <b>Python 解释器的隔离 sandbox</b> 里，模型<em>迭代写代码执行</em>去 crop / zoom / transform 输入图像、精算、验证中间结果，并把执行输出（含生成的图）当作<b>新观测</b>喂回——图像操作与观测越多，视觉推理越强。</p>
+    <div class="viz">
+  <svg viewBox="0 0 760 314" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang SC',sans-serif">
+    <defs>
+      <marker id="c1-arr" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#1a3a8a"/></marker>
+      <marker id="c1-arr-g" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#1e6b1e"/></marker>
+      <marker id="c1-arr-gold" markerWidth="8" markerHeight="8" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#e0a040"/></marker>
+    </defs>
+
+    <text x="380" y="20" text-anchor="middle" font-size="16" font-weight="700" fill="#1a3a8a">可验证 agentic 问题 · Verifiable Problems in Agentic Environments</text>
+    <text x="380" y="38" text-anchor="middle" font-size="11.5" fill="#555">三类任务都产出可验证答案：搜索对拍 · 专业交付 · 视觉推理迭代</text>
+
+    <!-- ===== Lane 1: 多步复杂信息搜索 ===== -->
+    <rect x="12" y="52" width="118" height="38" rx="6" fill="#dbe7f3" stroke="#1a3a8a" stroke-width="1.3"/>
+    <text x="71" y="68" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1a3a8a">多步复杂</text>
+    <text x="71" y="83" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1a3a8a">信息搜索</text>
+
+    <rect x="150" y="52" width="118" height="38" rx="6" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.3"/>
+    <text x="209" y="68" text-anchor="middle" font-size="12.5" fill="#1a3a8a">model plan</text>
+    <text x="209" y="83" text-anchor="middle" font-size="12.5" fill="#1a3a8a">research</text>
+
+    <rect x="290" y="52" width="138" height="38" rx="6" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.3"/>
+    <text x="359" y="68" text-anchor="middle" font-size="12.5" fill="#1a3a8a">web search ×多步</text>
+    <text x="359" y="83" text-anchor="middle" font-size="12" fill="#1a3a8a">gather evidence</text>
+
+    <rect x="452" y="52" width="138" height="38" rx="6" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.4"/>
+    <text x="521" y="68" text-anchor="middle" font-size="12.5" fill="#256b25">verifiable answer</text>
+    <text x="521" y="83" text-anchor="middle" font-size="12.5" fill="#256b25">对拍验证</text>
+
+    <line x1="132" y1="71" x2="148" y2="71" stroke="#1a3a8a" stroke-width="1.4" marker-end="url(#c1-arr)"/>
+    <line x1="270" y1="71" x2="288" y2="71" stroke="#1a3a8a" stroke-width="1.4" marker-end="url(#c1-arr)"/>
+    <line x1="430" y1="71" x2="450" y2="71" stroke="#1e6b1e" stroke-width="1.4" marker-end="url(#c1-arr-g)"/>
+
+    <!-- ===== Lane 2: 专业日常工作 ===== -->
+    <rect x="12" y="110" width="118" height="38" rx="6" fill="#dbe7f3" stroke="#1a3a8a" stroke-width="1.3"/>
+    <text x="71" y="126" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1a3a8a">专业日常工作</text>
+    <text x="71" y="141" text-anchor="middle" font-size="11" fill="#1a3a8a">投行/数据/法律</text>
+
+    <rect x="150" y="110" width="118" height="38" rx="6" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.3"/>
+    <text x="209" y="133" text-anchor="middle" font-size="12.5" fill="#1a3a8a">分解复杂请求</text>
+
+    <rect x="290" y="110" width="138" height="38" rx="6" fill="#fff5e8" stroke="#e0a040" stroke-width="1.4"/>
+    <text x="359" y="126" text-anchor="middle" font-size="12.5" fill="#6e4c0f">sandbox 操作</text>
+    <text x="359" y="141" text-anchor="middle" font-size="12.5" fill="#6e4c0f">领域工具</text>
+
+    <rect x="452" y="110" width="138" height="38" rx="6" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.4"/>
+    <text x="521" y="126" text-anchor="middle" font-size="12.5" fill="#256b25">deliverable 交付</text>
+    <text x="521" y="141" text-anchor="middle" font-size="11" fill="#256b25">跨几十~几百步</text>
+
+    <line x1="132" y1="129" x2="148" y2="129" stroke="#1a3a8a" stroke-width="1.4" marker-end="url(#c1-arr)"/>
+    <line x1="270" y1="129" x2="288" y2="129" stroke="#1a3a8a" stroke-width="1.4" marker-end="url(#c1-arr)"/>
+    <line x1="430" y1="129" x2="450" y2="129" stroke="#1e6b1e" stroke-width="1.4" marker-end="url(#c1-arr-g)"/>
+
+    <!-- ===== Lane 3: 多步视觉推理 (loop) ===== -->
+    <rect x="12" y="176" width="118" height="48" rx="6" fill="#dbe7f3" stroke="#1a3a8a" stroke-width="1.3"/>
+    <text x="71" y="197" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1a3a8a">多步视觉推理</text>
+    <text x="71" y="213" text-anchor="middle" font-size="11" fill="#1a3a8a">STEM·图表·谜题</text>
+
+    <rect x="150" y="176" width="120" height="48" rx="6" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.3"/>
+    <text x="210" y="197" text-anchor="middle" font-size="12.5" fill="#1a3a8a">model</text>
+    <text x="210" y="213" text-anchor="middle" font-size="12.5" fill="#1a3a8a">写代码</text>
+
+    <rect x="310" y="176" width="150" height="48" rx="6" fill="#fff5e8" stroke="#e0a040" stroke-width="1.4"/>
+    <text x="385" y="196" text-anchor="middle" font-size="12.5" fill="#6e4c0f">isolated Python sandbox</text>
+    <text x="385" y="213" text-anchor="middle" font-size="12" fill="#6e4c0f">执行 crop / zoom / 精算</text>
+
+    <rect x="500" y="176" width="140" height="48" rx="6" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.4"/>
+    <text x="570" y="196" text-anchor="middle" font-size="12" fill="#256b25">执行输出 + 生成图</text>
+    <text x="570" y="213" text-anchor="middle" font-size="12.5" fill="#256b25">= 新 observation</text>
+
+    <line x1="132" y1="200" x2="148" y2="200" stroke="#1a3a8a" stroke-width="1.4" marker-end="url(#c1-arr)"/>
+    <line x1="272" y1="200" x2="308" y2="200" stroke="#1a3a8a" stroke-width="1.4" marker-end="url(#c1-arr)"/>
+    <line x1="462" y1="200" x2="498" y2="200" stroke="#1e6b1e" stroke-width="1.4" marker-end="url(#c1-arr-g)"/>
+
+    <path d="M570 224 C 570 258, 210 258, 210 227" fill="none" stroke="#e0a040" stroke-width="1.6" marker-end="url(#c1-arr-gold)"/>
+    <text x="390" y="252" text-anchor="middle" font-size="11.5" fill="#6e4c0f">执行结果回灌为新 observation · 多轮迭代</text>
+
+    <text x="380" y="288" text-anchor="middle" font-size="12.5" font-weight="700" fill="#6e4c0f">图像操作越多 → 观测越多 → 视觉推理越强</text>
+  </svg>
+  <div class="viz-cap">三类任务都落到可验证答案：搜索多步对拍答案、专业工作在 sandbox 产出 deliverable、视觉推理靠 Python sandbox 迭代操作图像并把执行结果当新 observation。</div>
+</div>
+
+    <h4 style="font-style:normal;color:#1a3a8a;margin-top:22px">② GPU Kernel 优化（§4.2.4）</h4>
+    <p>任务谱系从<b>单算子 kernel</b> 到<b>融合 mega-kernel</b>，源自 Flash Linear Attention 等高质量 GitHub repo；覆盖 <b>CUDA / Triton / CuTe DSL / Gluon / ThunderKittens / TileLang</b> 多种编程方式与 <b>BF16 / FP8 / FP4</b> 数值格式。reward <b>兼看正确性 + 性能</b>：每个 kernel 带 PyTorch reference，解<em>超过数值误差阈值直接给 0</em>；性能对标专家实现——<b>追平给 0.5</b>，<b>逼近硬件 roofline 趋近 1</b>。再配一套 <b>hacking-detection</b> 系统，惩罚 <em>CUDA graph replay / 输入缓存 / 降精度</em> 等作弊，并随开发中发现新作弊持续加防线。</p>
+    <div class="viz">
+  <svg viewBox="0 0 760 340" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang SC',sans-serif">
+    <defs>
+      <marker id="c2-arr" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#1a3a8a"/></marker>
+      <marker id="c2-arr-r" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#c0392b"/></marker>
+      <marker id="c2-arr-g" markerWidth="9" markerHeight="9" refX="7" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 Z" fill="#1e6b1e"/></marker>
+      <linearGradient id="barGrad" x1="0" y1="0" x2="0" y2="1">
+        <stop offset="0" stop-color="#1e6b1e"/>
+        <stop offset="0.5" stop-color="#e0a040"/>
+        <stop offset="1" stop-color="#c0392b"/>
+      </linearGradient>
+    </defs>
+
+    <text x="380" y="22" text-anchor="middle" font-size="16" font-weight="700" fill="#1a3a8a">GPU Kernel 优化：reward = 正确性(gate) + 性能</text>
+
+    <!-- panels -->
+    <rect x="16" y="34" width="234" height="278" rx="7" fill="#fbfcfe" stroke="#e3e8ef"/>
+    <rect x="262" y="34" width="246" height="278" rx="7" fill="#fbfcfe" stroke="#e3e8ef"/>
+    <rect x="520" y="34" width="224" height="278" rx="7" fill="#fbfcfe" stroke="#e3e8ef"/>
+
+    <!-- ===== LEFT: task spectrum + source ===== -->
+    <text x="133" y="52" text-anchor="middle" font-size="13" font-weight="700" fill="#1a3a8a">① 任务谱系 · 数据源</text>
+
+    <rect x="28" y="64" width="88" height="36" rx="6" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.3"/>
+    <text x="72" y="80" text-anchor="middle" font-size="12" fill="#1a3a8a">单算子</text>
+    <text x="72" y="94" text-anchor="middle" font-size="12" fill="#1a3a8a">kernel</text>
+    <line x1="116" y1="82" x2="148" y2="82" stroke="#1a3a8a" stroke-width="1.4" marker-end="url(#c2-arr)"/>
+    <rect x="150" y="64" width="90" height="36" rx="6" fill="#dbe7f3" stroke="#1a3a8a" stroke-width="1.3"/>
+    <text x="195" y="80" text-anchor="middle" font-size="12" fill="#1a3a8a">融合</text>
+    <text x="195" y="94" text-anchor="middle" font-size="12" fill="#1a3a8a">mega-kernel</text>
+
+    <rect x="28" y="110" width="212" height="36" rx="6" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.2"/>
+    <text x="134" y="125" text-anchor="middle" font-size="11" fill="#555">源自高质量 GitHub 仓库</text>
+    <text x="134" y="140" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1a3a8a">Flash Linear Attention</text>
+
+    <text x="133" y="164" text-anchor="middle" font-size="12" fill="#555">GPU 编程语言 / 数值格式</text>
+
+    <rect x="28" y="172" width="100" height="24" rx="5" fill="#fff5e8" stroke="#e0a040" stroke-width="1.2"/>
+    <text x="78" y="188" text-anchor="middle" font-size="11" fill="#6e4c0f">CUDA</text>
+    <rect x="140" y="172" width="100" height="24" rx="5" fill="#fff5e8" stroke="#e0a040" stroke-width="1.2"/>
+    <text x="190" y="188" text-anchor="middle" font-size="11" fill="#6e4c0f">Triton</text>
+    <rect x="28" y="200" width="100" height="24" rx="5" fill="#fff5e8" stroke="#e0a040" stroke-width="1.2"/>
+    <text x="78" y="216" text-anchor="middle" font-size="11" fill="#6e4c0f">CuTe DSL</text>
+    <rect x="140" y="200" width="100" height="24" rx="5" fill="#fff5e8" stroke="#e0a040" stroke-width="1.2"/>
+    <text x="190" y="216" text-anchor="middle" font-size="11" fill="#6e4c0f">Gluon</text>
+    <rect x="28" y="228" width="100" height="24" rx="5" fill="#fff5e8" stroke="#e0a040" stroke-width="1.2"/>
+    <text x="78" y="244" text-anchor="middle" font-size="11" fill="#6e4c0f">ThunderKittens</text>
+    <rect x="140" y="228" width="100" height="24" rx="5" fill="#fff5e8" stroke="#e0a040" stroke-width="1.2"/>
+    <text x="190" y="244" text-anchor="middle" font-size="11" fill="#6e4c0f">TileLang</text>
+
+    <rect x="28" y="256" width="58" height="22" rx="5" fill="#dbe7f3" stroke="#1a3a8a" stroke-width="1.1"/>
+    <text x="57" y="271" text-anchor="middle" font-size="11" fill="#1a3a8a">BF16</text>
+    <rect x="94" y="256" width="54" height="22" rx="5" fill="#dbe7f3" stroke="#1a3a8a" stroke-width="1.1"/>
+    <text x="121" y="271" text-anchor="middle" font-size="11" fill="#1a3a8a">FP8</text>
+    <rect x="156" y="256" width="54" height="22" rx="5" fill="#dbe7f3" stroke="#1a3a8a" stroke-width="1.1"/>
+    <text x="183" y="271" text-anchor="middle" font-size="11" fill="#1a3a8a">FP4</text>
+
+    <!-- left -> middle -->
+    <line x1="250" y1="124" x2="261" y2="124" stroke="#1a3a8a" stroke-width="1.4" marker-end="url(#c2-arr)"/>
+
+    <!-- ===== MIDDLE: reward ladder ===== -->
+    <text x="385" y="52" text-anchor="middle" font-size="13" font-weight="700" fill="#1a3a8a">② reward = 正确性 + 性能</text>
+    <text x="385" y="68" text-anchor="middle" font-size="11" fill="#666">先过正确性门，再按性能给分</text>
+
+    <rect x="286" y="90" width="16" height="182" rx="3" fill="url(#barGrad)" stroke="#999"/>
+    <text x="282" y="94" text-anchor="end" font-size="11" font-weight="700" fill="#256b25">1</text>
+    <text x="282" y="185" text-anchor="end" font-size="11" font-weight="700" fill="#6e4c0f">0.5</text>
+    <text x="282" y="272" text-anchor="end" font-size="11" font-weight="700" fill="#9f2e2e">0</text>
+
+    <line x1="302" y1="110" x2="316" y2="110" stroke="#999" stroke-width="1"/>
+    <line x1="302" y1="180" x2="316" y2="180" stroke="#999" stroke-width="1"/>
+    <line x1="302" y1="252" x2="316" y2="252" stroke="#999" stroke-width="1"/>
+
+    <rect x="316" y="88" width="188" height="44" rx="6" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.3"/>
+    <text x="410" y="106" text-anchor="middle" font-size="12" fill="#256b25">③ 逼近 roofline</text>
+    <text x="410" y="122" text-anchor="middle" font-size="12" font-weight="700" fill="#256b25">→ 趋近 1</text>
+
+    <rect x="316" y="158" width="188" height="44" rx="6" fill="#fff5e8" stroke="#e0a040" stroke-width="1.3"/>
+    <text x="410" y="176" text-anchor="middle" font-size="12" fill="#6e4c0f">② 追平专家实现</text>
+    <text x="410" y="192" text-anchor="middle" font-size="12" font-weight="700" fill="#6e4c0f">→ 0.5</text>
+
+    <rect x="316" y="228" width="188" height="48" rx="6" fill="#fdecec" stroke="#c0392b" stroke-width="1.3"/>
+    <text x="410" y="246" text-anchor="middle" font-size="12" font-weight="700" fill="#9f2e2e">① 数值误差超阈值 → 0</text>
+    <text x="410" y="264" text-anchor="middle" font-size="11" fill="#9f2e2e">PyTorch reference 门禁</text>
+
+    <!-- ===== RIGHT: hacking detection ===== -->
+    <text x="632" y="52" text-anchor="middle" font-size="13" font-weight="700" fill="#c0392b">③ 反 hacking 检测</text>
+    <rect x="528" y="62" width="210" height="214" rx="7" fill="#fdecec" stroke="#c0392b" stroke-width="1.5"/>
+    <text x="633" y="80" text-anchor="middle" font-size="11.5" font-weight="700" fill="#9f2e2e">罚作弊策略（持续扩充）</text>
+
+    <rect x="540" y="90" width="186" height="34" rx="5" fill="#fff" stroke="#c0392b" stroke-width="1.2"/>
+    <text x="633" y="111" text-anchor="middle" font-size="12" fill="#9f2e2e">CUDA graph replay</text>
+    <rect x="540" y="132" width="186" height="34" rx="5" fill="#fff" stroke="#c0392b" stroke-width="1.2"/>
+    <text x="633" y="153" text-anchor="middle" font-size="11.5" fill="#9f2e2e">input caching 输入缓存</text>
+    <rect x="540" y="174" width="186" height="34" rx="5" fill="#fff" stroke="#c0392b" stroke-width="1.2"/>
+    <text x="633" y="195" text-anchor="middle" font-size="11.5" fill="#9f2e2e">precision reduction 降精度</text>
+
+    <rect x="540" y="216" width="186" height="48" rx="6" fill="#fff" stroke="#c0392b" stroke-width="1.2" stroke-dasharray="5 3"/>
+    <text x="633" y="235" text-anchor="middle" font-size="11" fill="#9f2e2e">发现新作弊策略</text>
+    <text x="633" y="252" text-anchor="middle" font-size="11" font-weight="700" fill="#9f2e2e">→ 持续加新防线</text>
+
+    <!-- penalty back to reward=0 -->
+    <text x="516" y="242" text-anchor="middle" font-size="10.5" fill="#9f2e2e">罚0</text>
+    <line x1="527" y1="252" x2="506" y2="252" stroke="#c0392b" stroke-width="1.5" marker-end="url(#c2-arr-r)"/>
+  </svg>
+  <div class="viz-cap">reward 先过正确性门（超误差阈值判 0），再按性能给分：追平专家 0.5、逼近 roofline 趋近 1，并用 hacking-detection 罚 graph replay / 输入缓存 / 降精度等作弊。</div>
+</div>
+
+    <h4 style="font-style:normal;color:#1a3a8a;margin-top:22px">③ 个人助理任务（§4.2.5）</h4>
+    <p>为 long-horizon 助手造 <b>Gmail / Notion / Slack / Canvas</b> 的高保真 mock——保留真实应用核心语义，但<em>可复现、可大规模交互，无需外部 API、无 rate limit</em>。在此之上设计受真实职场流程（HR / 法律 / 金融）启发的复杂任务：agent 在一个<b>持久、逐日演化</b>的环境里跨<b>多个模拟日</b>操作，遇到跨应用分布的<b>几十个相互依赖事件</b>；单条 rollout 可达<em>数千次工具调用、百万级 context token</em>。每个事件自带评判（确定性规则或 LLM evaluator）；初始工作区由 agent 自主搜网构建，RL 框架也被扩展以支持这种 living environment。</p>
+    <div class="viz">
+  <svg viewBox="0 0 760 340" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang SC',sans-serif">
+    <defs>
+      <marker id="c3-arr" markerWidth="9" markerHeight="9" refX="7.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#1a3a8a"/></marker>
+      <marker id="c3-arr-g" markerWidth="9" markerHeight="9" refX="7.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#1e6b1e"/></marker>
+      <marker id="c3-arr-r" markerWidth="9" markerHeight="9" refX="7.5" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#c0392b"/></marker>
+    </defs>
+
+    <text x="380" y="24" text-anchor="middle" font-size="16" font-weight="700" fill="#1a3a8a">个人助理任务 · long-horizon（Personal Assistant Tasks）</text>
+
+    <!-- ===== LEFT: high-fidelity mock apps ===== -->
+    <rect x="20" y="42" width="188" height="282" rx="8" fill="#ffffff" stroke="#d8d8d8" stroke-width="1.3"/>
+    <text x="114" y="60" text-anchor="middle" font-size="14.5" font-weight="700" fill="#1a3a8a">高保真 mock 应用</text>
+
+    <rect x="32" y="76" width="80" height="48" rx="6" fill="#fdecec" stroke="#c0392b" stroke-width="1.3"/>
+    <text x="72" y="100" text-anchor="middle" font-size="13" font-weight="700" fill="#9f2e2e">Gmail</text>
+    <text x="72" y="114" text-anchor="middle" font-size="9.5" fill="#9f2e2e">email</text>
+
+    <rect x="118" y="76" width="80" height="48" rx="6" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.3"/>
+    <text x="158" y="100" text-anchor="middle" font-size="13" font-weight="700" fill="#1a3a8a">Notion</text>
+    <text x="158" y="114" text-anchor="middle" font-size="9.5" fill="#1a3a8a">docs</text>
+
+    <rect x="32" y="132" width="80" height="48" rx="6" fill="#fff5e8" stroke="#e0a040" stroke-width="1.3"/>
+    <text x="72" y="156" text-anchor="middle" font-size="13" font-weight="700" fill="#6e4c0f">Slack</text>
+    <text x="72" y="170" text-anchor="middle" font-size="9.5" fill="#6e4c0f">chat</text>
+
+    <rect x="118" y="132" width="80" height="48" rx="6" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.3"/>
+    <text x="158" y="156" text-anchor="middle" font-size="13" font-weight="700" fill="#256b25">Canvas</text>
+    <text x="158" y="170" text-anchor="middle" font-size="9.5" fill="#256b25">board</text>
+
+    <text x="114" y="199" text-anchor="middle" font-size="11" fill="#555">保留真实应用核心语义</text>
+    <rect x="30" y="208" width="168" height="24" rx="6" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.2"/>
+    <text x="114" y="224" text-anchor="middle" font-size="11.5" fill="#1a3a8a">可复现 · 大规模交互</text>
+    <rect x="30" y="238" width="168" height="24" rx="6" fill="#ffffff" stroke="#d8d8d8" stroke-width="1.2"/>
+    <text x="114" y="254" text-anchor="middle" font-size="11" fill="#555">无外部 API · 无 rate limit</text>
+
+    <line x1="208" y1="150" x2="215" y2="150" stroke="#1a3a8a" stroke-width="1.5" marker-end="url(#c3-arr)"/>
+
+    <!-- ===== MIDDLE: persistent day-by-day evolving env ===== -->
+    <rect x="216" y="42" width="308" height="282" rx="8" fill="#ffffff" stroke="#d8d8d8" stroke-width="1.3"/>
+    <text x="370" y="60" text-anchor="middle" font-size="14.5" font-weight="700" fill="#1a3a8a">持久 · 逐日演化环境</text>
+    <text x="370" y="77" text-anchor="middle" font-size="11" fill="#666">跨多个模拟日 (multiple simulated days) 持续演化</text>
+
+    <rect x="228" y="86" width="138" height="24" rx="12" fill="#f7d9a8" stroke="#e0a040" stroke-width="1.3"/>
+    <text x="297" y="102" text-anchor="middle" font-size="12.5" font-weight="700" fill="#6e4c0f">数千次 tool calls</text>
+    <rect x="374" y="86" width="142" height="24" rx="12" fill="#f7d9a8" stroke="#e0a040" stroke-width="1.3"/>
+    <text x="445" y="102" text-anchor="middle" font-size="12" font-weight="700" fill="#6e4c0f">百万级 context token</text>
+
+    <text x="370" y="126" text-anchor="middle" font-size="10.5" fill="#666">interdependent events（几十个 · 跨 app）</text>
+
+    <!-- dependency links -->
+    <line x1="270" y1="176" x2="316" y2="146" stroke="#1a3a8a" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#c3-arr)"/>
+    <line x1="330" y1="140" x2="372" y2="176" stroke="#1a3a8a" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#c3-arr)"/>
+    <line x1="330" y1="136" x2="430" y2="140" stroke="#1a3a8a" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#c3-arr)"/>
+    <line x1="386" y1="180" x2="486" y2="180" stroke="#1a3a8a" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#c3-arr)"/>
+    <line x1="440" y1="146" x2="490" y2="174" stroke="#1a3a8a" stroke-width="1.2" stroke-dasharray="3 2" marker-end="url(#c3-arr)"/>
+
+    <!-- drop lines to axis -->
+    <line x1="262" y1="185" x2="262" y2="246" stroke="#d8d8d8" stroke-width="1" stroke-dasharray="2 3"/>
+    <line x1="322" y1="147" x2="322" y2="246" stroke="#d8d8d8" stroke-width="1" stroke-dasharray="2 3"/>
+    <line x1="378" y1="191" x2="378" y2="246" stroke="#d8d8d8" stroke-width="1" stroke-dasharray="2 3"/>
+    <line x1="436" y1="147" x2="436" y2="246" stroke="#d8d8d8" stroke-width="1" stroke-dasharray="2 3"/>
+    <line x1="492" y1="185" x2="492" y2="246" stroke="#d8d8d8" stroke-width="1" stroke-dasharray="2 3"/>
+
+    <!-- event nodes -->
+    <circle cx="262" cy="178" r="9" fill="#fdecec" stroke="#c0392b" stroke-width="1.5"/>
+    <circle cx="322" cy="138" r="9" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.5"/>
+    <circle cx="378" cy="184" r="9" fill="#fff5e8" stroke="#e0a040" stroke-width="1.5"/>
+    <circle cx="436" cy="138" r="9" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.5"/>
+    <circle cx="492" cy="178" r="9" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.5"/>
+
+    <!-- timeline axis -->
+    <line x1="232" y1="250" x2="506" y2="250" stroke="#1a3a8a" stroke-width="1.6" marker-end="url(#c3-arr)"/>
+    <line x1="278" y1="245" x2="278" y2="255" stroke="#1a3a8a" stroke-width="1.4"/>
+    <line x1="378" y1="245" x2="378" y2="255" stroke="#1a3a8a" stroke-width="1.4"/>
+    <line x1="478" y1="245" x2="478" y2="255" stroke="#1a3a8a" stroke-width="1.4"/>
+    <text x="278" y="270" text-anchor="middle" font-size="11.5" font-weight="600" fill="#1a3a8a">Day 1</text>
+    <text x="378" y="270" text-anchor="middle" font-size="11.5" font-weight="600" fill="#1a3a8a">Day 2</text>
+    <text x="478" y="270" text-anchor="middle" font-size="11.5" font-weight="600" fill="#1a3a8a">Day 3</text>
+    <text x="370" y="292" text-anchor="middle" font-size="11" fill="#666">单条 rollout 跨日累积 · 事件相互依赖</text>
+    <text x="370" y="310" text-anchor="middle" font-size="10.5" fill="#888">RL 框架扩展以支持 living environment（事件流 + 世界状态转移）</text>
+
+    <line x1="524" y1="150" x2="531" y2="150" stroke="#1e6b1e" stroke-width="1.5" marker-end="url(#c3-arr-g)"/>
+
+    <!-- ===== RIGHT: per-event evaluation ===== -->
+    <rect x="532" y="42" width="208" height="282" rx="8" fill="#ffffff" stroke="#d8d8d8" stroke-width="1.3"/>
+    <text x="636" y="60" text-anchor="middle" font-size="14.5" font-weight="700" fill="#1e6b1e">每个事件自带评判</text>
+
+    <rect x="542" y="72" width="190" height="42" rx="6" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.4"/>
+    <text x="637" y="90" text-anchor="middle" font-size="12.5" font-weight="700" fill="#256b25">确定性规则</text>
+    <text x="637" y="105" text-anchor="middle" font-size="10.5" fill="#256b25">deterministic rules</text>
+
+    <rect x="542" y="120" width="190" height="42" rx="6" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.4"/>
+    <text x="637" y="138" text-anchor="middle" font-size="12.5" font-weight="700" fill="#256b25">LLM-based evaluator</text>
+    <text x="637" y="153" text-anchor="middle" font-size="10.5" fill="#256b25">每事件挂一个判分器</text>
+
+    <rect x="542" y="172" width="190" height="60" rx="6" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.3"/>
+    <text x="637" y="190" text-anchor="middle" font-size="11.5" font-weight="600" fill="#1a3a8a">初始工作区</text>
+    <text x="637" y="206" text-anchor="middle" font-size="11" fill="#1a3a8a">agent 自主搜网构建</text>
+    <text x="637" y="222" text-anchor="middle" font-size="11" fill="#1a3a8a">连贯 · 任务相关环境</text>
+
+    <rect x="542" y="240" width="190" height="58" rx="6" fill="#fff5e8" stroke="#e0a040" stroke-width="1.3"/>
+    <text x="637" y="258" text-anchor="middle" font-size="11.5" font-weight="600" fill="#6e4c0f">RL 框架扩展支持</text>
+    <text x="637" y="274" text-anchor="middle" font-size="11" fill="#6e4c0f">living environment：</text>
+    <text x="637" y="290" text-anchor="middle" font-size="11" fill="#6e4c0f">事件流 + 状态转移</text>
+  </svg>
+  <div class="viz-cap">Gmail/Notion/Slack/Canvas 做成高保真 mock，构成逐日演化、几十个相互依赖事件的持久环境，单 rollout 数千工具调用/百万 context，每事件自带确定性或 LLM 评判。</div>
+</div>
+
+    <h4 style="font-style:normal;color:#1a3a8a;margin-top:22px">④ AET 自主执行（§4.2.6）— 最能体现"造环境"野心的一类</h4>
+    <p>AET 设定近乎苛刻：每个任务只给 agent <b>五样东西</b>——初始状态、一个受约束的目标、基于工具的动作空间、执行预算，外加一个<b>独立的 verifier</b>。<em>不给参考轨迹、不给预定义流程。</em>agent 只看到目标、上下文、约束与验证接口，必须自主完成<b>任务分解 / 工具选择 / 规划 / 错误恢复 / 终止判断</b>，训练出一个通用闭环：<b>假设 → 行动 → 分析反馈 → 调整</b>。</p>
+    <div class="viz">
+  <svg viewBox="0 0 760 400" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang SC',sans-serif">
+    <defs>
+      <marker id="c4-arr" markerWidth="9" markerHeight="9" refX="7.5" refY="3" orient="auto"><path d="M0,0 L8,3 L0,6 Z" fill="#1a3a8a"/></marker>
+    </defs>
+    <text x="380" y="24" text-anchor="middle" font-size="17" fill="#1a3a8a" font-weight="700">AET 自主执行 · Autonomous Execution Tasks</text>
+
+    <!-- 左：五要素 -->
+    <text x="185" y="50" text-anchor="middle" font-size="14" fill="#6e4c0f" font-weight="700">任务只给五样 · five inputs</text>
+    <rect x="20" y="58" width="330" height="27" rx="6" fill="#fff5e8" stroke="#e0a040" stroke-width="1.3"/>
+    <text x="32" y="76" font-size="12.5" fill="#6e4c0f">① 初始状态 initial state</text>
+    <rect x="20" y="88" width="330" height="27" rx="6" fill="#fff5e8" stroke="#e0a040" stroke-width="1.3"/>
+    <text x="32" y="106" font-size="12.5" fill="#6e4c0f">② 受约束目标 constrained goal</text>
+    <rect x="20" y="118" width="330" height="27" rx="6" fill="#fff5e8" stroke="#e0a040" stroke-width="1.3"/>
+    <text x="32" y="136" font-size="12.5" fill="#6e4c0f">③ 工具动作空间 tool-based action space</text>
+    <rect x="20" y="148" width="330" height="27" rx="6" fill="#fff5e8" stroke="#e0a040" stroke-width="1.3"/>
+    <text x="32" y="166" font-size="12.5" fill="#6e4c0f">④ 执行预算 execution budget</text>
+    <rect x="20" y="178" width="330" height="27" rx="6" fill="#fff5e8" stroke="#e0a040" stroke-width="1.3"/>
+    <text x="32" y="196" font-size="12.5" fill="#6e4c0f">⑤ 独立 verifier independent verifier</text>
+    <text x="185" y="223" text-anchor="middle" font-size="11.5" fill="#c0392b" font-weight="700">✕ 不给参考轨迹 · ✕ 不给预定义流程</text>
+    <text x="185" y="241" text-anchor="middle" font-size="11" fill="#555">agent 自主:分解/选工具/规划/错误恢复/终止判断</text>
+
+    <!-- 连接箭头 -->
+    <text x="371" y="121" text-anchor="middle" font-size="10.5" fill="#1a3a8a">agent</text>
+    <line x1="355" y1="130" x2="386" y2="130" stroke="#1a3a8a" stroke-width="1.5" marker-end="url(#c4-arr)"/>
+
+    <!-- 右：verify-in-the-loop 闭环 -->
+    <text x="560" y="50" text-anchor="middle" font-size="14" fill="#1a3a8a" font-weight="700">verify-in-the-loop 闭环</text>
+    <rect x="505" y="56" width="110" height="32" rx="7" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.3"/>
+    <text x="560" y="76" text-anchor="middle" font-size="12.5" fill="#1a3a8a">hypothesize 假设</text>
+    <rect x="617" y="112" width="110" height="32" rx="7" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.3"/>
+    <text x="672" y="132" text-anchor="middle" font-size="12.5" fill="#1a3a8a">act 行动</text>
+    <rect x="505" y="168" width="110" height="32" rx="7" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.3"/>
+    <text x="560" y="188" text-anchor="middle" font-size="12.5" fill="#1a3a8a">analyze 分析反馈</text>
+    <rect x="393" y="112" width="110" height="32" rx="7" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.3"/>
+    <text x="448" y="132" text-anchor="middle" font-size="12.5" fill="#1a3a8a">adapt 调整</text>
+    <line x1="612" y1="84" x2="656" y2="113" stroke="#1a3a8a" stroke-width="1.5" marker-end="url(#c4-arr)"/>
+    <line x1="658" y1="144" x2="614" y2="171" stroke="#1a3a8a" stroke-width="1.5" marker-end="url(#c4-arr)"/>
+    <line x1="508" y1="172" x2="464" y2="143" stroke="#1a3a8a" stroke-width="1.5" marker-end="url(#c4-arr)"/>
+    <line x1="462" y1="112" x2="506" y2="85" stroke="#1a3a8a" stroke-width="1.5" marker-end="url(#c4-arr)"/>
+    <text x="560" y="123" text-anchor="middle" font-size="10.5" fill="#555">迭代提交 solution</text>
+    <text x="560" y="138" text-anchor="middle" font-size="10.5" fill="#555">收 verifier feedback 改进</text>
+    <text x="560" y="225" text-anchor="middle" font-size="11.5" fill="#c0392b" font-weight="700">reward 锚 verifier 评「环境最终状态」</text>
+    <text x="560" y="242" text-anchor="middle" font-size="11" fill="#9f2e2e">非 agent 自称完成（堵自我报告作弊）</text>
+
+    <line x1="20" y1="255" x2="740" y2="255" stroke="#d8d8d8" stroke-width="1"/>
+
+    <!-- 三类 verifier -->
+    <text x="380" y="272" text-anchor="middle" font-size="14" fill="#1e6b1e" font-weight="700">三类 verifier</text>
+    <rect x="20" y="280" width="230" height="40" rx="6" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.3"/>
+    <text x="135" y="298" text-anchor="middle" font-size="12.5" fill="#256b25" font-weight="700">黑箱系统复刻</text>
+    <text x="135" y="313" text-anchor="middle" font-size="10.5" fill="#256b25">black-box replication · Fig.10 相机维修</text>
+    <rect x="264" y="280" width="230" height="40" rx="6" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.3"/>
+    <text x="379" y="298" text-anchor="middle" font-size="12.5" fill="#256b25" font-weight="700">定量因子发现</text>
+    <text x="379" y="313" text-anchor="middle" font-size="10.5" fill="#256b25">quantitative factor discovery</text>
+    <rect x="508" y="280" width="230" height="40" rx="6" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.3"/>
+    <text x="623" y="298" text-anchor="middle" font-size="12.5" fill="#256b25" font-weight="700">税务审计</text>
+    <text x="623" y="313" text-anchor="middle" font-size="10.5" fill="#256b25">tax auditing</text>
+
+    <line x1="20" y1="328" x2="740" y2="328" stroke="#d8d8d8" stroke-width="1"/>
+
+    <!-- 反 hacking 三招 -->
+    <text x="380" y="343" text-anchor="middle" font-size="14" fill="#c0392b" font-weight="700">反 hacking 三招</text>
+    <rect x="20" y="349" width="230" height="46" rx="6" fill="#fdecec" stroke="#c0392b" stroke-width="1.3"/>
+    <text x="135" y="368" text-anchor="middle" font-size="11.5" fill="#9f2e2e" font-weight="700">(a) 隔离 isolation</text>
+    <text x="135" y="384" text-anchor="middle" font-size="10.5" fill="#9f2e2e">agent ↔ verifier</text>
+    <rect x="264" y="349" width="230" height="46" rx="6" fill="#fdecec" stroke="#c0392b" stroke-width="1.3"/>
+    <text x="379" y="368" text-anchor="middle" font-size="11.5" fill="#9f2e2e" font-weight="700">(b) public verifier 诊断反馈</text>
+    <text x="379" y="384" text-anchor="middle" font-size="10.5" fill="#9f2e2e">+ hidden verifier held-out 防过拟合</text>
+    <rect x="508" y="349" width="230" height="46" rx="6" fill="#fdecec" stroke="#c0392b" stroke-width="1.3"/>
+    <text x="623" y="368" text-anchor="middle" font-size="11.5" fill="#9f2e2e" font-weight="700">(c) 有限提交预算</text>
+    <text x="623" y="384" text-anchor="middle" font-size="10.5" fill="#9f2e2e">惩罚式 reward under budget</text>
+  </svg>
+  <div class="viz-cap">AET 只给五要素（初始态/受约束目标/动作空间/预算/独立 verifier），逼 agent 自主跑 hypothesize→act→analyze→adapt 闭环；reward 锚最终状态，靠隔离 + public/hidden verifier + 惩罚式 reward 反作弊。</div>
+</div>
+    <ol class="pts">
+      <li><b>reward 锚在环境的最终状态</b>，而非 agent 自称"我做完了"——堵死"自我报告式"作弊。</li>
+      <li><b>多类 verifier</b> 支持多样环境：黑箱系统复刻（Figure 10 相机维修系统）、定量因子发现、税务审计。</li>
+      <li><b>三重反 hacking</b>：(a) agent 与 verifier <b>隔离</b>；(b) <b>public verifier</b>（给诊断反馈）配 <b>hidden verifier</b>（评 held-out 场景，防过拟合公开检查）；(c) 有限提交预算下用<b>惩罚式 reward</b>。</li>
+    </ol>
+
+    <h4 style="font-style:normal;color:#1a3a8a;margin-top:22px">⑤ Web 开发（§4.2.7）</h4>
+    <p>专家精选的 web 开发任务：输入从<b>一行场景描述</b>到<b>多段规格</b>；产物涵盖<b>网站 / 交互游戏 / 3D·WebGL / 数据可视化 / SVG / 全栈应用</b>。每个任务跑在<b>容器化 sandbox</b>，且在<em>多种 agent scaffold</em>（而非单一固定 harness）下 rollout，促跨 scaffold 泛化。reward = <b>确定性检查 + 模型判分</b>两部分：确定性检查功能测试应用行为、复刻类打<b>结构与像素级相似度</b>；模型判分用其它模型做源码审查、看/交互产物。<em>build 失败、运行报错、或假装实现（fake 而非 implement）→ reward 直接清零。</em></p>
+    <div class="viz">
+  <svg viewBox="0 0 760 300" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang SC',sans-serif">
+    <defs>
+      <marker id="c5-arr" markerWidth="9" markerHeight="9" refX="7.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#1a3a8a"/></marker>
+      <marker id="c5-arr-g" markerWidth="9" markerHeight="9" refX="7.5" refY="4" orient="auto"><path d="M0,0 L8,4 L0,8 z" fill="#e0a040"/></marker>
+    </defs>
+
+    <text x="18" y="22" font-size="16" font-weight="bold" fill="#1a3a8a">图C-⑤ · Web 开发 · sandbox + 多 scaffold rollout</text>
+
+    <!-- ===== 左：输入谱系 + 产物 ===== -->
+    <text x="97" y="48" font-size="14" font-weight="bold" fill="#1a3a8a" text-anchor="middle">输入谱系</text>
+    <rect x="30" y="62" width="60" height="20" rx="5" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.2"/>
+    <text x="60" y="76" font-size="11.5" fill="#1a3a8a" text-anchor="middle">一行描述</text>
+    <rect x="30" y="88" width="100" height="20" rx="5" fill="#dbe7f3" stroke="#1a3a8a" stroke-width="1.2"/>
+    <text x="80" y="102" font-size="11.5" fill="#1a3a8a" text-anchor="middle">场景规格</text>
+    <rect x="30" y="114" width="140" height="20" rx="5" fill="#dbe7f3" stroke="#1a3a8a" stroke-width="1.2"/>
+    <text x="100" y="128" font-size="11.5" fill="#1a3a8a" text-anchor="middle">多段 specification</text>
+    <text x="97" y="150" font-size="10.5" fill="#555" text-anchor="middle">由短到长: 一行 → 多段 spec</text>
+
+    <text x="97" y="170" font-size="13" font-weight="bold" fill="#6e4c0f" text-anchor="middle">产物 artifacts</text>
+    <rect x="18" y="178" width="76" height="20" rx="5" fill="#fff5e8" stroke="#e0a040" stroke-width="1.2"/>
+    <text x="56" y="192" font-size="11.5" fill="#6e4c0f" text-anchor="middle">网站</text>
+    <rect x="100" y="178" width="76" height="20" rx="5" fill="#fff5e8" stroke="#e0a040" stroke-width="1.2"/>
+    <text x="138" y="192" font-size="11.5" fill="#6e4c0f" text-anchor="middle">交互游戏</text>
+    <rect x="18" y="202" width="76" height="20" rx="5" fill="#fff5e8" stroke="#e0a040" stroke-width="1.2"/>
+    <text x="56" y="216" font-size="11.5" fill="#6e4c0f" text-anchor="middle">3D·WebGL</text>
+    <rect x="100" y="202" width="76" height="20" rx="5" fill="#fff5e8" stroke="#e0a040" stroke-width="1.2"/>
+    <text x="138" y="216" font-size="11.5" fill="#6e4c0f" text-anchor="middle">数据可视化</text>
+    <rect x="18" y="226" width="76" height="20" rx="5" fill="#fff5e8" stroke="#e0a040" stroke-width="1.2"/>
+    <text x="56" y="240" font-size="11.5" fill="#6e4c0f" text-anchor="middle">SVG</text>
+    <rect x="100" y="226" width="76" height="20" rx="5" fill="#fff5e8" stroke="#e0a040" stroke-width="1.2"/>
+    <text x="138" y="240" font-size="11.5" fill="#6e4c0f" text-anchor="middle">全栈应用</text>
+
+    <!-- ===== 中：sandbox + scaffold ===== -->
+    <line x1="176" y1="98" x2="206" y2="98" stroke="#1a3a8a" stroke-width="1.5" marker-end="url(#c5-arr)"/>
+
+    <rect x="210" y="64" width="250" height="58" rx="7" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.4"/>
+    <text x="335" y="86" font-size="13.5" font-weight="bold" fill="#1a3a8a" text-anchor="middle">容器化 sandbox</text>
+    <text x="335" y="106" font-size="11.5" fill="#555" text-anchor="middle">每任务隔离运行 · rollout</text>
+
+    <line x1="300" y1="122" x2="250" y2="148" stroke="#1a3a8a" stroke-width="1.3" marker-end="url(#c5-arr)"/>
+    <line x1="335" y1="122" x2="335" y2="148" stroke="#1a3a8a" stroke-width="1.3" marker-end="url(#c5-arr)"/>
+    <line x1="370" y1="122" x2="420" y2="148" stroke="#1a3a8a" stroke-width="1.3" marker-end="url(#c5-arr)"/>
+
+    <rect x="210" y="150" width="74" height="26" rx="5" fill="#fff" stroke="#d8d8d8" stroke-width="1.3"/>
+    <text x="247" y="167" font-size="11.5" fill="#555" text-anchor="middle">scaffold A</text>
+    <rect x="298" y="150" width="74" height="26" rx="5" fill="#fff" stroke="#d8d8d8" stroke-width="1.3"/>
+    <text x="335" y="167" font-size="11.5" fill="#555" text-anchor="middle">scaffold B</text>
+    <rect x="386" y="150" width="74" height="26" rx="5" fill="#fff" stroke="#d8d8d8" stroke-width="1.3"/>
+    <text x="423" y="167" font-size="11.5" fill="#555" text-anchor="middle">scaffold C</text>
+
+    <line x1="335" y1="176" x2="335" y2="194" stroke="#e0a040" stroke-width="1.5" marker-end="url(#c5-arr-g)"/>
+    <rect x="245" y="196" width="180" height="28" rx="6" fill="#f7d9a8" stroke="#e0a040" stroke-width="1.4"/>
+    <text x="335" y="214" font-size="12.5" font-weight="bold" fill="#6e4c0f" text-anchor="middle">跨 scaffold 泛化</text>
+
+    <!-- ===== 右：reward = 检查 + 判分 ===== -->
+    <line x1="460" y1="93" x2="494" y2="93" stroke="#1a3a8a" stroke-width="1.5" marker-end="url(#c5-arr)"/>
+    <text x="622" y="48" font-size="14" font-weight="bold" fill="#1e6b1e" text-anchor="middle">reward = 确定性检查 + 模型判分</text>
+
+    <rect x="498" y="64" width="248" height="60" rx="7" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.4"/>
+    <text x="622" y="82" font-size="12.5" font-weight="bold" fill="#256b25" text-anchor="middle">确定性检查 deterministic checks</text>
+    <text x="622" y="100" font-size="11.5" fill="#256b25" text-anchor="middle">功能测试 app 行为</text>
+    <text x="622" y="116" font-size="11.5" fill="#256b25" text-anchor="middle">复刻类: 结构 + 像素级相似度</text>
+
+    <rect x="498" y="136" width="248" height="52" rx="7" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.4"/>
+    <text x="622" y="156" font-size="12.5" font-weight="bold" fill="#256b25" text-anchor="middle">模型判分 model judging</text>
+    <text x="622" y="176" font-size="11.5" fill="#256b25" text-anchor="middle">其它模型: 源码审查 + 看/交互产物</text>
+
+    <rect x="498" y="200" width="248" height="60" rx="7" fill="#fdecec" stroke="#c0392b" stroke-width="1.6"/>
+    <text x="622" y="222" font-size="12.5" font-weight="bold" fill="#9f2e2e" text-anchor="middle">build 失败 / 运行报错 / fake 假装实现</text>
+    <text x="622" y="244" font-size="12.5" font-weight="bold" fill="#c0392b" text-anchor="middle">→ reward 清零 = 0</text>
+  </svg>
+  <div class="viz-cap">输入从一行描述到多段规格，产物覆盖网站/游戏/3D·WebGL/可视化/全栈；容器化 sandbox 下多 scaffold rollout 促泛化，reward = 确定性检查(功能+像素相似度) + 模型判分(源码审查+交互)，build 失败或造假直接清零。</div>
+</div>
+  </div>
+
+  <div class="punchline" style="font-size:20px">一句话看懂 environment scaling 的价值：K3 把"agentic RL 该给什么信号"这个最脏最难的问题，变成一条<em>可扩张的流水线</em>——知识图谱负责造题量与覆盖，五类可验证环境负责给可靠 reward，white-box 壳负责防过拟合，hidden verifier + hacking-detection 负责防作弊。相比之下，换个 loss、调个 advantage 反而是小事。</div>
+</div>
+
+<!-- ================= 5.3 Infra for 1M Agentic RL ================= -->
+<div class="paper">
+  <h4>Infra for 1M Agentic RL — 护城河的另一半在工程</h4>
+  <div class="subtitle">在有限算力里把百万 token、多步 agentic RL 跑起来（论文 §5.3）</div>
+
+  <div class="note">
+    前面 Environment Scaling 解决"训练信号从哪来"，但还有个同样脏的问题：<strong>把一个 Kimi K3 这么大的模型、拉到百万 token 上下文做 agentic RL，在有限算力预算下怎么跑得动</strong>？K3 把 <em>资源效率</em> 当成一等目标，砸了两块 infra：<b>(1) 高效训练与 rollout</b>（KV-cache 管理、请求调度、训练态摆放）；<b>(2) 高性能可续跑的 sandbox</b>（长程交互）。
+  </div>
+
+  <!-- 5.3.1 -->
+  <div class="mg-section">
+    <span class="mg-section-tag">5.3.1 Long-context RL infrastructure — 三招省显存 / 降尾延迟</span>
+    <p>K3 用 <strong>co-located RL training</strong>（训练与 rollout 同卡）把每个 1M-context 实验压进<b>几百张 GPU</b>，再用 <strong>partial rollout</strong> 削超长轨迹的尾延迟。硬件利用率上去了，却带来一个新矛盾：<em>要留给下一轮的 rollout KV-cache</em> 和 <em>训练本身要的显存</em> 互相抢地方——长上下文下尤其致命。三招各治一处：</p>
+    <!-- FIG_INFRA531 -->
+    <div class="viz">
+  <svg viewBox="0 0 760 400" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang SC',sans-serif">
+    <defs>
+      <marker id="i1-arr" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1a3a8a"/></marker>
+      <marker id="i1-arr-o" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#e0a040"/></marker>
+      <marker id="i1-arr-g" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#1e6b1e"/></marker>
+    </defs>
+
+    <!-- 背景带 -->
+    <rect x="12" y="8" width="736" height="46" rx="7" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.4"/>
+    <text x="380" y="28" text-anchor="middle" font-size="13.5" font-weight="700" fill="#1a3a8a">co-located RL training ＋ partial rollout —— 高硬件利用率</text>
+    <text x="380" y="44" text-anchor="middle" font-size="11" fill="#9f2e2e">代价：rollout KV-cache（要留给下一轮）↔ 训练显存 争抢，长上下文尤甚</text>
+    <text x="380" y="68" text-anchor="middle" font-size="11.5" font-weight="700" fill="#6e4c0f">▼ 三招：省显存 · 降尾延迟</text>
+
+    <!-- 引导箭头 -->
+    <line x1="130" y1="70" x2="130" y2="76" stroke="#1a3a8a" stroke-width="1.3" marker-end="url(#i1-arr)"/>
+    <line x1="380" y1="70" x2="380" y2="76" stroke="#1a3a8a" stroke-width="1.3" marker-end="url(#i1-arr)"/>
+    <line x1="630" y1="70" x2="630" y2="76" stroke="#1a3a8a" stroke-width="1.3" marker-end="url(#i1-arr)"/>
+
+    <!-- ===== 卡片1 External KV-cache pool ===== -->
+    <rect x="12" y="78" width="236" height="314" rx="8" fill="#ffffff" stroke="#d8d8d8" stroke-width="1.3"/>
+    <text x="130" y="99" text-anchor="middle" font-size="13" font-weight="700" fill="#1a3a8a">① External KV-cache pool</text>
+    <text x="130" y="114" text-anchor="middle" font-size="11" fill="#666">write-back 设计</text>
+
+    <rect x="30" y="126" width="200" height="50" rx="6" fill="#dbe7f3" stroke="#1a3a8a" stroke-width="1.3"/>
+    <text x="130" y="147" text-anchor="middle" font-size="12.5" font-weight="700" fill="#1a3a8a">GPU KV cache</text>
+    <text x="130" y="165" text-anchor="middle" font-size="11" fill="#555">active decoding 常驻</text>
+
+    <line x1="82" y1="178" x2="82" y2="240" stroke="#e0a040" stroke-width="1.5" marker-end="url(#i1-arr-o)"/>
+    <line x1="178" y1="240" x2="178" y2="178" stroke="#1a3a8a" stroke-width="1.5" marker-end="url(#i1-arr)"/>
+    <text x="130" y="202" text-anchor="middle" font-size="10.5" fill="#6e4c0f">evict→write-back ↓</text>
+    <text x="130" y="224" text-anchor="middle" font-size="10.5" fill="#1a3a8a">↑ prefetch 回 GPU</text>
+
+    <rect x="30" y="244" width="200" height="50" rx="6" fill="#fff5e8" stroke="#e0a040" stroke-width="1.3"/>
+    <text x="130" y="265" text-anchor="middle" font-size="12.5" font-weight="700" fill="#6e4c0f">CPU DRAM 外部池</text>
+    <text x="130" y="283" text-anchor="middle" font-size="11" fill="#6e4c0f">存可复用 idle prefix</text>
+
+    <text x="130" y="310" text-anchor="middle" font-size="10.5" fill="#555">KDA state 对齐 MLA KV 块</text>
+    <text x="130" y="325" text-anchor="middle" font-size="10.5" fill="#555">生命周期一起 offload/prefetch</text>
+    <text x="130" y="346" text-anchor="middle" font-size="10.5" fill="#256b25">只为离开 active 的 prefix 付</text>
+    <text x="130" y="360" text-anchor="middle" font-size="10.5" fill="#256b25">DRAM+带宽，不冗余拷贝</text>
+    <text x="130" y="381" text-anchor="middle" font-size="10" fill="#9f2e2e">训练态(w+opt) iter 后→NVMe</text>
+
+    <!-- ===== 卡片2 Auto-throttling scheduler ===== -->
+    <rect x="262" y="78" width="236" height="314" rx="8" fill="#ffffff" stroke="#d8d8d8" stroke-width="1.3"/>
+    <text x="380" y="99" text-anchor="middle" font-size="13" font-weight="700" fill="#1a3a8a">② Auto-throttling scheduler</text>
+    <text x="380" y="114" text-anchor="middle" font-size="11" fill="#666">rollout 动态并发 · 反馈闭环</text>
+
+    <rect x="280" y="126" width="200" height="48" rx="6" fill="#dbe7f3" stroke="#1a3a8a" stroke-width="1.3"/>
+    <text x="380" y="145" text-anchor="middle" font-size="12" font-weight="700" fill="#1a3a8a">运行时信号</text>
+    <text x="380" y="163" text-anchor="middle" font-size="10.5" fill="#555">active / queued · KV util</text>
+
+    <line x1="380" y1="176" x2="380" y2="198" stroke="#1a3a8a" stroke-width="1.5" marker-end="url(#i1-arr)"/>
+
+    <rect x="280" y="200" width="200" height="44" rx="6" fill="#f7d9a8" stroke="#e0a040" stroke-width="1.3"/>
+    <text x="380" y="219" text-anchor="middle" font-size="12" font-weight="700" fill="#6e4c0f">调节阀 valve</text>
+    <text x="380" y="236" text-anchor="middle" font-size="10.5" fill="#6e4c0f">动态控制发出请求数</text>
+
+    <line x1="380" y1="246" x2="380" y2="268" stroke="#1a3a8a" stroke-width="1.5" marker-end="url(#i1-arr)"/>
+
+    <rect x="280" y="270" width="200" height="44" rx="6" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.3"/>
+    <text x="380" y="289" text-anchor="middle" font-size="12" font-weight="700" fill="#256b25">inference engine</text>
+    <text x="380" y="306" text-anchor="middle" font-size="10.5" fill="#256b25">执行多步 rollout</text>
+
+    <polyline points="480,292 491,292 491,150 480,150" fill="none" stroke="#e0a040" stroke-width="1.5" marker-end="url(#i1-arr-o)"/>
+    <text x="495" y="223" text-anchor="middle" font-size="10" fill="#6e4c0f" transform="rotate(-90 495 223)">闭环反馈</text>
+
+    <text x="380" y="336" text-anchor="middle" font-size="10.5" fill="#256b25">早期高利用，压力升则降并发</text>
+    <text x="380" y="356" text-anchor="middle" font-size="10.5" fill="#9f2e2e">KV 压力↑ → 降并发</text>
+    <text x="380" y="370" text-anchor="middle" font-size="10.5" fill="#9f2e2e">避免触发 preemption</text>
+
+    <!-- ===== 卡片3 Gradient-buffer reuse ===== -->
+    <rect x="512" y="78" width="236" height="314" rx="8" fill="#ffffff" stroke="#d8d8d8" stroke-width="1.3"/>
+    <text x="630" y="99" text-anchor="middle" font-size="13" font-weight="700" fill="#1a3a8a">③ Gradient-buffer reuse</text>
+    <text x="630" y="114" text-anchor="middle" font-size="11" fill="#666">非策略模型前向</text>
+
+    <rect x="530" y="126" width="200" height="48" rx="6" fill="#fff5e8" stroke="#e0a040" stroke-width="1.3"/>
+    <text x="630" y="145" text-anchor="middle" font-size="12" font-weight="700" fill="#6e4c0f">reference model</text>
+    <text x="630" y="163" text-anchor="middle" font-size="10.5" fill="#6e4c0f">forward-only 太大 → 放 CPU</text>
+
+    <line x1="630" y1="176" x2="630" y2="202" stroke="#e0a040" stroke-width="1.5" marker-end="url(#i1-arr-o)"/>
+    <text x="640" y="192" font-size="10" fill="#6e4c0f">借用物化</text>
+
+    <rect x="530" y="204" width="200" height="42" rx="6" fill="#dbe7f3" stroke="#1a3a8a" stroke-width="1.3"/>
+    <text x="630" y="222" text-anchor="middle" font-size="11.5" font-weight="700" fill="#1a3a8a">policy FP32 grad-buffer</text>
+    <text x="630" y="238" text-anchor="middle" font-size="10.5" fill="#555">存前向，零额外分配</text>
+
+    <text x="630" y="261" text-anchor="middle" font-size="10" fill="#555">真梯度算出时覆盖回（安全）</text>
+    <text x="630" y="280" text-anchor="middle" font-size="10.5" fill="#256b25">ZeRO-2：每 GPU 留 2 个 VPP chunk</text>
+
+    <rect x="530" y="290" width="95" height="42" rx="6" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.3"/>
+    <text x="577" y="308" text-anchor="middle" font-size="11" font-weight="700" fill="#256b25">slot0</text>
+    <text x="577" y="324" text-anchor="middle" font-size="10.5" fill="#256b25">compute</text>
+
+    <rect x="635" y="290" width="95" height="42" rx="6" fill="#f7d9a8" stroke="#e0a040" stroke-width="1.3"/>
+    <text x="682" y="308" text-anchor="middle" font-size="11" font-weight="700" fill="#6e4c0f">slot1</text>
+    <text x="682" y="324" text-anchor="middle" font-size="10.5" fill="#6e4c0f">prefetch</text>
+
+    <text x="630" y="316" text-anchor="middle" font-size="15" fill="#555">⇄</text>
+    <text x="630" y="350" text-anchor="middle" font-size="10" fill="#555">逐 chunk 流式换入，隐藏拷贝开销</text>
+  </svg>
+  <div class="viz-cap">co-located + partial rollout 换来高利用率却引发 KV-cache 与训练显存争抢；write-back KV 池、auto-throttling、grad-buffer 复用三招把 1M-context RL 压进几百张卡。</div>
+</div>
+    <ol class="pts">
+      <li><b>External KV-cache pool（write-back 设计）。</b>1M-context 多步 rollout 下，一次 prefix KV-cache miss 极其昂贵；partial rollout 在每轮开头还会让上一轮没跑完的长 prefill 请求扎堆涌来，加上投机解码加速请求周转，prefix block 频繁 churn → 触发 preemption、拉低命中率。解法：<em>把"prefix 保留"与"GPU 常驻"解耦</em>——active decoding block 留在 GPU KV cache，可复用的 idle prefix 只在<b>被逐出 GPU 时</b>才 write-back 到 CPU DRAM 外部池，下次复用前 prefetch 回来（KDA state 与对应 MLA KV 块对齐生命周期一起搬）。比 write-through 只为"离开 active decode 的 prefix"付 DRAM 与带宽，不冗余拷贝仍活跃的块。DRAM 不够就在 iteration 结束后把训练态 offload 到 NVMe。</li>
+      <li><b>Rollout auto-throttling scheduler（自动限流调度）。</b>多步 rollout 里 context 随轨迹推进越来越长，按"整条轨迹平均长度"定固定并发既难估、早期又过保守；并发调太高则后期 KV 压力大触发 preemption。K3 在请求调度层做<em>自动限流</em>：用运行时信号（active 请求数、queued 请求数、KV 利用率）动态决定发多少请求进推理引擎——<b>早期保持高利用，KV 压力升就降并发</b>，无需手调就避开欠饱和与过载两头。</li>
+      <li><b>Gradient-buffer reuse（复用梯度缓冲跑非策略模型）。</b>RL loss 常要 reference model 这类 forward-only 的非策略模型，权重太大不能常驻 GPU。K3 把它们放 CPU、用时才物化，且<em>借 policy model 的 FP32 gradient-buffer 存储</em>来放——零额外分配、不产生碎片，真梯度算出时正好覆盖回来（安全）。ZeRO-2 梯度分片下每 GPU 只留 2 个 VPP chunk 的 grad buffer：一个 slot 做当前前向、另一个 prefetch 下一 chunk，逐 chunk 流式换入，把拷贝开销藏起来、不占额外显存。</li>
+    </ol>
+  </div>
+
+  <!-- 5.3.2 -->
+  <div class="mg-section">
+    <span class="mg-section-tag">5.3.2 Sandbox Infrastructure — AgentENV（microVM 沙箱）</span>
+    <p>K3 用多种 sandbox runtime 支撑后训练与评测：传统 container、GPU sandbox，以及最亮眼的 microVM 沙箱 <strong>AgentENV</strong>（与合作伙伴联合研发，专为 agentic 负载设计）。它围绕三个目标：</p>
+    <!-- FIG_INFRA532 -->
+    <div class="viz">
+  <svg viewBox="0 0 760 472" xmlns="http://www.w3.org/2000/svg" font-family="'PingFang SC',sans-serif">
+    <defs>
+      <marker id="i2-arr" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#1a3a8a"/></marker>
+      <marker id="i2-arr-g" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#1e6b1e"/></marker>
+      <marker id="i2-arr-gd" markerWidth="9" markerHeight="9" refX="7" refY="3" orient="auto"><path d="M0,0 L7,3 L0,6 Z" fill="#e0a040"/></marker>
+    </defs>
+
+    <!-- title -->
+    <text x="20" y="18" font-size="15" font-weight="700" fill="#1a3a8a">图6 · Sandbox Infrastructure — AgentENV</text>
+    <text x="740" y="18" font-size="11" fill="#666" text-anchor="end">K3 选多种 sandbox runtime</text>
+
+    <!-- runtime row -->
+    <rect x="20" y="28" width="228" height="42" rx="6" fill="#ffffff" stroke="#d8d8d8" stroke-width="1.3"/>
+    <text x="134" y="46" font-size="12.5" fill="#333" text-anchor="middle">Container runtime</text>
+    <text x="134" y="62" font-size="11" fill="#666" text-anchor="middle">(传统隔离)</text>
+
+    <rect x="266" y="28" width="228" height="42" rx="6" fill="#dbe7f3" stroke="#1a3a8a" stroke-width="1.3"/>
+    <text x="380" y="46" font-size="12.5" fill="#1a3a8a" text-anchor="middle">GPU sandbox</text>
+    <text x="380" y="62" font-size="11" fill="#555" text-anchor="middle">(加速卡隔离)</text>
+
+    <rect x="512" y="28" width="228" height="42" rx="6" fill="#f7d9a8" stroke="#e0a040" stroke-width="1.5"/>
+    <text x="626" y="45" font-size="13.5" font-weight="700" fill="#6e4c0f" text-anchor="middle">AgentENV ★</text>
+    <text x="626" y="62" font-size="11" fill="#6e4c0f" text-anchor="middle">Firecracker microVM</text>
+
+    <line x1="626" y1="70" x2="626" y2="86" stroke="#e0a040" stroke-width="1.6" marker-end="url(#i2-arr-gd)"/>
+
+    <!-- main body -->
+    <rect x="20" y="88" width="720" height="118" rx="8" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.4"/>
+    <text x="30" y="107" font-size="14" font-weight="700" fill="#1a3a8a">AgentENV · Firecracker microVM 沙箱</text>
+    <line x1="440" y1="96" x2="440" y2="200" stroke="#c9d4e6" stroke-width="1"/>
+
+    <!-- left: isolation -->
+    <text x="30" y="127" font-size="12.5" font-weight="700" fill="#1a3a8a">高保真隔离</text>
+    <text x="30" y="146" font-size="11" fill="#444">agent 越强越激进探索 / reward hacking</text>
+    <text x="30" y="164" font-size="11" fill="#9f2e2e">传统 container → kernel panic / deadlock</text>
+    <text x="30" y="182" font-size="11" fill="#256b25">microVM：挂盘 · 跑容器 · 起 VM 仍隔离安全</text>
+
+    <!-- right: checkpoint -->
+    <text x="587" y="127" font-size="12.5" font-weight="700" fill="#1a3a8a" text-anchor="middle">增量 checkpoint（仅脏页 write-back）</text>
+    <text x="505" y="172" font-size="23" font-weight="700" fill="#cf8a20" text-anchor="middle">133ms</text>
+    <text x="505" y="192" font-size="11" fill="#666" text-anchor="middle">checkpoint</text>
+    <text x="665" y="172" font-size="23" font-weight="700" fill="#cf8a20" text-anchor="middle">49ms</text>
+    <text x="665" y="192" font-size="11" fill="#666" text-anchor="middle">resume</text>
+
+    <!-- body -> cards arrows -->
+    <line x1="134" y1="206" x2="134" y2="224" stroke="#1a3a8a" stroke-width="1.4" marker-end="url(#i2-arr)"/>
+    <line x1="380" y1="206" x2="380" y2="224" stroke="#1a3a8a" stroke-width="1.4" marker-end="url(#i2-arr)"/>
+    <line x1="626" y1="206" x2="626" y2="224" stroke="#1a3a8a" stroke-width="1.4" marker-end="url(#i2-arr)"/>
+
+    <!-- card a: Pause/Resume -->
+    <rect x="20" y="226" width="228" height="112" rx="7" fill="#fff5e8" stroke="#e0a040" stroke-width="1.4"/>
+    <text x="134" y="247" font-size="12.5" font-weight="700" fill="#6e4c0f" text-anchor="middle">(a) Pause / Resume</text>
+    <text x="134" y="266" font-size="11" fill="#444" text-anchor="middle">等模型推理时暂停沙箱</text>
+    <text x="134" y="283" font-size="11" fill="#444" text-anchor="middle">暂停态 零内存零 CPU</text>
+    <text x="134" y="317" font-size="26" font-weight="700" fill="#cf8a20" text-anchor="middle">98%</text>
+    <text x="134" y="332" font-size="10.5" fill="#666" text-anchor="middle">「等推理」占沙箱生命周期</text>
+
+    <!-- card b: Fork -->
+    <rect x="266" y="226" width="228" height="112" rx="7" fill="#eef2f7" stroke="#1a3a8a" stroke-width="1.4"/>
+    <text x="380" y="247" font-size="12.5" font-weight="700" fill="#1a3a8a" text-anchor="middle">(b) Fork</text>
+    <text x="380" y="266" font-size="11" fill="#444" text-anchor="middle">从精确状态复制新沙箱</text>
+    <text x="380" y="283" font-size="11" fill="#444" text-anchor="middle">原沙箱继续运行</text>
+    <rect x="278" y="300" width="204" height="24" rx="5" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.1"/>
+    <text x="380" y="316" font-size="11" fill="#256b25" text-anchor="middle">无副作用 reward 判分</text>
+
+    <!-- card c: Snapshot -->
+    <rect x="512" y="226" width="228" height="112" rx="7" fill="#eaf5ea" stroke="#1e6b1e" stroke-width="1.4"/>
+    <text x="626" y="247" font-size="12.5" font-weight="700" fill="#256b25" text-anchor="middle">(c) Snapshot</text>
+    <text x="626" y="266" font-size="11" fill="#444" text-anchor="middle">定时快照</text>
+    <text x="626" y="283" font-size="11" fill="#444" text-anchor="middle">→ 错误恢复 / 容错</text>
+    <rect x="524" y="300" width="204" height="24" rx="5" fill="#ffffff" stroke="#1e6b1e" stroke-width="1.1"/>
+    <text x="626" y="316" font-size="11" fill="#256b25" text-anchor="middle">崩溃后恢复训练现场</text>
+
+    <!-- bottom data bar -->
+    <rect x="20" y="350" width="720" height="110" rx="7" fill="#f4f6f9" stroke="#d8d8d8" stroke-width="1.3"/>
+    <text x="30" y="372" font-size="12.5" font-weight="700" fill="#1a3a8a">高密度 · 高效存储与规模</text>
+
+    <text x="30" y="396" font-size="11" fill="#444">OverlayBD + 自定义 ublk + 存储层共享 + P2P  →</text>
+    <text x="380" y="396" font-size="13" font-weight="700" fill="#cf8a20">亚秒级启动</text>
+
+    <text x="30" y="420" font-size="11" fill="#444">copy-on-write + page-cache  →  内存</text>
+    <text x="270" y="420" font-size="13" font-weight="700" fill="#cf8a20">overcommit 6.5×</text>
+
+    <text x="30" y="444" font-size="11" fill="#444">全程训练 + 评测累计创建</text>
+    <text x="188" y="444" font-size="12" font-weight="700" fill="#1e6b1e">51,219,741 sandbox · 1,505,678 image</text>
+  </svg>
+  <div class="viz-cap">AgentENV 用 Firecracker microVM 做高保真隔离，靠脏页增量 checkpoint 撑起 Pause（省 98% 空等）/Fork（无副作用判分）/Snapshot（容错），亚秒启动 + 6.5× overcommit 共创 5000 万次沙箱。</div>
+</div>
+    <ol class="pts">
+      <li><b>高保真隔离 runtime。</b>agent 越强越爱激进探索、甚至试图 reward hacking——早期用传统 container runtime 时就出现过 agent 误操作引发的 <em>kernel panic / deadlock</em>。既要放开探索不限能力，复杂任务又需要贴近真实的环境（agent 得能挂盘、跑容器、甚至随手起虚拟机）。用 <strong>Firecracker</strong> 跑隔离 microVM，隔离度与保真度是容器给不了的。</li>
+      <li><b>灵活的沙箱生命周期。</b>底层增量 checkpoint：只存自上次以来的<em>脏页</em>，checkpoint 低至 <b>133ms</b>、resume 低至 <b>49ms</b>。之上给三大高级能力：<b>(a) Pause/Resume</b>——等模型推理时把沙箱暂停，暂停态零内存零 CPU，而"等推理"可占沙箱生命周期高达 <em>98%</em>；<b>(b) Fork</b>——从原沙箱精确状态复制一个新沙箱、原沙箱继续跑，用于<em>无副作用的 reward 判分</em>；<b>(c) Snapshot</b>——定时快照做错误恢复。</li>
+      <li><b>高效率、高密度。</b>数万个各带不同 image 的沙箱可能要在几秒内创建。用 OverlayBD 做 image 格式，配自定义 ublk 驱动、存储层共享与 P2P 传输，做到<b>亚秒级启动</b>；再靠 copy-on-write 与 page-cache 优化，内存 overcommit 实测高达 <em>6.5×</em>。</li>
+    </ol>
+    <div class="punchline">全程训练 + 评测共创建 <em>51,219,741</em> 个 sandbox、跨 <em>1,505,678</em> 个 image —— 这个体量本身就是"环境即基础设施"的注脚。</div>
+  </div>
+</div>
+
+<!-- ================= Deployment-aware ================= -->
+<div class="paper">
+  <h4>Deployment-aware：训练即部署</h4>
+  <div class="subtitle">从头就为上线量化做准备，消除 train-inference mismatch</div>
+  <ul class="pts">
+    <li><b>MXFP4 QAT 贯穿 SFT + RL</b>：量化感知训练从 SFT 一直做到 RL，且 rollout（生成）与 training（更新）用<b>同一套量化方案</b>——训练时看到的就是上线时的数值分布，从根上消掉 mismatch；</li>
+    <li><b>MTP 层 → EAGLE-3 draft model</b>：把 Multi-Token-Prediction 层 fine-tune 成 EAGLE-3 draft model 做投机解码，并直接优化<b>接受率（acceptance rate）</b>。</li>
+  </ul>
+  <div class="punchline">$L_{LK} = -\log \sum_x \min\big(p(x),\, q(x)\big)$ —— <em>最大化 draft 与 target 分布重叠</em></div>
+  <ul class="formula-legend">
+    <li><b>$p(x)$ / $q(x)$</b>：target（目标）模型 / draft（草稿）模型对 token $x$ 的概率；</li>
+    <li><b>$\sum_x \min(p,q)$</b>：两分布的重叠面积——越大代表 draft 与 target 越一致，投机解码越容易被接受。</li>
+  </ul>
+  <p style="font-size:18px;color:#555">翻译成人话：<b style="color:#1a3a8a">最大化 draft 与 target 概率分布的重叠，就是直接最大化"draft 猜的 token 被 target 采纳"的比例，即直接优化投机解码的接受率，让推理更快。</b></p>
+</div>
+
+<!-- ===== 收尾 ===== -->
+<div class="closing">
+  <h3>一句话记住这条主线</h3>
+  <p>Kimi K3 的后训练，<b>不是发明一个新目标函数，而是把 agentic 能力拆成一条"分工再合并 + 环境自造"的流水线</b>：SFT 冷启动 → 3 domain × 3 effort 裂变出 9 个专家分别 RL → MOPD 用 per-token log-ratio 把 9 个专家蒸回一个 student。</p>
+  <p>而真正的护城河藏在 <b>Environment Scaling</b>：white-box 壳防过拟合、知识图谱造题量与覆盖、五类可验证环境给可靠 reward、hidden verifier + hacking-detection 防作弊——<b>与其说 K3 赢在模型，不如说赢在能把环境本身 scale 起来</b>。</p>
+</div>
+
+<div class="foot">Kimi K3 · Post-Training · 教学拆解 · 数字与机制来自 K3 技术报告 §4</div>
+
+</div>
+</body></html>
