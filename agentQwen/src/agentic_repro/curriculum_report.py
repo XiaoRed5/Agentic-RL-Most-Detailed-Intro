@@ -184,6 +184,10 @@ def build_report(
     source_selection = synthesis.get("source_selection") or (
         "post_train_probe_failures" if source_failures else "frontier_taxonomy_fallback"
     )
+    run_label = (
+        (run_summary.get("execution") or {}).get("run_id")
+        or run_root.name
+    )
     s1_train = stage1.get("training_rollout_summary", {})
     s2_train = stage2.get("training_rollout_summary", {})
     bfcl_status = bfcl.get("overall_status", "NOT_RUN")
@@ -193,7 +197,7 @@ def build_report(
 
 > ✅ **结论先行。** 本次运行在 `{gpu.get('name', 'unknown GPU')}` 上完成了 Qwen3-8B 的两阶段 response-token QLoRA-GRPO：Stage 1 产生真实失败与非零奖励方差，训练后 probe 达到满分时按 frontier taxonomy 升级难度并混入 replay，再从 Stage-1 adapter 继续 Stage 2。完整性审计为 **{verification.get('overall_status')}**，官方 BFCL-V4 multi-turn smoke 为 **{bfcl_status}**。这证明的是一条真实、可恢复、可复核的小规模 curriculum 链路；不等价于论文 100K 数据、八卡训练或 47.4 平均分。
 
-**Run:** `{run_root.name}`  
+**Run:** `{run_label}`  
 **模型:** `{config['model']['id']}` · NF4 QLoRA rank {config['model']['lora_rank']}  
 **训练:** Stage 1 `{stage1['global_step']}` steps → Stage 2 `{stage2['global_step']}` steps  
 **状态:** curriculum {status_word} · BFCL `{bfcl_status}` · paper-scale claim `false`

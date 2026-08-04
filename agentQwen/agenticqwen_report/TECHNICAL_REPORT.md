@@ -2,7 +2,7 @@
 
 > ✅ **结论先行。** 本次运行在 `NVIDIA RTX PRO 6000 Blackwell Server Edition` 上完成了 Qwen3-8B 的两阶段 response-token QLoRA-GRPO：Stage 1 产生真实失败与非零奖励方差，训练后 probe 达到满分时按 frontier taxonomy 升级难度并混入 replay，再从 Stage-1 adapter 继续 Stage 2。完整性审计为 **PASS**，官方 BFCL-V4 multi-turn smoke 为 **NOT_RUN**。这证明的是一条真实、可恢复、可复核的小规模 curriculum 链路；不等价于论文 100K 数据、八卡训练或 47.4 平均分。
 
-**Run:** `evidence`  
+**Run:** `qwen3-8b-qlora-20260804-v2`  
 **模型:** `Qwen/Qwen3-8B` · NF4 QLoRA rank 16  
 **训练:** Stage 1 `12` steps → Stage 2 `12` steps  
 **状态:** curriculum 完整通过 · BFCL `NOT_RUN` · paper-scale claim `false`
