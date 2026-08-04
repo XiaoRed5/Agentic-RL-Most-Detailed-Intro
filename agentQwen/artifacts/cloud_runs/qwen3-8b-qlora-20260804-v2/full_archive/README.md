@@ -10,5 +10,7 @@ The complete V2 run archive is intentionally excluded from Git because it is
   splits, manifests, logs, and fresh-process replay artifacts.
 - Git-tracked compact evidence: `../evidence/`
 
-The local archive is valid only after both the byte count and SHA-256 match the
-metadata and `tar -tzf` succeeds.
+Local verification completed successfully: the byte count and SHA-256 match the
+remote metadata, `tar -tzf` returned 140 entries, and both adapter weight files,
+`verification.json`, `fresh_replay/summary.json`, and
+`artifact_inventory.json` are present. See `local_verification.json`.
