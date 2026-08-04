@@ -1,0 +1,4 @@
+interface:
+  display_name: "AutoDL Agentic RL"
+  short_description: "一键完成 AutoDL 租卡、部署、训练、产物取回与安全关机"
+  default_prompt: "Use $autodl-agentic-rl to rent an AutoDL GPU, deploy my project, run training, collect verified artifacts, and shut down safely."
