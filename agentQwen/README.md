@@ -157,6 +157,8 @@ agenticqwen-reproduction/
 │   ├── failure_diagnosis.md
 │   ├── curriculum_protocol.md
 │   └── claims_and_evidence.md
+├── skills/
+│   └── autodl-agentic-rl/   # 一键租卡→上传→训练→收集→关机
 ├── tests/
 ├── run_real_qwen3_8b.sh
 ├── run_curriculum_modal.sh
@@ -196,6 +198,22 @@ Upload or sync the project to `/root/autodl-tmp/agenticqwen-reproduction`, then 
 ```
 
 The launcher reuses the retained standard Qwen3-8B snapshot, loads it as NF4 at runtime, trains LoRA adapters, resumes Trainer checkpoints, saves Stage-1/Stage-2 traces and hashes, and refuses to turn a missing run into a completed report.
+
+### Reusable AutoDL Agentic RL skill
+
+本项目把完整的云端实验操作 skill 一并沉淀在
+[`skills/autodl-agentic-rl/SKILL.md`](skills/autodl-agentic-rl/SKILL.md)。它定义了从
+GPU 预算/实例确认、四文件上传包、ModelScope/Hugging Face 模型缓存、CUDA/TRL/bitsandbytes
+预检、可恢复训练、状态监控、结果归档与 SHA-256 校验，到关机停止计费的证据状态机。
+
+配套资源包括：
+
+- `references/autodl-browser.md`：AutoDL 浏览器操作和敏感信息边界；
+- `references/job-contract.md`：任务契约、终态和恢复协议；
+- `scripts/prepare_job.py`：生成 payload、launch/status/collect 四件套；
+- `scripts/model_fetch.py`、`remote_preflight.py`、`package_results.py`：模型下载、远端预检和结果安全打包。
+
+在 Codex 中调用时使用 skill 名 `autodl-agentic-rl`；这套流程适用于本项目的 QLoRA-GRPO，也适用于后续 SFT、GRPO 和 curriculum 实验。
 
 ### Modal alternative
 
