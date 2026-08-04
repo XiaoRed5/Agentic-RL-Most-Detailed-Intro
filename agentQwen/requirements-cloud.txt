@@ -1,0 +1,9 @@
+accelerate==1.14.0
+bitsandbytes==0.50.0
+datasets==5.0.1
+jmespath==1.0.1
+peft==0.20.0
+safetensors==0.8.0
+torch==2.9.1
+transformers==5.14.1
+trl==1.9.2

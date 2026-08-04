@@ -1,0 +1,399 @@
+{"kind":"deck","id":"pr/ptorlx","name":"Deck"}
+{"kind":"layout","layoutId":"be9fdbbd-5d5b-4db7-82ab-90ed12e816b5","name":"Master","type":"master"}
+{"kind":"layout","layoutId":"6089f04d-bb5a-4c5b-b0c2-bb8c5d1b4cf2","name":"Title Slide","type":"title"}
+{"kind":"slide","id":"sl/s6nxkz","slide":1,"title":"长程多轮智能体强化学习","textShapes":8}
+{"kind":"shape","id":"sh/cfqpo3et","slide":1,"name":"cover-copper","bbox":[0,0,20,720]}
+{"kind":"shape","id":"sh/behovyx8","slide":1,"name":"cover-teal","bbox":[1010,0,270,720]}
+{"kind":"textbox","id":"sh/ad87mtwn","slide":1,"name":"cover-flourish","text":"长程多轮智能体强化学习","textPreview":"长程多轮智能体强化学习","textChars":11,"textLines":1,"bbox":[84,62,650,60]}
+{"kind":"shape","id":"sh/l4jq18fa","slide":1,"bbox":[86,154,185,0]}
+{"kind":"textbox","id":"sh/k3aps3ep","slide":1,"name":"cover-title","text":"AgenticQwen\nCurriculum Lab","textPreview":"AgenticQwen | Curriculum Lab","textChars":26,"textLines":2,"bbox":[80,195,800,160]}
+{"kind":"textbox","id":"sh/j21ozyx4","slide":1,"name":"cover-sub","text":"训练 → 失败诊断 → 困难数据合成 → 再训练","textPreview":"训练 → 失败诊断 → 困难数据合成 → 再训练","textChars":24,"textLines":1,"bbox":[86,392,790,48]}
+{"kind":"textbox","id":"sh/y1s7qtwz","slide":1,"name":"cover-meta","text":"Qwen3-8B · response-token QLoRA-GRPO · NVIDIA RTX PRO 6000 Blackwell Server Edition\n/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2","textPreview":"Qwen3-8B · response-token QLoRA-GRPO · NVIDIA RTX PRO 6000 Blackwell Server Edition | /root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2...","textChars":162,"textLines":2,"bbox":[88,476,790,72]}
+{"kind":"textbox","id":"sh/18f6pof6","slide":1,"name":"cover-02","text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[1040,90,170,170]}
+{"kind":"textbox","id":"sh/076pgjel","slide":1,"name":"cover-side","text":"REAL RUN\nFAILURE LOOP\nAUDITED","textPreview":"REAL RUN | FAILURE LOOP | AUDITED","textChars":29,"textLines":3,"bbox":[1030,330,195,120]}
+{"kind":"shape","id":"sh/ql8z2psj","slide":1,"name":"cover-pass-bg","bbox":[86,606,190,30]}
+{"kind":"textbox","id":"sh/r6h0but4","slide":1,"name":"cover-pass-text","text":"CURRICULUM PASS","textPreview":"CURRICULUM PASS","textChars":15,"textLines":1,"bbox":[96,611,170,20]}
+{"kind":"shape","id":"sh/s7qh4zap","slide":1,"name":"cover-bfcl-bg","bbox":[294,606,190,30]}
+{"kind":"textbox","id":"sh/d8zid4bu","slide":1,"name":"cover-bfcl-text","text":"BFCL NOT RUN","textPreview":"BFCL NOT RUN","textChars":12,"textLines":1,"bbox":[304,611,170,20]}
+{"kind":"notes","id":"nt/s6nxkz","slide":1,"text":"开场先讲清证据边界：这是一次真实小规模云端训练闭环，不是论文八卡/100K 数据指标复刻。\n\n[Sources]\n- /Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/cloud_runs/qwen3-8b-qlora-20260804-v2/evidence/run_summary.json\n- /Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/cloud_runs/qwen3-8b-qlora-20260804-v2/evidence/verification.json\n- https://arxiv.org/abs/2604.21590\n[/Sources]"}
+{"kind":"slide","id":"sl/e1ftjy","slide":2,"title":"长程多轮智能体强化学习","textShapes":18}
+{"kind":"shape","id":"sh/lg3qdwrq","slide":2,"name":"rail-2","bbox":[0,0,30,720]}
+{"kind":"textbox","id":"sh/ydc7218z","slide":2,"name":"flourish-2","text":"长程多轮智能体强化学习","textPreview":"长程多轮智能体强化学习","textChars":11,"textLines":1,"bbox":[70,29,420,32]}
+{"kind":"textbox","id":"sh/zel8b69k","slide":2,"name":"chapter-2","text":"PROJECT MAP","textPreview":"PROJECT MAP","textChars":11,"textLines":1,"bbox":[760,33,420,24]}
+{"kind":"textbox","id":"sh/8jep8bqh","slide":2,"name":"title-2","text":"拿到这个项目，你应该先建立四层心智模型","textPreview":"拿到这个项目，你应该先建立四层心智模型","textChars":19,"textLines":1,"bbox":[70,78,1095,55]}
+{"kind":"textbox","id":"sh/9knqhgrm","slide":2,"name":"subtitle-2","text":"Agentic RL 不是“模型会调工具”这一件事，而是 policy、environment、reward、curriculum 的闭环。","textPreview":"Agentic RL 不是“模型会调工具”这一件事，而是 policy、environment、reward、curriculum 的闭环。","textChars":70,"textLines":1,"bbox":[72,137,1080,34]}
+{"kind":"shape","id":"sh/mhc7618b","slide":2,"bbox":[70,184,1110,0]}
+{"kind":"textbox","id":"sh/ni58f69w","slide":2,"name":"page-2","text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[1125,670,55,20]}
+{"kind":"shape","id":"sh/onapw7ax","slide":2,"name":"map-0","bbox":[72,238,244,292]}
+{"kind":"textbox","id":"sh/poj65cri","slide":2,"name":"map-num-0","text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[92,258,65,38]}
+{"kind":"textbox","id":"sh/p0fexsnm","slide":2,"name":"map-name-0","text":"POLICY","textPreview":"POLICY","textChars":6,"textLines":1,"bbox":[92,322,204,35]}
+{"kind":"textbox","id":"sh/oz6donm1","slide":2,"name":"map-body-0","text":"Qwen3-8B 生成完整 assistant response 与工具调用","textPreview":"Qwen3-8B 生成完整 assistant response 与工具调用","textChars":38,"textLines":1,"bbox":[92,390,204,96]}
+{"kind":"shape","id":"sh/nyxwvi5g","slide":2,"name":"map-1","bbox":[354,238,244,292]}
+{"kind":"textbox","id":"sh/2xovmd4v","slide":2,"name":"map-num-1","text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[374,258,65,38]}
+{"kind":"textbox","id":"sh/x4ze1cni","slide":2,"name":"map-name-1","text":"ENVIRONMENT","textPreview":"ENVIRONMENT","textChars":11,"textLines":1,"bbox":[374,322,204,35]}
+{"kind":"textbox","id":"sh/c3qds7md","slide":2,"name":"map-body-1","text":"七个 stateful tools 执行读写与真实状态转移","textPreview":"七个 stateful tools 执行读写与真实状态转移","textChars":29,"textLines":1,"bbox":[374,390,204,96]}
+{"kind":"shape","id":"sh/b2hwz25s","slide":2,"name":"map-2","bbox":[636,238,244,292]}
+{"kind":"textbox","id":"sh/a1ovqx47","slide":2,"name":"map-num-2","text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[656,258,65,38]}
+{"kind":"textbox","id":"sh/lsze5cnu","slide":2,"name":"map-name-2","text":"REWARD","textPreview":"REWARD","textChars":6,"textLines":1,"bbox":[656,322,204,35]}
+{"kind":"textbox","id":"sh/k7qdw7m9","slide":2,"name":"map-body-2","text":"exact outcome + process shaping，按 group 求相对优势","textPreview":"exact outcome + process shaping，按 group 求相对优势","textChars":45,"textLines":1,"bbox":[656,390,204,96]}
+{"kind":"shape","id":"sh/kbyx8vul","slide":2,"name":"map-3","bbox":[918,238,244,292]}
+{"kind":"textbox","id":"sh/5c7y1gv6","slide":2,"name":"map-num-3","text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[938,258,65,38]}
+{"kind":"textbox","id":"sh/i9gf6lcf","slide":2,"name":"map-name-3","text":"CURRICULUM","textPreview":"CURRICULUM","textChars":10,"textLines":1,"bbox":[938,322,204,35]}
+{"kind":"textbox","id":"sh/japgzqd0","slide":2,"name":"map-body-3","text":"从真实失败类型制造 decoy、timeout 与 replay","textPreview":"从真实失败类型制造 decoy、timeout 与 replay","textChars":32,"textLines":1,"bbox":[938,390,204,96]}
+{"kind":"textbox","id":"sh/szixcvuh","slide":2,"name":"map-foot","text":"训练完整性的证据链：trajectory → reward → optimizer step → adapter hash → fresh-process replay","textPreview":"训练完整性的证据链：trajectory → reward → optimizer step → adapter hash → fresh-process replay","textChars":84,"textLines":1,"bbox":[120,584,1010,38]}
+{"kind":"notes","id":"nt/e1ftjy","slide":2,"text":"这是给入门同学的总地图。后面的每一页都落到这四层中的一个证据问题。\n\n[Sources]\n- /Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/docs/curriculum_protocol.md\n- /Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/cloud_runs/qwen3-8b-qlora-20260804-v2/evidence/resolved_config.json\n[/Sources]"}
+{"kind":"slide","id":"sl/uh2c4s","slide":3,"title":"长程多轮智能体强化学习","textShapes":13}
+{"kind":"shape","id":"sh/3e9gbypk","slide":3,"name":"rail-3","bbox":[0,0,30,720]}
+{"kind":"textbox","id":"sh/4f2h43qp","slide":3,"name":"flourish-3","text":"长程多轮智能体强化学习","textPreview":"长程多轮智能体强化学习","textChars":11,"textLines":1,"bbox":[70,29,420,32]}
+{"kind":"textbox","id":"sh/p0byd87a","slide":3,"name":"chapter-3","text":"PAPER → PROJECT","textPreview":"PAPER → PROJECT","textChars":15,"textLines":1,"bbox":[760,33,420,24]}
+{"kind":"textbox","id":"sh/u90zyt8n","slide":3,"name":"title-3","text":"论文方法如何被拆成一条可执行的工程链路","textPreview":"论文方法如何被拆成一条可执行的工程链路","textChars":19,"textLines":1,"bbox":[70,78,1095,55]}
+{"kind":"textbox","id":"sh/fa9g7ep8","slide":3,"name":"subtitle-3","text":"保留双飞轮的因果结构，缩小模型、数据和 benchmark 规模，并明确不支持的 claim。","textPreview":"保留双飞轮的因果结构，缩小模型、数据和 benchmark 规模，并明确不支持的 claim。","textChars":47,"textLines":1,"bbox":[72,137,1080,34]}
+{"kind":"shape","id":"sh/gbih0jqt","slide":3,"bbox":[70,184,1110,0]}
+{"kind":"textbox","id":"sh/hcry9o7e","slide":3,"name":"page-3","text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[1125,670,55,20]}
+{"kind":"shape","id":"sh/76pg3epc","slide":3,"bbox":[700,232,36,0]}
+{"kind":"textbox","id":"sh/72h076h4","slide":3,"name":"paper-k-0","text":"论文","textPreview":"论文","textChars":2,"textLines":1,"bbox":[758,220,100,30]}
+{"kind":"textbox","id":"sh/m18zy10j","slide":3,"name":"paper-v-0","text":"≈100K 数据 · 235B simulator/judge · 8×H100","textPreview":"≈100K 数据 · 235B simulator/judge · 8×H100","textChars":40,"textLines":1,"bbox":[758,255,410,48]}
+{"kind":"shape","id":"sh/94zi9wza","slide":3,"bbox":[700,326,36,0]}
+{"kind":"textbox","id":"sh/83qh0rip","slide":3,"name":"paper-k-1","text":"本次","textPreview":"本次","textChars":2,"textLines":1,"bbox":[758,314,100,30]}
+{"kind":"textbox","id":"sh/v610b6h0","slide":3,"name":"paper-v-1","text":"8+12 训练任务 · 24 optimizer steps · 1×NVIDIA RTX PRO 6000 Blackwell Server Edition","textPreview":"8+12 训练任务 · 24 optimizer steps · 1×NVIDIA RTX PRO 6000 Blackwell Server Edition","textChars":79,"textLines":1,"bbox":[758,349,410,48]}
+{"kind":"shape","id":"sh/u58z210f","slide":3,"bbox":[700,420,36,0]}
+{"kind":"textbox","id":"sh/hsjidgz6","slide":3,"name":"paper-k-2","text":"保留","textPreview":"保留","textChars":2,"textLines":1,"bbox":[758,408,100,30]}
+{"kind":"textbox","id":"sh/wrah4bil","slide":3,"name":"paper-v-2","text":"多轮 response token · stateful tools · GRPO · failure loop","textPreview":"多轮 response token · stateful tools · GRPO · failure loop","textChars":56,"textLines":1,"bbox":[758,443,410,48]}
+{"kind":"shape","id":"sh/baxgzmhw","slide":3,"bbox":[700,514,36,0]}
+{"kind":"textbox","id":"sh/a9ozqh0b","slide":3,"name":"paper-k-3","text":"不声称","textPreview":"不声称","textChars":3,"textLines":1,"bbox":[758,502,100,30]}
+{"kind":"textbox","id":"sh/e1wbu9ob","slide":3,"name":"paper-v-3","text":"论文 47.4 平均分 · 全量 TAU-2/BFCL · 统计显著性","textPreview":"论文 47.4 平均分 · 全量 TAU-2/BFCL · 统计显著性","textChars":35,"textLines":1,"bbox":[758,537,410,48]}
+{"kind":"image","id":"im/rm143ah4","slide":3,"name":"","alt":"AgenticQwen dual flywheel","bbox":[70,214,570,340]}
+{"kind":"notes","id":"nt/uh2c4s","slide":3,"text":"先比较论文与本项目尺度，避免把工程闭环 PASS 误解成论文分数复现。\n\n[Sources]\n- https://arxiv.org/abs/2604.21590\n- /Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/cloud_runs/qwen3-8b-qlora-20260804-v2/evidence/resolved_config.json\n[/Sources]"}
+{"kind":"slide","id":"sl/d7ge03","slide":4,"title":"长程多轮智能体强化学习","textShapes":24}
+{"kind":"shape","id":"sh/mh4j6hg7","slide":4,"name":"rail-4","bbox":[0,0,30,720]}
+{"kind":"textbox","id":"sh/9kvi1czy","slide":4,"name":"flourish-4","text":"长程多轮智能体强化学习","textPreview":"长程多轮智能体强化学习","textChars":11,"textLines":1,"bbox":[70,29,420,32]}
+{"kind":"textbox","id":"sh/8jm187yd","slide":4,"name":"chapter-4","text":"SYSTEM ARCHITECTURE","textPreview":"SYSTEM ARCHITECTURE","textChars":19,"textLines":1,"bbox":[760,33,420,24]}
+{"kind":"textbox","id":"sh/zet0v2hg","slide":4,"name":"title-4","text":"一次 rollout 究竟发生了什么？","textPreview":"一次 rollout 究竟发生了什么？","textChars":19,"textLines":1,"bbox":[70,78,1095,55]}
+{"kind":"textbox","id":"sh/ydkz2xgb","slide":4,"name":"subtitle-4","text":"模型不能直接改业务状态；所有 side effect 都经过工具、先决条件和 verifier。","textPreview":"模型不能直接改业务状态；所有 side effect 都经过工具、先决条件和 verifier。","textChars":48,"textLines":1,"bbox":[72,137,1080,34]}
+{"kind":"shape","id":"sh/lgvixczm","slide":4,"bbox":[70,184,1110,0]}
+{"kind":"textbox","id":"sh/kfm147y1","slide":4,"name":"page-4","text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[1125,670,55,20]}
+{"kind":"shape","id":"sh/3ax07mh0","slide":4,"bbox":[250,361,54,0]}
+{"kind":"shape","id":"sh/i9oje1gf","slide":4,"bbox":[476,361,72,0]}
+{"kind":"shape","id":"sh/07mhk7al","slide":4,"bbox":[720,361,72,0]}
+{"kind":"shape","id":"sh/18vydcr6","slide":4,"bbox":[964,361,72,0]}
+{"kind":"shape","id":"sh/e5kzihsf","slide":4,"name":"arch-0","bbox":[78,285,172,152]}
+{"kind":"textbox","id":"sh/z6tgb290","slide":4,"name":"arch-k-0","text":"PROMPT","textPreview":"PROMPT","textChars":6,"textLines":1,"bbox":[93,307,142,25]}
+{"kind":"textbox","id":"sh/c32hg7a9","slide":4,"name":"arch-v-0","text":"模糊退款诉求","textPreview":"模糊退款诉求","textChars":6,"textLines":1,"bbox":[93,355,142,60]}
+{"kind":"shape","id":"sh/d4by9cru","slide":4,"name":"arch-1","bbox":[304,285,172,152]}
+{"kind":"textbox","id":"sh/qhkfexsj","slide":4,"name":"arch-k-1","text":"POLICY","textPreview":"POLICY","textChars":6,"textLines":1,"bbox":[319,307,142,25]}
+{"kind":"textbox","id":"sh/ritg7294","slide":4,"name":"arch-v-1","text":"Qwen3-8B\nresponse tokens","textPreview":"Qwen3-8B | response tokens","textChars":24,"textLines":2,"bbox":[319,355,142,60]}
+{"kind":"shape","id":"sh/4fixcnad","slide":4,"name":"arch-2","bbox":[548,285,172,152]}
+{"kind":"textbox","id":"sh/pgby5sry","slide":4,"name":"arch-k-2","text":"TOOLS","textPreview":"TOOLS","textChars":5,"textLines":1,"bbox":[563,307,142,25]}
+{"kind":"textbox","id":"sh/5w3e9ojm","slide":4,"name":"arch-v-2","text":"7 个工具\nobservation","textPreview":"7 个工具 | observation","textChars":17,"textLines":2,"bbox":[563,355,142,60]}
+{"kind":"shape","id":"sh/kbaxgj21","slide":4,"name":"arch-3","bbox":[792,285,172,152]}
+{"kind":"textbox","id":"sh/ja1w7e1g","slide":4,"name":"arch-k-3","text":"STATE","textPreview":"STATE","textChars":5,"textLines":1,"bbox":[807,307,142,25]}
+{"kind":"textbox","id":"sh/i9sve9kb","slide":4,"name":"arch-v-3","text":"身份/订单/支付\n确认/退款","textPreview":"身份/订单/支付 | 确认/退款","textChars":14,"textLines":2,"bbox":[807,355,142,60]}
+{"kind":"shape","id":"sh/x8je54jq","slide":4,"name":"arch-4","bbox":[1036,285,172,152]}
+{"kind":"textbox","id":"sh/w7adcj25","slide":4,"name":"arch-k-4","text":"REWARD","textPreview":"REWARD","textChars":6,"textLines":1,"bbox":[1051,307,142,25]}
+{"kind":"textbox","id":"sh/v61w3elk","slide":4,"name":"arch-v-4","text":"outcome +\n0.30 process","textPreview":"outcome + | 0.30 process","textChars":22,"textLines":2,"bbox":[1051,355,142,60]}
+{"kind":"textbox","id":"sh/a5sva9kz","slide":4,"name":"arch-loop","text":"↺ tool observation 回到同一对话，直到完成或 10 次上限","textPreview":"↺ tool observation 回到同一对话，直到完成或 10 次上限","textChars":38,"textLines":1,"bbox":[310,500,660,40]}
+{"kind":"shape","id":"sh/14neh8ju","slide":4,"bbox":[170,570,210,0]}
+{"kind":"textbox","id":"sh/g3exo329","slide":4,"name":"arch-tools-value","text":"7","textPreview":"7","textChars":1,"textLines":1,"bbox":[170,588,210,55]}
+{"kind":"textbox","id":"sh/ex43m1wf","slide":4,"name":"arch-tools-label","text":"typed tools","textPreview":"typed tools","textChars":11,"textLines":1,"bbox":[170,648,210,44]}
+{"kind":"shape","id":"sh/zydkv6d0","slide":4,"bbox":[450,570,210,0]}
+{"kind":"textbox","id":"sh/0zmlobel","slide":4,"name":"arch-group-value","text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[450,588,210,55]}
+{"kind":"textbox","id":"sh/10f2xgv6","slide":4,"name":"arch-group-label","text":"rollouts / group","textPreview":"rollouts / group","textChars":16,"textLines":1,"bbox":[450,648,210,44]}
+{"kind":"shape","id":"sh/q94ji1wj","slide":4,"bbox":[730,570,210,0]}
+{"kind":"textbox","id":"sh/radkr6x4","slide":4,"name":"arch-max-value","text":"10","textPreview":"10","textChars":2,"textLines":1,"bbox":[730,588,210,55]}
+{"kind":"textbox","id":"sh/cvm1kbep","slide":4,"name":"arch-max-label","text":"max tool turns","textPreview":"max tool turns","textChars":14,"textLines":1,"bbox":[730,648,210,44]}
+{"kind":"shape","id":"sh/dwv2twva","slide":4,"bbox":[1010,570,210,0]}
+{"kind":"textbox","id":"sh/a5o3ulwn","slide":4,"name":"arch-token-value","text":"1,400","textPreview":"1,400","textChars":5,"textLines":1,"bbox":[1010,588,210,55]}
+{"kind":"textbox","id":"sh/bqxk3qd8","slide":4,"name":"arch-token-label","text":"max completion tokens","textPreview":"max completion tokens","textChars":21,"textLines":1,"bbox":[1010,648,210,44]}
+{"kind":"notes","id":"nt/d7ge03","slide":4,"text":"强调模型只生成动作，环境负责执行，reward 从最终状态读取。\n\n[Sources]\n- /Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/src/agentic_repro/curriculum_env.py\n- /Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/src/agentic_repro/curriculum_train.py\n[/Sources]"}
+{"kind":"slide","id":"sl/bxxwcd","slide":5,"title":"长程多轮智能体强化学习","textShapes":20}
+{"kind":"shape","id":"sh/ulsvqp43","slide":5,"name":"rail-5","bbox":[0,0,30,720]}
+{"kind":"textbox","id":"sh/hoje1k3u","slide":5,"name":"flourish-5","text":"长程多轮智能体强化学习","textPreview":"长程多轮智能体强化学习","textChars":11,"textLines":1,"bbox":[70,29,420,32]}
+{"kind":"textbox","id":"sh/gnadszm9","slide":5,"name":"chapter-5","text":"STATE MACHINE","textPreview":"STATE MACHINE","textChars":13,"textLines":1,"bbox":[760,33,420,24]}
+{"kind":"textbox","id":"sh/7i1wva5c","slide":5,"name":"title-5","text":"退款不是一句话：它是一条受约束的状态机","textPreview":"退款不是一句话：它是一条受约束的状态机","textChars":19,"textLines":1,"bbox":[70,78,1095,55]}
+{"kind":"textbox","id":"sh/6xsvm547","slide":5,"name":"subtitle-5","text":"训练目标既包含任务成功，也包含 read-before-write、精确确认和错误恢复。","textPreview":"训练目标既包含任务成功，也包含 read-before-write、精确确认和错误恢复。","textChars":44,"textLines":1,"bbox":[72,137,1080,34]}
+{"kind":"shape","id":"sh/tkjexkni","slide":5,"bbox":[70,184,1110,0]}
+{"kind":"textbox","id":"sh/sjadofmx","slide":5,"name":"page-5","text":"05","textPreview":"05","textChars":2,"textLines":1,"bbox":[1125,670,55,20]}
+{"kind":"shape","id":"sh/juhcra5g","slide":5,"bbox":[136,329,100,0]}
+{"kind":"shape","id":"sh/it8vi54v","slide":5,"bbox":[294,329,100,0]}
+{"kind":"shape","id":"sh/wje9sfu5","slide":5,"bbox":[452,329,100,0]}
+{"kind":"shape","id":"sh/hknalkbq","slide":5,"bbox":[610,329,100,0]}
+{"kind":"shape","id":"sh/uxcrqpcz","slide":5,"bbox":[768,329,100,0]}
+{"kind":"shape","id":"sh/vylsjatk","slide":5,"bbox":[926,329,100,0]}
+{"kind":"shape","id":"sh/8vu9ofu9","slide":5,"name":"state-dot-0","bbox":[78,300,58,58]}
+{"kind":"textbox","id":"sh/9w3qhkbu","slide":5,"name":"state-n-0","text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[78,312,58,30]}
+{"kind":"textbox","id":"sh/mtcrm5c3","slide":5,"name":"state-label-0","text":"索取身份","textPreview":"索取身份","textChars":4,"textLines":1,"bbox":[52,385,112,48]}
+{"kind":"shape","id":"sh/7ul8fato","slide":5,"name":"state-dot-1","bbox":[236,300,58,58]}
+{"kind":"textbox","id":"sh/sry90zud","slide":5,"name":"state-n-1","text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[236,312,58,30]}
+{"kind":"textbox","id":"sh/ts7at4by","slide":5,"name":"state-label-1","text":"验证客户","textPreview":"验证客户","textChars":4,"textLines":1,"bbox":[210,385,112,48]}
+{"kind":"shape","id":"sh/183ad432","slide":5,"name":"state-dot-2","bbox":[394,300,58,58]}
+{"kind":"textbox","id":"sh/07u9kzmh","slide":5,"name":"state-n-2","text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[394,312,58,30]}
+{"kind":"textbox","id":"sh/f6l8bulw","slide":5,"name":"state-label-2","text":"读取订单","textPreview":"读取订单","textChars":4,"textLines":1,"bbox":[368,385,112,48]}
+{"kind":"shape","id":"sh/e5crip4b","slide":5,"name":"state-dot-3","bbox":[552,300,58,58]}
+{"kind":"textbox","id":"sh/d4jq9k36","slide":5,"name":"state-n-3","text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[552,312,58,30]}
+{"kind":"textbox","id":"sh/sja9gzml","slide":5,"name":"state-label-3","text":"检查支付","textPreview":"检查支付","textChars":4,"textLines":1,"bbox":[526,385,112,48]}
+{"kind":"shape","id":"sh/ri187ul0","slide":5,"name":"state-dot-4","bbox":[710,300,58,58]}
+{"kind":"textbox","id":"sh/qhsrep4f","slide":5,"name":"state-n-4","text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[710,312,58,30]}
+{"kind":"textbox","id":"sh/5gjq5k3u","slide":5,"name":"state-label-4","text":"读取政策","textPreview":"读取政策","textChars":4,"textLines":1,"bbox":[684,385,112,48]}
+{"kind":"shape","id":"sh/4fa9cfm9","slide":5,"name":"state-dot-5","bbox":[868,300,58,58]}
+{"kind":"textbox","id":"sh/ulo76lk7","slide":5,"name":"state-n-5","text":"6","textPreview":"6","textChars":1,"textLines":1,"bbox":[868,312,58,30]}
+{"kind":"textbox","id":"sh/vmhofq1s","slide":5,"name":"state-label-5","text":"精确确认","textPreview":"精确确认","textChars":4,"textLines":1,"bbox":[842,385,112,48]}
+{"kind":"shape","id":"sh/gnqp8v2d","slide":5,"name":"state-dot-6","bbox":[1026,300,58,58]}
+{"kind":"textbox","id":"sh/hoz6h0jy","slide":5,"name":"state-n-6","text":"7","textPreview":"7","textChars":1,"textLines":1,"bbox":[1026,312,58,30]}
+{"kind":"textbox","id":"sh/6hon21kb","slide":5,"name":"state-label-6","text":"幂等退款","textPreview":"幂等退款","textChars":4,"textLines":1,"bbox":[1000,385,112,48]}
+{"kind":"shape","id":"sh/7ixob61g","slide":5,"name":"state-guard","bbox":[130,500,1020,92]}
+{"kind":"textbox","id":"sh/8j654b21","slide":5,"name":"state-guard-text","text":"WRITE GUARD  ·  verified identity ∧ orders read ∧ payment read ∧ policy read ∧ exact confirmation ∧ duplicate charge ∧ exact amount ∧ idempotency key","textPreview":"WRITE GUARD  ·  verified identity ∧ orders read ∧ payment read ∧ policy read ∧ exact confirmation ∧ duplicate charge ∧ exact amount ∧ ide...","textChars":149,"textLines":1,"bbox":[165,524,950,44]}
+{"kind":"notes","id":"nt/bxxwcd","slide":5,"text":"这页适合面试时讲 environment design：不可逆动作由代码硬门控制，模型无法通过语言绕过。\n\n[Sources]\n- /Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/src/agentic_repro/curriculum_env.py\n[/Sources]"}
+{"kind":"slide","id":"sl/uge2z7","slide":6,"title":"长程多轮智能体强化学习","textShapes":20}
+{"kind":"shape","id":"sh/y9wbet8v","slide":6,"name":"rail-6","bbox":[0,0,30,720]}
+{"kind":"textbox","id":"sh/lwnu987m","slide":6,"name":"flourish-6","text":"长程多轮智能体强化学习","textPreview":"长程多轮智能体强化学习","textChars":11,"textLines":1,"bbox":[70,29,420,32]}
+{"kind":"textbox","id":"sh/0bet03q1","slide":6,"name":"chapter-6","text":"OPTIMIZATION","textPreview":"OPTIMIZATION","textChars":12,"textLines":1,"bbox":[760,33,420,24]}
+{"kind":"textbox","id":"sh/ny5cbypc","slide":6,"name":"title-6","text":"为什么用 response-token GRPO，而不是动作分类？","textPreview":"为什么用 response-token GRPO，而不是动作分类？","textChars":33,"textLines":1,"bbox":[70,78,1095,55]}
+{"kind":"textbox","id":"sh/mxwv2d8r","slide":6,"name":"subtitle-6","text":"每个样本是一条完整多轮轨迹；梯度只覆盖 assistant completion token。","textPreview":"每个样本是一条完整多轮轨迹；梯度只覆盖 assistant completion token。","textChars":47,"textLines":1,"bbox":[72,137,1080,34]}
+{"kind":"shape","id":"sh/907ud87i","slide":6,"bbox":[70,184,1110,0]}
+{"kind":"textbox","id":"sh/8zed43qx","slide":6,"name":"page-6","text":"06","textPreview":"06","textChars":2,"textLines":1,"bbox":[1125,670,55,20]}
+{"kind":"shape","id":"sh/v2pcfipo","slide":6,"name":"grpo-formula","bbox":[75,230,520,300]}
+{"kind":"textbox","id":"sh/a1gv6d83","slide":6,"name":"grpo-formula-title","text":"GROUP-RELATIVE ADVANTAGE","textPreview":"GROUP-RELATIVE ADVANTAGE","textChars":24,"textLines":1,"bbox":[110,260,450,30]}
+{"kind":"textbox","id":"sh/wbydon21","slide":6,"name":"grpo-formula-main","text":"Aᵢ = (Rᵢ − μgroup) / (σgroup + ε)","textPreview":"Aᵢ = (Rᵢ − μgroup) / (σgroup + ε)","textChars":33,"textLines":1,"bbox":[105,337,460,54]}
+{"kind":"textbox","id":"sh/xc7uh8jm","slide":6,"name":"grpo-reward","text":"R = 𝟙[exact outcome] + 0.30 × Rprocess","textPreview":"R = 𝟙[exact outcome] + 0.30 × Rprocess","textChars":39,"textLines":1,"bbox":[110,428,450,38]}
+{"kind":"textbox","id":"sh/a9wvmdkv","slide":6,"name":"grpo-num-0","text":"01","textPreview":"01","textChars":2,"textLines":1,"bbox":[675,227,55,30]}
+{"kind":"textbox","id":"sh/ba5cfi1g","slide":6,"name":"grpo-head-0","text":"同 prompt 采样 4 条 trajectory","textPreview":"同 prompt 采样 4 条 trajectory","textChars":26,"textLines":1,"bbox":[742,224,400,28]}
+{"kind":"textbox","id":"sh/kfydsn2d","slide":6,"name":"grpo-sub-0","text":"不依赖单独 value model","textPreview":"不依赖单独 value model","textChars":17,"textLines":1,"bbox":[742,261,400,28]}
+{"kind":"textbox","id":"sh/lg7ulsji","slide":6,"name":"grpo-num-1","text":"02","textPreview":"02","textChars":2,"textLines":1,"bbox":[675,317,55,30]}
+{"kind":"textbox","id":"sh/ydgvqdk7","slide":6,"name":"grpo-head-1","text":"DAPO-style clipped objective","textPreview":"DAPO-style clipped objective","textChars":28,"textLines":1,"bbox":[742,314,400,28]}
+{"kind":"textbox","id":"sh/jepcji1s","slide":6,"name":"grpo-sub-1","text":"LoRA 更新 Q/K/V/O + MLP","textPreview":"LoRA 更新 Q/K/V/O + MLP","textChars":21,"textLines":1,"bbox":[742,351,400,28]}
+{"kind":"textbox","id":"sh/83idw729","slide":6,"name":"grpo-num-2","text":"03","textPreview":"03","textChars":2,"textLines":1,"bbox":[675,407,55,30]}
+{"kind":"textbox","id":"sh/t4rupcju","slide":6,"name":"grpo-head-2","text":"NF4 base + BF16 compute","textPreview":"NF4 base + BF16 compute","textChars":23,"textLines":1,"bbox":[742,404,400,28]}
+{"kind":"textbox","id":"sh/h0nu9sby","slide":6,"name":"grpo-sub-2","text":"在单张 NVIDIA RTX PRO 6000 Blackwell Server Edition 上完成","textPreview":"在单张 NVIDIA RTX PRO 6000 Blackwell Server Edition 上完成","textChars":52,"textLines":1,"bbox":[742,441,400,28]}
+{"kind":"textbox","id":"sh/gzedgnud","slide":6,"name":"grpo-num-3","text":"04","textPreview":"04","textChars":2,"textLines":1,"bbox":[675,497,55,30]}
+{"kind":"textbox","id":"sh/fy5c72ts","slide":6,"name":"grpo-head-3","text":"过程分只打破失败平局","textPreview":"过程分只打破失败平局","textChars":10,"textLines":1,"bbox":[742,494,400,28]}
+{"kind":"textbox","id":"sh/uxcbexc7","slide":6,"name":"grpo-sub-3","text":"exact outcome 仍是主目标","textPreview":"exact outcome 仍是主目标","textChars":19,"textLines":1,"bbox":[742,531,400,28]}
+{"kind":"notes","id":"nt/uge2z7","slide":6,"text":"response-token 是本次相对早期单 token demo 的关键升级：整个 assistant completion 参与策略优化。\n\n[Sources]\n- /Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/cloud_runs/qwen3-8b-qlora-20260804-v2/evidence/resolved_config.json\n- https://huggingface.co/docs/trl/en/grpo_trainer\n[/Sources]"}
+{"kind":"slide","id":"sl/k3wopc","slide":7,"title":"长程智能体 · 强化学习","textShapes":6}
+{"kind":"shape","id":"sh/xc7yl43a","slide":7,"name":"copper-7","bbox":[0,0,18,720]}
+{"kind":"textbox","id":"sh/a9gfapkj","slide":7,"name":"chapter-script-7","text":"长程智能体 · 强化学习","textPreview":"长程智能体 · 强化学习","textChars":12,"textLines":1,"bbox":[84,68,500,55]}
+{"kind":"textbox","id":"sh/vapgjul4","slide":7,"name":"roman-7","text":"II","textPreview":"II","textChars":2,"textLines":1,"bbox":[840,34,320,240]}
+{"kind":"shape","id":"sh/kfixgz2l","slide":7,"bbox":[86,171,170,0]}
+{"kind":"textbox","id":"sh/5gryp436","slide":7,"name":"zh-7","text":"课程学习闭环","textPreview":"课程学习闭环","textChars":6,"textLines":1,"bbox":[82,214,800,86]}
+{"kind":"textbox","id":"sh/idgfe9kf","slide":7,"name":"en-7","text":"DIAGNOSE → SYNTHESIZE → RETRAIN","textPreview":"DIAGNOSE → SYNTHESIZE → RETRAIN","textChars":31,"textLines":1,"bbox":[87,318,900,45]}
+{"kind":"textbox","id":"sh/jepgnel0","slide":7,"name":"body-7","text":"真正有价值的不是“又训了一遍”，而是把第一次训练后的残余失败或能力边界变成下一轮可验证的数据分布。","textPreview":"真正有价值的不是“又训了一遍”，而是把第一次训练后的残余失败或能力边界变成下一轮可验证的数据分布。","textChars":49,"textLines":1,"bbox":[87,410,830,100]}
+{"kind":"shape","id":"sh/0jex4fmh","slide":7,"name":"chapter-pill-7-bg","bbox":[87,592,150,30]}
+{"kind":"textbox","id":"sh/lknedk32","slide":7,"name":"chapter-pill-7-text","text":"CHAPTER 07","textPreview":"CHAPTER 07","textChars":10,"textLines":1,"bbox":[97,597,130,20]}
+{"kind":"notes","id":"nt/k3wopc","slide":7,"text":"第二章切入用户最关心的 curriculum：训练—失败—合成更难数据—再训练。\n\n[Sources]\n- /Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/cloud_runs/qwen3-8b-qlora-20260804-v2/evidence/stage2/synthesis_manifest.json\n[/Sources]"}
+{"kind":"slide","id":"sl/f70221","slide":8,"title":"长程多轮智能体强化学习","textShapes":16}
+{"kind":"shape","id":"sh/ih03m5c3","slide":8,"name":"rail-8","bbox":[0,0,30,720]}
+{"kind":"textbox","id":"sh/5krmhkbe","slide":8,"name":"flourish-8","text":"长程多轮智能体强化学习","textPreview":"长程多轮智能体强化学习","textChars":11,"textLines":1,"bbox":[70,29,420,32]}
+{"kind":"textbox","id":"sh/kjilofu9","slide":8,"name":"chapter-8","text":"STAGE 1","textPreview":"STAGE 1","textChars":7,"textLines":1,"bbox":[760,33,420,24]}
+{"kind":"textbox","id":"sh/ve9kbadc","slide":8,"name":"title-8","text":"第一次训练之后，模型在哪里失败？","textPreview":"第一次训练之后，模型在哪里失败？","textChars":16,"textLines":1,"bbox":[70,78,1095,55]}
+{"kind":"textbox","id":"sh/atg3i5cr","slide":8,"name":"subtitle-8","text":"报告保留负结果：成功率下降也不会被隐藏，curriculum 依据 failure composition 而不是漂亮样例。","textPreview":"报告保留负结果：成功率下降也不会被隐藏，curriculum 依据 failure composition 而不是漂亮样例。","textChars":62,"textLines":1,"bbox":[72,137,1080,34]}
+{"kind":"shape","id":"sh/xgr2d0vi","slide":8,"bbox":[70,184,1110,0]}
+{"kind":"textbox","id":"sh/wfilkfux","slide":8,"name":"page-8","text":"08","textPreview":"08","textChars":2,"textLines":1,"bbox":[1125,670,55,20]}
+{"kind":"shape","id":"sh/fat4nutw","slide":8,"bbox":[85,235,210,0]}
+{"kind":"textbox","id":"sh/epk3upcb","slide":8,"name":"s1-before-value","text":"75.0%","textPreview":"75.0%","textChars":5,"textLines":1,"bbox":[85,253,210,55]}
+{"kind":"textbox","id":"sh/wvepsfq1","slide":8,"name":"s1-before-label","text":"probe success · before","textPreview":"probe success · before","textChars":22,"textLines":1,"bbox":[85,313,210,44]}
+{"kind":"shape","id":"sh/xwnq1k7m","slide":8,"bbox":[345,235,210,0]}
+{"kind":"textbox","id":"sh/atw7q58b","slide":8,"name":"s1-after-value","text":"100.0%","textPreview":"100.0%","textChars":6,"textLines":1,"bbox":[345,253,210,55]}
+{"kind":"textbox","id":"sh/vu58zapw","slide":8,"name":"s1-after-label","text":"probe success · after","textPreview":"probe success · after","textChars":21,"textLines":1,"bbox":[345,313,210,44]}
+{"kind":"shape","id":"sh/8repofq5","slide":8,"bbox":[605,235,210,0]}
+{"kind":"textbox","id":"sh/9snqxk7q","slide":8,"name":"s1-delta-value","text":"+25.0 pt","textPreview":"+25.0 pt","textChars":8,"textLines":1,"bbox":[605,253,210,55]}
+{"kind":"textbox","id":"sh/mpc7m58z","slide":8,"name":"s1-delta-label","text":"success delta","textPreview":"success delta","textChars":13,"textLines":1,"bbox":[605,313,210,44]}
+{"kind":"shape","id":"sh/nqlovapk","slide":8,"bbox":[865,235,210,0]}
+{"kind":"textbox","id":"sh/03upkvq9","slide":8,"name":"s1-steps-value","text":"12","textPreview":"12","textChars":2,"textLines":1,"bbox":[865,253,210,55]}
+{"kind":"textbox","id":"sh/lo36t07e","slide":8,"name":"s1-steps-label","text":"optimizer steps","textPreview":"optimizer steps","textChars":15,"textLines":1,"bbox":[865,313,210,44]}
+{"kind":"textbox","id":"sh/h8be1sv6","slide":8,"name":"failure-head","text":"TERMINAL FAILURE TAXONOMY","textPreview":"TERMINAL FAILURE TAXONOMY","textChars":25,"textLines":1,"bbox":[88,410,400,28]}
+{"kind":"textbox","id":"sh/g72d8nel","slide":8,"name":"failure-name-0","text":"POLICY_NOT_INSPECTED","textPreview":"POLICY_NOT_INSPECTED","textChars":20,"textLines":1,"bbox":[92,458,380,24]}
+{"kind":"shape","id":"sh/f6twzix0","slide":8,"name":"failure-track-0","bbox":[490,461,500,14]}
+{"kind":"shape","id":"sh/ulkv6xwf","slide":8,"name":"failure-before-0","bbox":[490,461,175,14]}
+{"kind":"shape","id":"sh/tkbexsfa","slide":8,"name":"failure-after-0","bbox":[690,461,5,14]}
+{"kind":"textbox","id":"sh/sj2d4nep","slide":8,"name":"failure-count-0","text":"1 → 0","textPreview":"1 → 0","textChars":5,"textLines":1,"bbox":[1020,456,90,22]}
+{"kind":"notes","id":"nt/f70221","slide":8,"text":"Stage 1 后在冻结 probe 上生成轨迹并分类 terminal state；该 trace 的 hash 是合成输入证据。\n\n[Sources]\n- /Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/cloud_runs/qwen3-8b-qlora-20260804-v2/evidence/stage1/summary.json\n- /Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/cloud_runs/qwen3-8b-qlora-20260804-v2/evidence/stage1/eval_probe_traces.jsonl\n[/Sources]"}
+{"kind":"slide","id":"sl/ksyx9r","slide":9,"title":"长程多轮智能体强化学习","textShapes":12}
+{"kind":"shape","id":"sh/q9gfepwn","slide":9,"name":"rail-9","bbox":[0,0,30,720]}
+{"kind":"textbox","id":"sh/dw7e94fy","slide":9,"name":"flourish-9","text":"长程多轮智能体强化学习","textPreview":"长程多轮智能体强化学习","textChars":11,"textLines":1,"bbox":[70,29,420,32]}
+{"kind":"textbox","id":"sh/cvyxgzed","slide":9,"name":"chapter-9","text":"HARD-DATA SYNTHESIS","textPreview":"HARD-DATA SYNTHESIS","textChars":19,"textLines":1,"bbox":[760,33,420,24]}
+{"kind":"textbox","id":"sh/zypwbud4","slide":9,"name":"title-9","text":"残余失败或能力边界，都会进入下一轮数据生成器","textPreview":"残余失败或能力边界，都会进入下一轮数据生成器","textChars":22,"textLines":1,"bbox":[70,78,1095,55]}
+{"kind":"textbox","id":"sh/exgfipwj","slide":9,"name":"subtitle-9","text":"ground truth 由确定性代码生成；模型自然语言永远不充当 charge、amount 或 verifier target。","textPreview":"ground truth 由确定性代码生成；模型自然语言永远不充当 charge、amount 或 verifier target。","textChars":66,"textLines":1,"bbox":[72,137,1080,34]}
+{"kind":"shape","id":"sh/10red4va","slide":9,"bbox":[70,184,1110,0]}
+{"kind":"textbox","id":"sh/0zyxkzep","slide":9,"name":"page-9","text":"09","textPreview":"09","textChars":2,"textLines":1,"bbox":[1125,670,55,20]}
+{"kind":"shape","id":"sh/f25wzax0","slide":9,"bbox":[375,390,115,0]}
+{"kind":"shape","id":"sh/u1wv65wf","slide":9,"bbox":[790,390,115,0]}
+{"kind":"shape","id":"sh/wrel0zq5","slide":9,"name":"synth-left","bbox":[75,240,300,300]}
+{"kind":"shape","id":"sh/xsn294rq","slide":9,"name":"synth-mid","bbox":[490,240,300,300]}
+{"kind":"shape","id":"sh/a5c3yp8f","slide":9,"name":"synth-right","bbox":[905,240,300,300]}
+{"kind":"textbox","id":"sh/v6lk7u90","slide":9,"name":"synth-left-k","text":"OBSERVED FAILURES","textPreview":"OBSERVED FAILURES","textChars":17,"textLines":1,"bbox":[105,270,240,30]}
+{"kind":"textbox","id":"sh/kvel4zqh","slide":9,"name":"synth-left-v","text":"no observed failure\n→ fallback taxonomy","textPreview":"no observed failure | → fallback taxonomy","textChars":39,"textLines":2,"bbox":[105,330,240,150]}
+{"kind":"textbox","id":"sh/5wn2d4r2","slide":9,"name":"synth-mid-k","text":"DETERMINISTIC\nTRANSFORMS","textPreview":"DETERMINISTIC | TRANSFORMS","textChars":24,"textLines":2,"bbox":[530,272,220,55]}
+{"kind":"textbox","id":"sh/itw3298b","slide":9,"name":"synth-mid-v","text":"+ decoy orders\n+ transient timeout\n+ exact confirmation\n+ old-task replay","textPreview":"+ decoy orders | + transient timeout | + exact confirmation | + old-task replay","textChars":73,"textLines":4,"bbox":[535,360,210,120]}
+{"kind":"textbox","id":"sh/ju5kbu9w","slide":9,"name":"synth-right-k","text":"STAGE-2 MIX","textPreview":"STAGE-2 MIX","textChars":11,"textLines":1,"bbox":[940,270,230,30]}
+{"kind":"textbox","id":"sh/0za1sfqx","slide":9,"name":"synth-right-v","text":"8 hard tasks\n+\n4 replay tasks","textPreview":"8 hard tasks | + | 4 replay tasks","textChars":29,"textLines":3,"bbox":[945,348,220,105]}
+{"kind":"textbox","id":"sh/l0321kri","slide":9,"name":"synth-hash","text":"source trace  ca0d54b78a400…    stage2 data  5790304c792b7…","textPreview":"source trace  ca0d54b78a400…    stage2 data  5790304c792b7…","textChars":59,"textLines":1,"bbox":[185,590,910,30]}
+{"kind":"notes","id":"nt/ksyx9r","slide":9,"text":"此页是 curriculum 的核心：failure category 到 task perturbation 的确定性映射，并保留 trace/data hash。\n\n[Sources]\n- /Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/cloud_runs/qwen3-8b-qlora-20260804-v2/evidence/stage2/synthesis_manifest.json\n- /Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/cloud_runs/qwen3-8b-qlora-20260804-v2/evidence/tasks/stage2_hard.jsonl\n[/Sources]"}
+{"kind":"slide","id":"sl/di3rhc","slide":10,"title":"长程多轮智能体强化学习","textShapes":17}
+{"kind":"shape","id":"sh/z61kbid8","slide":10,"name":"rail-10","bbox":[0,0,30,720]}
+{"kind":"textbox","id":"sh/07a14nut","slide":10,"name":"flourish-10","text":"长程多轮智能体强化学习","textPreview":"长程多轮智能体强化学习","textChars":11,"textLines":1,"bbox":[70,29,420,32]}
+{"kind":"textbox","id":"sh/1832dsve","slide":10,"name":"chapter-10","text":"STAGE 2","textPreview":"STAGE 2","textChars":7,"textLines":1,"bbox":[760,33,420,24]}
+{"kind":"textbox","id":"sh/m9c36xcz","slide":10,"name":"title-10","text":"从 Stage-1 adapter 继续训练，效果是否真的改变？","textPreview":"从 Stage-1 adapter 继续训练，效果是否真的改变？","textChars":32,"textLines":1,"bbox":[70,78,1095,55]}
+{"kind":"textbox","id":"sh/nalkf2dk","slide":10,"name":"subtitle-10","text":"算法效果和工程完整性分开判断：即使指标不升，只要审计通过，它仍是一个真实负结果。","textPreview":"算法效果和工程完整性分开判断：即使指标不升，只要审计通过，它仍是一个真实负结果。","textChars":40,"textLines":1,"bbox":[72,137,1080,34]}
+{"kind":"shape","id":"sh/obul8nup","slide":10,"bbox":[70,184,1110,0]}
+{"kind":"textbox","id":"sh/9c32hsva","slide":10,"name":"page-10","text":"10","textPreview":"10","textChars":2,"textLines":1,"bbox":[1125,670,55,20]}
+{"kind":"textbox","id":"sh/adc3axcv","slide":10,"name":"s2-label-0","text":"Final holdout success","textPreview":"Final holdout success","textChars":21,"textLines":1,"bbox":[90,257,300,30]}
+{"kind":"shape","id":"sh/bylkj2dg","slide":10,"name":"s2-track-a-0","bbox":[410,265,570,22]}
+{"kind":"shape","id":"sh/jy50329g","slide":10,"name":"s2-a-0","bbox":[410,265,380,22]}
+{"kind":"shape","id":"sh/ixwjuhsv","slide":10,"name":"s2-track-b-0","bbox":[410,313,570,22]}
+{"kind":"shape","id":"sh/50ni5crm","slide":10,"name":"s2-b-0","bbox":[410,313,570,22]}
+{"kind":"textbox","id":"sh/4ze1w7a1","slide":10,"name":"s2-value-0","text":"66.7%  →  100.0%","textPreview":"66.7%  →  100.0%","textChars":16,"textLines":1,"bbox":[1000,281,160,38]}
+{"kind":"textbox","id":"sh/vul0z29k","slide":10,"name":"s2-label-1","text":"Mean combined reward","textPreview":"Mean combined reward","textChars":20,"textLines":1,"bbox":[90,407,300,30]}
+{"kind":"shape","id":"sh/atcjqxsz","slide":10,"name":"s2-track-a-1","bbox":[410,415,570,22]}
+{"kind":"shape","id":"sh/xwni1cra","slide":10,"name":"s2-a-1","bbox":[410,415,367.26,22]}
+{"kind":"shape","id":"sh/wve1s7a5","slide":10,"name":"s2-track-b-1","bbox":[410,463,570,22]}
+{"kind":"shape","id":"sh/fqpkbm9o","slide":10,"name":"s2-b-1","bbox":[410,463,548.27,22]}
+{"kind":"textbox","id":"sh/epgj21s3","slide":10,"name":"s2-value-1","text":"0.838  →  1.250","textPreview":"0.838  →  1.250","textChars":15,"textLines":1,"bbox":[1000,431,160,38]}
+{"kind":"shape","id":"sh/qlk3ulcb","slide":10,"bbox":[120,570,210,0]}
+{"kind":"textbox","id":"sh/bmt43qtw","slide":10,"name":"s2-step-value","text":"12","textPreview":"12","textChars":2,"textLines":1,"bbox":[120,588,210,55]}
+{"kind":"textbox","id":"sh/cn2lwvuh","slide":10,"name":"s2-step-label","text":"Stage-2 optimizer steps","textPreview":"Stage-2 optimizer steps","textChars":23,"textLines":1,"bbox":[120,648,210,44]}
+{"kind":"shape","id":"sh/dobm50b2","slide":10,"bbox":[420,570,210,0]}
+{"kind":"textbox","id":"sh/ypkny5cn","slide":10,"name":"s2-time-value","text":"7m","textPreview":"7m","textChars":2,"textLines":1,"bbox":[420,588,210,55]}
+{"kind":"textbox","id":"sh/zqt47ats","slide":10,"name":"s2-time-label","text":"training wall time","textPreview":"training wall time","textChars":18,"textLines":1,"bbox":[420,648,210,44]}
+{"kind":"shape","id":"sh/0r250fud","slide":10,"bbox":[720,570,210,0]}
+{"kind":"textbox","id":"sh/lsbm9kby","slide":10,"name":"s2-replay-value","text":"6","textPreview":"6","textChars":1,"textLines":1,"bbox":[720,588,210,55]}
+{"kind":"textbox","id":"sh/etg3m1c3","slide":10,"name":"s2-replay-label","text":"fresh-process episodes","textPreview":"fresh-process episodes","textChars":22,"textLines":1,"bbox":[720,648,210,44]}
+{"kind":"shape","id":"sh/fu94v6to","slide":10,"bbox":[1020,570,210,0]}
+{"kind":"textbox","id":"sh/x8f61ov6","slide":10,"name":"s2-gpu-value","text":"1×","textPreview":"1×","textChars":2,"textLines":1,"bbox":[1020,588,210,55]}
+{"kind":"textbox","id":"sh/w76psjel","slide":10,"name":"s2-gpu-label","text":"RTX PRO 6000 · 96GB","textPreview":"RTX PRO 6000 · 96GB","textChars":19,"textLines":1,"bbox":[1020,648,210,44]}
+{"kind":"notes","id":"nt/di3rhc","slide":10,"text":"结果页必须如实展示正负 delta；不要用完整性 PASS 替代性能提升。\n\n[Sources]\n- /Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/cloud_runs/qwen3-8b-qlora-20260804-v2/evidence/stage2/summary.json\n- /Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/cloud_runs/qwen3-8b-qlora-20260804-v2/evidence/fresh_replay/summary.json\n[/Sources]"}
+{"kind":"slide","id":"sl/0d9ofg","slide":11,"title":"长程多轮智能体强化学习","textShapes":27}
+{"kind":"shape","id":"sh/zqdgv2xw","slide":11,"name":"rail-11","bbox":[0,0,30,720]}
+{"kind":"textbox","id":"sh/0r6h47eh","slide":11,"name":"flourish-11","text":"长程多轮智能体强化学习","textPreview":"长程多轮智能体强化学习","textChars":11,"textLines":1,"bbox":[70,29,420,32]}
+{"kind":"textbox","id":"sh/lsfyxcf2","slide":11,"name":"chapter-11","text":"TRAJECTORY EVIDENCE","textPreview":"TRAJECTORY EVIDENCE","textChars":19,"textLines":1,"bbox":[760,33,420,24]}
+{"kind":"textbox","id":"sh/mdoz6hwn","slide":11,"name":"title-11","text":"一条完整轨迹：从模糊诉求到安全 side effect","textPreview":"一条完整轨迹：从模糊诉求到安全 side effect","textChars":27,"textLines":1,"bbox":[70,78,1095,55]}
+{"kind":"textbox","id":"sh/nex0zmx8","slide":11,"name":"subtitle-11","text":"task=refund-final_holdout-0204 · reward=1.248 · SUCCESS","textPreview":"task=refund-final_holdout-0204 · reward=1.248 · SUCCESS","textChars":55,"textLines":1,"bbox":[72,137,1080,34]}
+{"kind":"shape","id":"sh/8f6h8ret","slide":11,"bbox":[70,184,1110,0]}
+{"kind":"textbox","id":"sh/9gfi1cfe","slide":11,"name":"page-11","text":"11","textPreview":"11","textChars":2,"textLines":1,"bbox":[1125,670,55,20]}
+{"kind":"shape","id":"sh/ahozahwz","slide":11,"name":"traj-spine","bbox":[122,244,3,336]}
+{"kind":"shape","id":"sh/vix03mx4","slide":11,"name":"traj-dot-0","bbox":[105,225,36,36]}
+{"kind":"textbox","id":"sh/fuxwn2dk","slide":11,"name":"traj-num-0","text":"1","textPreview":"1","textChars":1,"textLines":1,"bbox":[105,232,36,20]}
+{"kind":"textbox","id":"sh/etofexwz","slide":11,"name":"traj-tool-0","text":"request_identity","textPreview":"request_identity","textChars":16,"textLines":1,"bbox":[175,224,250,28]}
+{"kind":"textbox","id":"sh/1wfepcvq","slide":11,"name":"traj-obs-0","text":"{\"email\":\"customer0204@example.com\",\"phone_last4\":\"2369\"}","textPreview":"{\"email\":\"customer0204@example.com\",\"phone_last4\":\"2369\"}","textChars":57,"textLines":1,"bbox":[455,224,680,34]}
+{"kind":"shape","id":"sh/gv6xg7u5","slide":11,"name":"traj-dot-1","bbox":[105,281,36,36]}
+{"kind":"textbox","id":"sh/rqxwj2do","slide":11,"name":"traj-num-1","text":"2","textPreview":"2","textChars":1,"textLines":1,"bbox":[105,288,36,20]}
+{"kind":"textbox","id":"sh/6p4faxw3","slide":11,"name":"traj-tool-1","text":"lookup_customer","textPreview":"lookup_customer","textChars":15,"textLines":1,"bbox":[175,280,250,28]}
+{"kind":"textbox","id":"sh/tsfelsve","slide":11,"name":"traj-obs-1","text":"{\"customer_id\":\"CUS-1204\",\"verified\":true}","textPreview":"{\"customer_id\":\"CUS-1204\",\"verified\":true}","textChars":42,"textLines":1,"bbox":[455,280,680,34]}
+{"kind":"shape","id":"sh/sr6xcne9","slide":11,"name":"traj-dot-2","bbox":[105,337,36,36]}
+{"kind":"textbox","id":"sh/bmhgvmds","slide":11,"name":"traj-num-2","text":"3","textPreview":"3","textChars":1,"textLines":1,"bbox":[105,344,36,20]}
+{"kind":"textbox","id":"sh/al8fmhc7","slide":11,"name":"traj-tool-2","text":"list_orders","textPreview":"list_orders","textChars":11,"textLines":1,"bbox":[175,336,250,28]}
+{"kind":"textbox","id":"sh/6tcrap0r","slide":11,"name":"traj-obs-2","text":"{\"orders\":[{\"amount\":349,\"currency\":\"CNY\",\"order_id\":\"ORD-2026-4204\"},{\"amount\":478.13,…","textPreview":"{\"orders\":[{\"amount\":349,\"currency\":\"CNY\",\"order_id\":\"ORD-2026-4204\"},{\"amount\":478.13,…","textChars":88,"textLines":1,"bbox":[455,336,680,34]}
+{"kind":"shape","id":"sh/7u583u1c","slide":11,"name":"traj-dot-3","bbox":[105,393,36,36]}
+{"kind":"textbox","id":"sh/8ve9cfix","slide":11,"name":"traj-num-3","text":"4","textPreview":"4","textChars":1,"textLines":1,"bbox":[105,400,36,20]}
+{"kind":"textbox","id":"sh/twnq5kji","slide":11,"name":"traj-tool-3","text":"get_payment_history","textPreview":"get_payment_history","textChars":19,"textLines":1,"bbox":[175,392,250,28]}
+{"kind":"textbox","id":"sh/uxwrep0n","slide":11,"name":"traj-obs-3","text":"{\"charges\":[{\"amount\":349,\"captured_at\":\"2026-07-25T09:31:08+08:00\",\"charge_id\":\"CHG-74…","textPreview":"{\"charges\":[{\"amount\":349,\"captured_at\":\"2026-07-25T09:31:08+08:00\",\"charge_id\":\"CHG-74…","textChars":88,"textLines":1,"bbox":[455,392,680,34]}
+{"kind":"shape","id":"sh/vy587u18","slide":11,"name":"traj-dot-4","bbox":[105,449,36,36]}
+{"kind":"textbox","id":"sh/gje9gzit","slide":11,"name":"traj-num-4","text":"5","textPreview":"5","textChars":1,"textLines":1,"bbox":[105,456,36,20]}
+{"kind":"textbox","id":"sh/hknq94je","slide":11,"name":"traj-tool-4","text":"get_refund_policy","textPreview":"get_refund_policy","textChars":17,"textLines":1,"bbox":[175,448,250,28]}
+{"kind":"textbox","id":"sh/a1s725kj","slide":11,"name":"traj-obs-4","text":"{\"arrival_window\":\"3-5 business days\",\"currency\":\"CNY\",\"eligible\":true,\"max_refund\":349…","textPreview":"{\"arrival_window\":\"3-5 business days\",\"currency\":\"CNY\",\"eligible\":true,\"max_refund\":349…","textChars":88,"textLines":1,"bbox":[455,448,680,34]}
+{"kind":"shape","id":"sh/b2l8va14","slide":11,"name":"traj-dot-5","bbox":[105,505,36,36]}
+{"kind":"textbox","id":"sh/dgru183m","slide":11,"name":"traj-num-5","text":"6","textPreview":"6","textChars":1,"textLines":1,"bbox":[105,512,36,20]}
+{"kind":"textbox","id":"sh/sfit8321","slide":11,"name":"traj-tool-5","text":"request_confirmation","textPreview":"request_confirmation","textChars":20,"textLines":1,"bbox":[175,504,250,28]}
+{"kind":"textbox","id":"sh/re9czylg","slide":11,"name":"traj-obs-5","text":"{\"confirmed\":true,\"user_message\":\"I confirm refunding only CHG-7409 for CNY 349.00.\"}","textPreview":"{\"confirmed\":true,\"user_message\":\"I confirm refunding only CHG-7409 for CNY 349.00.\"}","textChars":85,"textLines":1,"bbox":[455,504,680,34]}
+{"kind":"shape","id":"sh/qd0b6tkv","slide":11,"name":"traj-dot-6","bbox":[105,561,36,36]}
+{"kind":"textbox","id":"sh/1kru583i","slide":11,"name":"traj-num-6","text":"7","textPreview":"7","textChars":1,"textLines":1,"bbox":[105,568,36,20]}
+{"kind":"textbox","id":"sh/0jitc32d","slide":11,"name":"traj-tool-6","text":"create_refund","textPreview":"create_refund","textChars":13,"textLines":1,"bbox":[175,560,250,28]}
+{"kind":"textbox","id":"sh/fi9c3yls","slide":11,"name":"traj-obs-6","text":"{\"amount\":349,\"arrival_window\":\"3-5 business days\",\"currency\":\"CNY\",\"refund_id\":\"RF-275…","textPreview":"{\"amount\":349,\"arrival_window\":\"3-5 business days\",\"currency\":\"CNY\",\"refund_id\":\"RF-275…","textChars":88,"textLines":1,"bbox":[455,560,680,34]}
+{"kind":"shape","id":"sh/eh0badk7","slide":11,"name":"traj-outcome-bg","bbox":[860,604,250,30]}
+{"kind":"textbox","id":"sh/ho7ato3e","slide":11,"name":"traj-outcome-text","text":"EXACT OUTCOME PASS","textPreview":"EXACT OUTCOME PASS","textChars":18,"textLines":1,"bbox":[870,609,230,20]}
+{"kind":"notes","id":"nt/0d9ofg","slide":11,"text":"轨迹页用 environment event ledger，而不是模型自述，证明每次读写、observation 和最终状态。\n\n[Sources]\n- /Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/cloud_runs/qwen3-8b-qlora-20260804-v2/evidence/stage2/eval_final_traces.jsonl\n[/Sources]"}
+{"kind":"slide","id":"sl/8lrky0","slide":12,"title":"长程多轮智能体强化学习","textShapes":10}
+{"kind":"shape","id":"sh/8jy90jad","slide":12,"name":"rail-12","bbox":[0,0,30,720]}
+{"kind":"textbox","id":"sh/7ips7yts","slide":12,"name":"flourish-12","text":"长程多轮智能体强化学习","textPreview":"长程多轮智能体强化学习","textChars":11,"textLines":1,"bbox":[70,29,420,32]}
+{"kind":"textbox","id":"sh/mhwryts7","slide":12,"name":"chapter-12","text":"BENCHMARK BOUNDARY","textPreview":"BENCHMARK BOUNDARY","textChars":18,"textLines":1,"bbox":[760,33,420,24]}
+{"kind":"textbox","id":"sh/lgna5obm","slide":12,"name":"title-12","text":"官方 benchmark 没跑，就不应该出现一个分数","textPreview":"官方 benchmark 没跑，就不应该出现一个分数","textChars":26,"textLines":1,"bbox":[70,78,1095,55]}
+{"kind":"textbox","id":"sh/kfe9cjah","slide":12,"name":"subtitle-12","text":"本次验证的是自建 stateful curriculum；BFCL/TAU-2 代码路径保留，但状态必须明确写成 NOT RUN。","textPreview":"本次验证的是自建 stateful curriculum；BFCL/TAU-2 代码路径保留，但状态必须明确写成 NOT RUN。","textChars":65,"textLines":1,"bbox":[72,137,1080,34]}
+{"kind":"shape","id":"sh/ze5s3etw","slide":12,"bbox":[70,184,1110,0]}
+{"kind":"textbox","id":"sh/ydwra9sb","slide":12,"name":"page-12","text":"12","textPreview":"12","textChars":2,"textLines":1,"bbox":[1125,670,55,20]}
+{"kind":"textbox","id":"sh/xcnq14bq","slide":12,"name":"benchmark-status","text":"NOT RUN","textPreview":"NOT RUN","textChars":7,"textLines":1,"bbox":[75,230,470,150]}
+{"kind":"textbox","id":"sh/cbe98za5","slide":12,"name":"benchmark-label","text":"BFCL-V4 MULTI-TURN","textPreview":"BFCL-V4 MULTI-TURN","textChars":18,"textLines":1,"bbox":[95,395,430,38]}
+{"kind":"shape","id":"sh/q14fuh4b","slide":12,"bbox":[640,230,470,0]}
+{"kind":"textbox","id":"sh/r2dg3m5w","slide":12,"name":"benchmark-ready","text":"代码已经具备","textPreview":"代码已经具备","textChars":6,"textLines":1,"bbox":[640,258,470,42]}
+{"kind":"textbox","id":"sh/c36xw7mh","slide":12,"name":"benchmark-list","text":"• 固定 ID 的 base / adapter 对照\n• 官方 multi-turn 结果与评分目录隔离\n• smoke 与 4×200 paper profile 分开\n• 缺 manifest 时报告和 PPT 不生成分数","textPreview":"• 固定 ID 的 base / adapter 对照 | • 官方 multi-turn 结果与评分目录隔离 | • smoke 与 4×200 paper profile 分开 | • 缺 manifest 时报告和 PPT 不生成分数","textChars":114,"textLines":4,"bbox":[640,335,475,180]}
+{"kind":"textbox","id":"sh/d4fy5cn2","slide":12,"name":"benchmark-boundary","text":"能写：curriculum micro-run PASS    不能写：论文 benchmark 已复现","textPreview":"能写：curriculum micro-run PASS    不能写：论文 benchmark 已复现","textChars":52,"textLines":1,"bbox":[175,575,930,42]}
+{"kind":"notes","id":"nt/8lrky0","slide":12,"text":"这页主动声明 BFCL 未运行；代码就绪不等于实验完成。\n\n[Sources]\n- /Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/docs/benchmark_protocol.md\n- https://github.com/ShishirPatil/gorilla/tree/main/berkeley-function-call-leaderboard\n[/Sources]"}
+{"kind":"slide","id":"sl/w5d5s5","slide":13,"title":"长程多轮智能体强化学习","textShapes":22}
+{"kind":"shape","id":"sh/3ap0j2ps","slide":13,"name":"rail-13","bbox":[0,0,30,720]}
+{"kind":"textbox","id":"sh/oby1c76d","slide":13,"name":"flourish-13","text":"长程多轮智能体强化学习","textPreview":"长程多轮智能体强化学习","textChars":11,"textLines":1,"bbox":[70,29,420,32]}
+{"kind":"textbox","id":"sh/pcr2lc7y","slide":13,"name":"chapter-13","text":"INTEGRITY AUDIT","textPreview":"INTEGRITY AUDIT","textChars":15,"textLines":1,"bbox":[760,33,420,24]}
+{"kind":"textbox","id":"sh/qd0jehoj","slide":13,"name":"title-13","text":"怎样证明不是“看起来训练了”？","textPreview":"怎样证明不是“看起来训练了”？","textChars":15,"textLines":1,"bbox":[70,78,1095,55]}
+{"kind":"textbox","id":"sh/be9knm54","slide":13,"name":"subtitle-13","text":"把一次 ML run 拆成可证伪的 gate：任何关键证据缺失，最终报告和 PPT 都拒绝生成。","textPreview":"把一次 ML run 拆成可证伪的 gate：任何关键证据缺失，最终报告和 PPT 都拒绝生成。","textChars":48,"textLines":1,"bbox":[72,137,1080,34]}
+{"kind":"shape","id":"sh/cfi1gr6p","slide":13,"bbox":[70,184,1110,0]}
+{"kind":"textbox","id":"sh/dgr2pwnu","slide":13,"name":"page-13","text":"13","textPreview":"13","textChars":2,"textLines":1,"bbox":[1125,670,55,20]}
+{"kind":"shape","id":"sh/yh0ji1of","slide":13,"name":"audit-bg-0","bbox":[85,225,520,72]}
+{"kind":"shape","id":"sh/zi9krm50","slide":13,"name":"audit-pill-0-bg","bbox":[103,245,75,30]}
+{"kind":"textbox","id":"sh/fqtcrmdc","slide":13,"name":"audit-pill-0-text","text":"PASS","textPreview":"PASS","textChars":4,"textLines":1,"bbox":[113,250,55,20]}
+{"kind":"textbox","id":"sh/epkbi1cr","slide":13,"name":"audit-name-0","text":"stage1 adapter exists","textPreview":"stage1 adapter exists","textChars":21,"textLines":1,"bbox":[195,242,380,38]}
+{"kind":"shape","id":"sh/1cvutwvi","slide":13,"name":"audit-bg-1","bbox":[645,225,520,72]}
+{"kind":"shape","id":"sh/0bmtkrux","slide":13,"name":"audit-pill-1-bg","bbox":[663,245,75,30]}
+{"kind":"textbox","id":"sh/rmtsnmdg","slide":13,"name":"audit-pill-1-text","text":"PASS","textPreview":"PASS","textChars":4,"textLines":1,"bbox":[673,250,55,20]}
+{"kind":"textbox","id":"sh/qlkbehcv","slide":13,"name":"audit-name-1","text":"stage2 adapter exists","textPreview":"stage2 adapter exists","textChars":21,"textLines":1,"bbox":[755,242,380,38]}
+{"kind":"shape","id":"sh/dobupwvm","slide":13,"name":"audit-bg-2","bbox":[85,317,520,72]}
+{"kind":"shape","id":"sh/sn2tgru1","slide":13,"name":"audit-pill-2-bg","bbox":[103,337,75,30]}
+{"kind":"textbox","id":"sh/bixcz6dk","slide":13,"name":"audit-pill-2-text","text":"PASS","textPreview":"PASS","textChars":4,"textLines":1,"bbox":[113,342,55,20]}
+{"kind":"textbox","id":"sh/ah4bqlcz","slide":13,"name":"audit-name-2","text":"stage2 adapter differs from stage1","textPreview":"stage2 adapter differs from stage1","textChars":34,"textLines":1,"bbox":[195,334,380,38]}
+{"kind":"shape","id":"sh/md8fy5w7","slide":13,"name":"audit-bg-3","bbox":[645,317,520,72]}
+{"kind":"shape","id":"sh/7ehwraxs","slide":13,"name":"audit-pill-3-bg","bbox":[663,337,75,30]}
+{"kind":"textbox","id":"sh/8fqx0fed","slide":13,"name":"audit-pill-3-text","text":"PASS","textPreview":"PASS","textChars":4,"textLines":1,"bbox":[673,342,55,20]}
+{"kind":"textbox","id":"sh/90zetkfy","slide":13,"name":"audit-name-3","text":"both GRPO stages changed trainable parameters","textPreview":"both GRPO stages changed trainable parameters","textChars":45,"textLines":1,"bbox":[755,334,380,38]}
+{"kind":"shape","id":"sh/u1sf2pwj","slide":13,"name":"audit-bg-4","bbox":[85,409,520,72]}
+{"kind":"shape","id":"sh/v21wvux4","slide":13,"name":"audit-pill-4-bg","bbox":[103,429,75,30]}
+{"kind":"textbox","id":"sh/g3ax4zep","slide":13,"name":"audit-pill-4-text","text":"PASS","textPreview":"PASS","textChars":4,"textLines":1,"bbox":[113,434,55,20]}
+{"kind":"textbox","id":"sh/h4jex4fu","slide":13,"name":"audit-name-4","text":"training reward variance observed","textPreview":"training reward variance observed","textChars":33,"textLines":1,"bbox":[195,426,380,38]}
+{"kind":"shape","id":"sh/a5ovqlwz","slide":13,"name":"audit-bg-5","bbox":[645,409,520,72]}
+{"kind":"shape","id":"sh/b6xwjqxk","slide":13,"name":"audit-pill-5-bg","bbox":[663,429,75,30]}
+{"kind":"textbox","id":"sh/d03ip8z2","slide":13,"name":"audit-pill-5-text","text":"PASS","textPreview":"PASS","textChars":4,"textLines":1,"bbox":[673,434,55,20]}
+{"kind":"textbox","id":"sh/szuhw3yx","slide":13,"name":"audit-name-5","text":"final holdout isolation","textPreview":"final holdout isolation","textChars":23,"textLines":1,"bbox":[755,426,380,38]}
+{"kind":"shape","id":"sh/ryl0nyhc","slide":13,"name":"audit-bg-6","bbox":[85,501,520,72]}
+{"kind":"shape","id":"sh/qxczutgr","slide":13,"name":"audit-pill-6-bg","bbox":[103,521,75,30]}
+{"kind":"textbox","id":"sh/14nit8ze","slide":13,"name":"audit-pill-6-text","text":"PASS","textPreview":"PASS","textChars":4,"textLines":1,"bbox":[113,526,55,20]}
+{"kind":"textbox","id":"sh/03eh03yt","slide":13,"name":"audit-name-6","text":"failure-driven synthesis has provenance","textPreview":"failure-driven synthesis has provenance","textChars":39,"textLines":1,"bbox":[195,518,380,38]}
+{"kind":"shape","id":"sh/f250ryh8","slide":13,"name":"audit-bg-7","bbox":[645,501,520,72]}
+{"kind":"shape","id":"sh/e1wzytgn","slide":13,"name":"audit-pill-7-bg","bbox":[663,521,75,30]}
+{"kind":"textbox","id":"sh/h8jyh4zu","slide":13,"name":"audit-pill-7-text","text":"PASS","textPreview":"PASS","textChars":4,"textLines":1,"bbox":[673,526,55,20]}
+{"kind":"textbox","id":"sh/g7ahojyp","slide":13,"name":"audit-name-7","text":"stage2 consumed stage1 adapter","textPreview":"stage2 consumed stage1 adapter","textChars":30,"textLines":1,"bbox":[755,518,380,38]}
+{"kind":"shape","id":"sh/knilwrix","slide":13,"name":"audit-hash","bbox":[100,605,1060,50]}
+{"kind":"textbox","id":"sh/lor2pcji","slide":13,"name":"audit-hash-text","text":"S1 7d3c6d223209f…   →   S2 920f76c8c0f35…   ·   child PID 6913","textPreview":"S1 7d3c6d223209f…   →   S2 920f76c8c0f35…   ·   child PID 6913","textChars":62,"textLines":1,"bbox":[135,619,990,24]}
+{"kind":"notes","id":"nt/w5d5s5","slide":13,"text":"审计门覆盖 adapter、权重变化、Stage-2 继承、数据隔离、轨迹、计划步数和真正的子进程重载。\n\n[Sources]\n- /Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/cloud_runs/qwen3-8b-qlora-20260804-v2/evidence/verification.json\n- /Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/cloud_runs/qwen3-8b-qlora-20260804-v2/evidence/stage1/summary.json\n- /Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/cloud_runs/qwen3-8b-qlora-20260804-v2/evidence/stage2/summary.json\n[/Sources]"}
+{"kind":"slide","id":"sl/bos9jv","slide":14,"title":"长程多轮智能体强化学习","textShapes":20}
+{"kind":"shape","id":"sh/7etwz2pc","slide":14,"name":"rail-14","bbox":[0,0,30,720]}
+{"kind":"textbox","id":"sh/sf2ds76x","slide":14,"name":"flourish-14","text":"长程多轮智能体强化学习","textPreview":"长程多轮智能体强化学习","textChars":11,"textLines":1,"bbox":[70,29,420,32]}
+{"kind":"textbox","id":"sh/tgbe1c72","slide":14,"name":"chapter-14","text":"HONEST SELF-CHECK","textPreview":"HONEST SELF-CHECK","textChars":17,"textLines":1,"bbox":[760,33,420,24]}
+{"kind":"textbox","id":"sh/uhkvuhon","slide":14,"name":"title-14","text":"项目已经完整到哪里，哪些仍然不能写？","textPreview":"项目已经完整到哪里，哪些仍然不能写？","textChars":18,"textLines":1,"bbox":[70,78,1095,55]}
+{"kind":"textbox","id":"sh/f2tw3mp8","slide":14,"name":"subtitle-14","text":"把 COMPLETE、CODE_READY 与 BLOCKED_RESOURCE 分开，是这份复现最重要的研究纪律。","textPreview":"把 COMPLETE、CODE_READY 与 BLOCKED_RESOURCE 分开，是这份复现最重要的研究纪律。","textChars":58,"textLines":1,"bbox":[72,137,1080,34]}
+{"kind":"shape","id":"sh/g32xwr6t","slide":14,"bbox":[70,184,1110,0]}
+{"kind":"textbox","id":"sh/h4be5w7e","slide":14,"name":"page-14","text":"14","textPreview":"14","textChars":2,"textLines":1,"bbox":[1125,670,55,20]}
+{"kind":"shape","id":"sh/algvydoj","slide":14,"name":"limit-0","bbox":[75,225,345,345]}
+{"kind":"textbox","id":"sh/v6pwrip4","slide":14,"name":"limit-k-0","text":"COMPLETE","textPreview":"COMPLETE","textChars":8,"textLines":1,"bbox":[99,250,297,34]}
+{"kind":"textbox","id":"sh/7ax4nuto","slide":14,"name":"limit-v-0-0","text":"✓  两阶段 response-token GRPO","textPreview":"✓  两阶段 response-token GRPO","textChars":26,"textLines":1,"bbox":[103,320,290,36]}
+{"kind":"textbox","id":"sh/69oneps3","slide":14,"name":"limit-v-0-1","text":"✓  frontier hard-task curriculum","textPreview":"✓  frontier hard-task curriculum","textChars":32,"textLines":1,"bbox":[103,376,290,36]}
+{"kind":"textbox","id":"sh/tczmp4bu","slide":14,"name":"limit-v-0-2","text":"✓  fresh-process adapter replay","textPreview":"✓  fresh-process adapter replay","textChars":31,"textLines":1,"bbox":[103,432,290,36]}
+{"kind":"textbox","id":"sh/8bq5gza9","slide":14,"name":"limit-v-0-3","text":"✓  V1 失败 → V2 修复审计","textPreview":"✓  V1 失败 → V2 修复审计","textChars":18,"textLines":1,"bbox":[103,488,290,36]}
+{"kind":"shape","id":"sh/jmx4juts","slide":14,"name":"limit-1","bbox":[460,225,345,345]}
+{"kind":"textbox","id":"sh/ylonaps7","slide":14,"name":"limit-k-1","text":"CODE READY / NOT RUN","textPreview":"CODE READY / NOT RUN","textChars":20,"textLines":1,"bbox":[484,250,297,34]}
+{"kind":"textbox","id":"sh/l8fml4bi","slide":14,"name":"limit-v-1-0","text":"◇  BFCL-V4 smoke / paper profile","textPreview":"◇  BFCL-V4 smoke / paper profile","textChars":32,"textLines":1,"bbox":[488,320,290,36]}
+{"kind":"textbox","id":"sh/k765czad","slide":14,"name":"limit-v-1-1","text":"◇  TAU-2 Avg@4","textPreview":"◇  TAU-2 Avg@4","textChars":14,"textLines":1,"bbox":[488,376,290,36]}
+{"kind":"textbox","id":"sh/bid4fatg","slide":14,"name":"limit-v-1-2","text":"◇  3 seeds × ablation matrix","textPreview":"◇  3 seeds × ablation matrix","textChars":28,"textLines":1,"bbox":[488,432,290,36]}
+{"kind":"textbox","id":"sh/ah4365sv","slide":14,"name":"limit-v-1-3","text":"◇  更长训练与 replay-ratio sweep","textPreview":"◇  更长训练与 replay-ratio sweep","textChars":27,"textLines":1,"bbox":[488,488,290,36]}
+{"kind":"shape","id":"sh/ed4ny5w3","slide":14,"name":"limit-2","bbox":[845,225,345,345]}
+{"kind":"textbox","id":"sh/zedorad8","slide":14,"name":"limit-k-2","text":"BLOCKED RESOURCE","textPreview":"BLOCKED RESOURCE","textChars":16,"textLines":1,"bbox":[869,250,297,34]}
+{"kind":"textbox","id":"sh/0fm50fet","slide":14,"name":"limit-v-2-0","text":"×  论文约 100K 数据飞轮","textPreview":"×  论文约 100K 数据飞轮","textChars":16,"textLines":1,"bbox":[873,320,290,36]}
+{"kind":"textbox","id":"sh/1gv6tkve","slide":14,"name":"limit-v-2-1","text":"×  Qwen3-235B simulator/judge","textPreview":"×  Qwen3-235B simulator/judge","textChars":29,"textLines":1,"bbox":[873,376,290,36]}
+{"kind":"textbox","id":"sh/mh4n2pwz","slide":14,"name":"limit-v-2-2","text":"×  8×H100 原配方","textPreview":"×  8×H100 原配方","textChars":13,"textLines":1,"bbox":[873,432,290,36]}
+{"kind":"textbox","id":"sh/nidovudk","slide":14,"name":"limit-v-2-3","text":"×  论文 47.4 benchmark claim","textPreview":"×  论文 47.4 benchmark claim","textChars":26,"textLines":1,"bbox":[873,488,290,36]}
+{"kind":"notes","id":"nt/bos9jv","slide":14,"text":"面试时最可信的讲法：先讲闭环与证据，再主动说 paper-scale 没做，最后给出扩展实验。\n\n[Sources]\n- /Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/cloud_runs/qwen3-8b-qlora-20260804-v2/evidence/run_summary.json\n- /Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/README.md\n[/Sources]"}
+{"kind":"slide","id":"sl/kh1fcx","slide":15,"title":"长程智能体 · 强化学习","textShapes":7}
+{"kind":"shape","id":"sh/r2d8vypw","slide":15,"name":"copper-15","bbox":[0,0,18,720]}
+{"kind":"textbox","id":"sh/c369ojqh","slide":15,"name":"chapter-script-15","text":"长程智能体 · 强化学习","textPreview":"长程智能体 · 强化学习","textChars":12,"textLines":1,"bbox":[84,68,500,55]}
+{"kind":"textbox","id":"sh/d4fqxo72","slide":15,"name":"roman-15","text":"✓","textPreview":"✓","textChars":1,"textLines":1,"bbox":[840,34,320,240]}
+{"kind":"shape","id":"sh/2x47i98f","slide":15,"bbox":[86,171,170,0]}
+{"kind":"textbox","id":"sh/3yd8rep0","slide":15,"name":"zh-15","text":"从论文到可审计项目","textPreview":"从论文到可审计项目","textChars":9,"textLines":1,"bbox":[82,214,800,86]}
+{"kind":"textbox","id":"sh/4zmpkjql","slide":15,"name":"en-15","text":"PLAN · EXECUTE · VERIFY · REPORT","textPreview":"PLAN · EXECUTE · VERIFY · REPORT","textChars":32,"textLines":1,"bbox":[87,318,900,45]}
+{"kind":"textbox","id":"sh/p0vqto76","slide":15,"name":"body-15","text":"现在可以真实地讲：我实现并运行了一个 Qwen3-8B 长程 Agentic RL curriculum，模型经历了真实多轮工具环境、失败诊断、难例再训练与独立重载。下一步是运行官方 benchmark、扩大数据与 seeds，而不是补一个更漂亮的故事。","textPreview":"现在可以真实地讲：我实现并运行了一个 Qwen3-8B 长程 Agentic RL curriculum，模型经历了真实多轮工具环境、失败诊断、难例再训练与独立重载。下一步是运行官方 benchmark、扩大数据与 seeds，而不是补一个更漂亮的故事。","textChars":127,"textLines":1,"bbox":[87,410,830,100]}
+{"kind":"shape","id":"sh/utk7e98j","slide":15,"name":"chapter-pill-15-bg","bbox":[87,592,150,30]}
+{"kind":"textbox","id":"sh/fut8nupo","slide":15,"name":"chapter-pill-15-text","text":"CHAPTER 15","textPreview":"CHAPTER 15","textChars":10,"textLines":1,"bbox":[97,597,130,20]}
+{"kind":"textbox","id":"sh/ry1sn6x8","slide":15,"name":"close-command","text":"./run_curriculum_modal.sh  →  ./finalize_curriculum_report.sh  →  build_curriculum_deck.mjs","textPreview":"./run_curriculum_modal.sh  →  ./finalize_curriculum_report.sh  →  build_curriculum_deck.mjs","textChars":91,"textLines":1,"bbox":[86,535,950,35]}
+{"kind":"notes","id":"nt/kh1fcx","slide":15,"text":"结尾把项目浓缩成一句可用于简历和面试、但不越过证据边界的话。\n\n[Sources]\n- /Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/cloud_runs/qwen3-8b-qlora-20260804-v2/evidence/verification.json\n- /Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/docs/benchmark_protocol.md\n[/Sources]"}

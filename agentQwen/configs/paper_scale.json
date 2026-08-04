@@ -1,0 +1,32 @@
+{
+  "paper": {
+    "arxiv_id": "2604.21590",
+    "title": "AgenticQwen: Training Small Agentic Language Models with Dual Data Flywheels for Industrial-Scale Tool Use",
+    "paper_url": "https://arxiv.org/abs/2604.21590",
+    "official_code": "https://github.com/haruhi-sudo/data_synth_and_rl"
+  },
+  "run": {
+    "mode": "paper-scale-plan-only",
+    "policy_models": ["Qwen3-8B", "Qwen3-30B-A3B"],
+    "simulator_model": "Qwen3-235B-A22B-Instruct-2507",
+    "agentic_samples_approx": 100000,
+    "rounds": 3,
+    "rl_backend": "veRL + SGLang",
+    "optimizer": "GRPO",
+    "reasoning_data": ["Omni", "2WikiMultiHopQA", "HotpotQA"],
+    "agentic_seed_data": ["SynthAgent"],
+    "benchmarks": ["TAU-2", "BFCL-V4 Multi-turn", "WebWalker", "XBench", "GAIA"],
+    "context_length": 40000
+  },
+  "required_infrastructure": {
+    "gpu": "multi-GPU cluster sized for 8B/30B rollout and training",
+    "storage": "model checkpoints, 100K tasks, rollout traces",
+    "services": ["Qwen3-235B local serving", "SGLang rollout", "experiment tracker"]
+  },
+  "gates": {
+    "dataset": "strong-model solvability + intended-branch match",
+    "evaluation": "fixed prompts and exact benchmark protocol",
+    "claim": "no paper-number reproduction claim until end-to-end run completes"
+  }
+}
+

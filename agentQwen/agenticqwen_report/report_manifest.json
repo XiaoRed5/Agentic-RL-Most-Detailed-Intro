@@ -1,0 +1,68 @@
+{
+  "schema_version": 1,
+  "generated_at": "2026-08-03T16:59:19.080627+00:00",
+  "claim_boundary": {
+    "paper_scale_claimed": false,
+    "cloud_curriculum_completed": false,
+    "sft_completed": false,
+    "bfcl_completed": false,
+    "tau2_completed": false
+  },
+  "actual_runs": {
+    "local_qwen3_8b_action_masked": {
+      "status": "PARTIAL_RUN",
+      "summary": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/real_qwen3_8b/summary.json",
+      "verification": "PASS"
+    },
+    "qwen3_7_flash_trajectory": {
+      "status": "COMPLETE",
+      "trajectory_id": "traj-38135bd79aff",
+      "verifier": "PASS"
+    }
+  },
+  "not_run": {
+    "cloud_run_file_count": 0,
+    "sft": "NOT_IMPLEMENTED",
+    "bfcl_tau2": "PLANNED_NOT_RUN",
+    "paper_round_0_3": "BLOCKED_RESOURCE"
+  },
+  "sources": {
+    "artifacts/real_qwen3_8b/summary.json": {
+      "sha256": "b2b7e9ee73e3320226906f0793fab4505d3461d22dd03445628812eddbb8f7c5",
+      "bytes": 2700
+    },
+    "artifacts/real_qwen3_8b/verification.json": {
+      "sha256": "5ff3bcb6af2a64652eb23ea4aee857e558315b5c095ca59fb2355b677e64c53c",
+      "bytes": 2102
+    },
+    "artifacts/long_horizon/trajectory_qwen3.7_flash.json": {
+      "sha256": "830e1f1753ebc54c87958b9ffff3dcd9a34033a04faa0ed4b26e945f9422f2b1",
+      "bytes": 27863
+    },
+    "artifacts/ablations/offline_reward_diagnostic.json": {
+      "sha256": "41df7caad8143327740be96f9c575aeddc6b1de9b6977ee69e850f9f3d1e647e",
+      "bytes": 106751
+    },
+    "artifacts/benchmarks/planned_manifest.json": {
+      "sha256": "a02f4101e48de30401acbc67a40d43095e03e1f483a8a8e3ff8b4866c92a3ba8",
+      "bytes": 8614
+    },
+    "configs/curriculum_qwen3_8b.json": {
+      "sha256": "b4354fdb75e05073aaa96505d4fefe93d4935c9ec3c3bdf3d18ae391ea10148e",
+      "bytes": 1938
+    }
+  },
+  "report": {
+    "markdown": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/agenticqwen_report/TECHNICAL_REPORT.md",
+    "markdown_sha256": "a731b2005ba0fe00792e65d2ddbf3924e493b33eb61f9e16498cef0de2a63d9a",
+    "html": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/agenticqwen_report/index.html",
+    "renderer": "agentic_repro.blog_renderer",
+    "rendered": {
+      "source": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/agenticqwen_report/TECHNICAL_REPORT.md",
+      "output": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/agenticqwen_report/index.html",
+      "source_sha256": "a731b2005ba0fe00792e65d2ddbf3924e493b33eb61f9e16498cef0de2a63d9a",
+      "output_sha256": "9119bf9cb29e91300f6f8a6ba74e43a8f76ca9d512ef7a65a02dd40675e1ad8d",
+      "generated_at": "2026-08-04T00:59:19+08:00"
+    }
+  }
+}

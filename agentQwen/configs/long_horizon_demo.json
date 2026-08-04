@@ -1,0 +1,17 @@
+{
+  "policy": {
+    "provider": "DashScope",
+    "model": "qwen3.7-flash",
+    "base_http_api_url": "https://dashscope.aliyuncs.com/api/v1",
+    "seed": 260421590,
+    "temperature": 0.1,
+    "max_tokens": 1024
+  },
+  "run": {
+    "max_agent_turns": 16
+  },
+  "artifacts": {
+    "trajectory_json": "artifacts/long_horizon/trajectory_qwen3.7_flash.json",
+    "trajectory_markdown": "artifacts/long_horizon/trajectory_qwen3.7_flash.md"
+  }
+}

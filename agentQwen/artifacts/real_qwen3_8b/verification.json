@@ -1,0 +1,70 @@
+{
+  "overall_status": "PASS",
+  "summary": {
+    "pass": 9,
+    "fail": 0
+  },
+  "fresh_process_replay_seconds": 142.6189,
+  "peak_memory_gib": 4.857,
+  "checks": [
+    {
+      "name": "official model weight hash",
+      "status": "PASS",
+      "detail": "fcc83d7537bee76cc143be3e25f8954b816798f93528103db1cddb02977c5617"
+    },
+    {
+      "name": "official dataset hash",
+      "status": "PASS",
+      "detail": "044648e2ffbed9b50029b165bce6585fb13c8e940feefdfcbc37a5c25d2a0b53"
+    },
+    {
+      "name": "adapter changed on disk",
+      "status": "PASS",
+      "detail": "initial=d1a3ed8b77ba83bd1c9515e27d8cd3b866b032fd29b970e32925fe4cd4799363; final=64301c0b81ec5af89c59b359f5f17aced54387701c933c0f38a37fb80b31e0ab"
+    },
+    {
+      "name": "non-zero learned LoRA delta",
+      "status": "PASS",
+      "detail": "lora_b_norm_after=0.2673622987288703"
+    },
+    {
+      "name": "real group-relative updates",
+      "status": "PASS",
+      "detail": "updated_groups=4; steps=8"
+    },
+    {
+      "name": "fresh-process checkpoint replay: train",
+      "status": "PASS",
+      "detail": "accuracy=0.3333333333333333; mean_correct_probability=0.3267506475; delta=0.0"
+    },
+    {
+      "name": "fresh-process checkpoint replay: holdout",
+      "status": "PASS",
+      "detail": "accuracy=0.4166666666666667; mean_correct_probability=0.3563734883333333; delta=0.0"
+    },
+    {
+      "name": "fresh-process checkpoint replay: unseen",
+      "status": "PASS",
+      "detail": "accuracy=0.25; mean_correct_probability=0.2500284225; delta=0.0"
+    },
+    {
+      "name": "scope label rejects paper-scale claim",
+      "status": "PASS",
+      "detail": "real Qwen3-8B 4-bit, local action-masked small-scale GRPO reproduction"
+    }
+  ],
+  "replay_metrics": {
+    "train": {
+      "accuracy": 0.3333333333333333,
+      "mean_correct_action_probability": 0.3267506475
+    },
+    "holdout": {
+      "accuracy": 0.4166666666666667,
+      "mean_correct_action_probability": 0.3563734883333333
+    },
+    "unseen": {
+      "accuracy": 0.25,
+      "mean_correct_action_probability": 0.2500284225
+    }
+  }
+}

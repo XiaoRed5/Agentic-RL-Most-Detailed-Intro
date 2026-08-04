@@ -1,0 +1,6 @@
+{
+  "status": "skipped",
+  "reason": "QWEN_MODEL_PATH was not supplied",
+  "model_id": "mlx-community/Qwen3-8B-4bit",
+  "network_fallback": false
+}

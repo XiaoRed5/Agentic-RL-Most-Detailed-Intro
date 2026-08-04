@@ -1,0 +1,7 @@
+{
+  "archive": "/root/agenticqwen-qwen3-8b-qlora-v2-results.tar.gz",
+  "archive_bytes": 1197755565,
+  "archive_sha256": "5bdd2a5a701d707e2fcefb6847565e0793b795308ab854616b34d67954a908d5",
+  "inventory": "/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2/artifact_inventory.json",
+  "status": "packaged"
+}

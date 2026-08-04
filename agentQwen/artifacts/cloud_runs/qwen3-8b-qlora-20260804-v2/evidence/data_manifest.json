@@ -1,0 +1,47 @@
+{
+  "contamination_check": "PASS",
+  "datasets": {
+    "holdout": {
+      "count": 6,
+      "path": "/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2/tasks/final_holdout.jsonl",
+      "sha256": "dc9c2fc8139dc7d81c52559bc04ed2ce2722d7976576f2bb5f6d48e918ed1533",
+      "task_ids": [
+        "refund-final_holdout-0200",
+        "refund-final_holdout-0201",
+        "refund-final_holdout-0202",
+        "refund-final_holdout-0203",
+        "refund-final_holdout-0204",
+        "refund-final_holdout-0205"
+      ]
+    },
+    "probe": {
+      "count": 4,
+      "path": "/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2/tasks/curriculum_probe.jsonl",
+      "sha256": "64c90346b92cf94381f06ade06ea0739495d81a85abbd8ee38ae1e0d9ee9a8da",
+      "task_ids": [
+        "refund-curriculum_probe-0100",
+        "refund-curriculum_probe-0101",
+        "refund-curriculum_probe-0102",
+        "refund-curriculum_probe-0103"
+      ]
+    },
+    "stage1_train": {
+      "count": 8,
+      "path": "/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2/tasks/stage1_train.jsonl",
+      "sha256": "afa55e2f00091ab13e6df52b05720dc1fe86808d2de5525a42cc31bf3fdb27dc",
+      "task_ids": [
+        "refund-stage1_train-0000",
+        "refund-stage1_train-0001",
+        "refund-stage1_train-0002",
+        "refund-stage1_train-0003",
+        "refund-stage1_train-0004",
+        "refund-stage1_train-0005",
+        "refund-stage1_train-0006",
+        "refund-stage1_train-0007"
+      ]
+    }
+  },
+  "ground_truth_provenance": "deterministic environment code, never model output",
+  "schema_version": 1,
+  "seed": 260421590
+}

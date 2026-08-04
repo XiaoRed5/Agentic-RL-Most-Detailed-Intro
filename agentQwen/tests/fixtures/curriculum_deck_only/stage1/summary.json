@@ -1,0 +1,20 @@
+{
+  "global_step": 12,
+  "training_seconds": 1912.5,
+  "adapter_weights_sha256": "1111111111111111111111111111111111111111111111111111111111111111",
+  "failure_summary_before": {
+    "episodes": 4,
+    "successes": 1,
+    "success_rate": 0.25,
+    "mean_reward": 0.31,
+    "failure_counts": {"PAYMENT_NOT_INSPECTED": 1, "CONFIRMATION_MISSING": 1, "TOOL_ERROR_NOT_RECOVERED": 1}
+  },
+  "failure_summary_after": {
+    "episodes": 4,
+    "successes": 2,
+    "success_rate": 0.5,
+    "mean_reward": 0.67,
+    "failure_counts": {"CONFIRMATION_MISSING": 1, "TOOL_ERROR_NOT_RECOVERED": 1}
+  },
+  "runtime": {"gpu": {"name": "NVIDIA H100 80GB HBM3"}}
+}

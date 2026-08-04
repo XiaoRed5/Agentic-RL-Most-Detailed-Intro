@@ -1,0 +1,68 @@
+{
+  "generator": "deterministic_failure_driven_curriculum",
+  "ground_truth_policy": "All identifiers, amounts, transitions, and verifier targets are generated deterministically from code; no model output is used as ground truth.",
+  "hard_tasks": {
+    "count": 8,
+    "path": "/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2/tasks/stage2_hard.jsonl",
+    "sha256": "77a8e8484cd7b65a868ebec95420e0508d6a16dc5c3aa457520664c6a3a5cfb0",
+    "task_ids": [
+      "refund-stage2_synthetic-1000",
+      "refund-stage2_synthetic-1001",
+      "refund-stage2_synthetic-1002",
+      "refund-stage2_synthetic-1003",
+      "refund-stage2_synthetic-1004",
+      "refund-stage2_synthetic-1005",
+      "refund-stage2_synthetic-1006",
+      "refund-stage2_synthetic-1007"
+    ]
+  },
+  "replay_tasks": [
+    "refund-stage1_train-0000",
+    "refund-stage1_train-0001",
+    "refund-stage1_train-0002",
+    "refund-stage1_train-0003"
+  ],
+  "schema_version": 1,
+  "seed": 260421591,
+  "source_summary": {
+    "episodes": 4,
+    "failure_counts": {},
+    "mean_reward": 1.2501867500000001,
+    "reward_std": 0.01059702978138217,
+    "success_rate": 1.0,
+    "successes": 4,
+    "unique_reward_count": 4
+  },
+  "source_trace": "/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2/stage1/eval_probe_traces.jsonl",
+  "source_trace_sha256": "ca0d54b78a400bab1de423e0bf2efc8cd1d68819925e926d16e2389c6d42b7bd",
+  "stage2_train": {
+    "count": 12,
+    "path": "/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2/tasks/stage2_train.jsonl",
+    "sha256": "5790304c792b7ef6bbcdf85b9eb2e40eb5f4ffd1ab2767c6e0007d085a96bf1d",
+    "task_ids": [
+      "refund-stage2_synthetic-1000",
+      "refund-stage2_synthetic-1001",
+      "refund-stage2_synthetic-1002",
+      "refund-stage2_synthetic-1003",
+      "refund-stage2_synthetic-1004",
+      "refund-stage2_synthetic-1005",
+      "refund-stage2_synthetic-1006",
+      "refund-stage2_synthetic-1007",
+      "refund-stage1_train-0000",
+      "refund-stage1_train-0001",
+      "refund-stage1_train-0002",
+      "refund-stage1_train-0003"
+    ]
+  },
+  "task_count": 8,
+  "task_ids": [
+    "refund-stage2_synthetic-1000",
+    "refund-stage2_synthetic-1001",
+    "refund-stage2_synthetic-1002",
+    "refund-stage2_synthetic-1003",
+    "refund-stage2_synthetic-1004",
+    "refund-stage2_synthetic-1005",
+    "refund-stage2_synthetic-1006",
+    "refund-stage2_synthetic-1007"
+  ]
+}

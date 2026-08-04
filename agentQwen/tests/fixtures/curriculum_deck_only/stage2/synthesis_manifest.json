@@ -1,0 +1,9 @@
+{
+  "generator": "deterministic_failure_driven_curriculum",
+  "source_trace_sha256": "aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa",
+  "source_summary": {"failure_counts": {"CONFIRMATION_MISSING": 1, "TOOL_ERROR_NOT_RECOVERED": 1}},
+  "hard_tasks": {"count": 8},
+  "replay_tasks": ["refund-stage1_train-0000", "refund-stage1_train-0001", "refund-stage1_train-0002", "refund-stage1_train-0003"],
+  "stage2_train": {"sha256": "bbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbbb"},
+  "ground_truth_policy": "Synthetic fixture text; deterministic code is authoritative in real runs."
+}

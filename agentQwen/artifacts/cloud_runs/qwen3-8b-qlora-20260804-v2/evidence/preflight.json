@@ -1,0 +1,99 @@
+{
+  "checks": [
+    {
+      "detail": {
+        "free_gib": 30.699,
+        "minimum_gib": 12.0
+      },
+      "name": "data disk free",
+      "status": "PASS"
+    },
+    {
+      "detail": {
+        "cuda_available": true,
+        "torch": "2.8.0+cu128"
+      },
+      "name": "CUDA available",
+      "status": "PASS"
+    },
+    {
+      "detail": {
+        "capability": [
+          12,
+          0
+        ],
+        "minimum_gib": 80.0,
+        "name": "NVIDIA RTX PRO 6000 Blackwell Server Edition",
+        "vram_gib": 94.971
+      },
+      "name": "GPU VRAM",
+      "status": "PASS"
+    },
+    {
+      "detail": "2.8.0+cu128",
+      "name": "import torch",
+      "status": "PASS"
+    },
+    {
+      "detail": "5.14.1",
+      "name": "import transformers",
+      "status": "PASS"
+    },
+    {
+      "detail": "1.9.2",
+      "name": "import trl",
+      "status": "PASS"
+    },
+    {
+      "detail": "0.50.0",
+      "name": "import bitsandbytes",
+      "status": "PASS"
+    },
+    {
+      "detail": "5.0.1",
+      "name": "import datasets",
+      "status": "PASS"
+    },
+    {
+      "detail": "0.20.0",
+      "name": "import peft",
+      "status": "PASS"
+    },
+    {
+      "detail": {
+        "exists": true,
+        "marker": "/root/autodl-tmp/models/Qwen3-8B/.autodl_model_complete.json",
+        "marker_valid": true,
+        "missing_shards": [],
+        "path": "/root/autodl-tmp/models/Qwen3-8B",
+        "shard_count": 5
+      },
+      "name": "model snapshot marker",
+      "status": "PASS"
+    },
+    {
+      "detail": [],
+      "name": "model shards complete",
+      "status": "PASS"
+    }
+  ],
+  "model": {
+    "exists": true,
+    "marker": "/root/autodl-tmp/models/Qwen3-8B/.autodl_model_complete.json",
+    "marker_valid": true,
+    "missing_shards": [],
+    "path": "/root/autodl-tmp/models/Qwen3-8B",
+    "shard_count": 5
+  },
+  "packages": {
+    "bitsandbytes": "0.50.0",
+    "datasets": "5.0.1",
+    "peft": "0.20.0",
+    "torch": "2.8.0+cu128",
+    "transformers": "5.14.1",
+    "trl": "1.9.2"
+  },
+  "python": "3.12.3 | packaged by Anaconda, Inc. | (main, May  6 2024, 19:46:43) [GCC 11.2.0]",
+  "schema_version": 1,
+  "status": "PASS"
+}

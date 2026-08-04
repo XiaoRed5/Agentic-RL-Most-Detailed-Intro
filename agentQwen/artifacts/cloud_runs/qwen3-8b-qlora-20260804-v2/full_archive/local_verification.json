@@ -1,0 +1,10 @@
+{
+  "archive_bytes": 1197755565,
+  "archive_sha256": "5bdd2a5a701d707e2fcefb6847565e0793b795308ab854616b34d67954a908d5",
+  "byte_count_matches_remote": true,
+  "required_entries_present": true,
+  "sha256_matches_remote": true,
+  "status": "PASS",
+  "tar_entries": 140,
+  "tar_readable": true
+}

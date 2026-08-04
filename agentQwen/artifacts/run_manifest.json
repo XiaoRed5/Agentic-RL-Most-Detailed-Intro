@@ -1,0 +1,28 @@
+{
+  "created_at": "2026-08-02T08:15:12.806363+00:00",
+  "python": "3.9.6 (default, Jan  9 2026, 11:03:41) \n[Clang 17.0.0 (clang-1700.6.4.2)]",
+  "platform": "macOS-26.2-arm64-arm-64bit",
+  "seed": 20260802,
+  "files": {
+    "tasks.jsonl": {
+      "sha256": "ceedb89de2c9cec68cd77452d972e6849ff9068cdb81cb40ae343860c7ce567e",
+      "bytes": 21156
+    },
+    "metrics.json": {
+      "sha256": "4efc9e965508a60d85d26280d46cfd0d83c8ad532c4d71692499085e08468e8f",
+      "bytes": 3366
+    },
+    "smoke_policy.json": {
+      "sha256": "2afd68ef3c0756a6f38ef06710207349d0719a55ac65f427932499680030b790",
+      "bytes": 4586
+    },
+    "smoke_trajectories.jsonl": {
+      "sha256": "fe88e04fc12c84195ee991a1c4d7c90c430dccb38f1f9f329cfbb1c2cfad773a",
+      "bytes": 4271
+    },
+    "qwen3_8b_inference.json": {
+      "sha256": "29c8724654bde4aa03f3ae3fc5e51336369b15d95fa0ae0b1dd6b2612c3d6350",
+      "bytes": 147
+    }
+  }
+}

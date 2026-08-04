@@ -1,0 +1,885 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <meta name="generator" content="agentic_repro.blog_renderer">
+  <meta name="source-path" content="/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/agenticqwen_report/TECHNICAL_REPORT.md">
+  <meta name="source-sha256" content="dcd36401a6a494ef8a3230b0c1e955574363ac9615c6798bcd8981b5dd807dd3">
+  <meta name="generated-at" content="2026-08-04T12:31:08+08:00">
+  <title>AgenticQwen：从失败轨迹到下一轮训练</title>
+  <style>
+:root {
+  --ink: #28231f;
+  --muted: #756b62;
+  --line: #e7ded2;
+  --paper: #fffdf9;
+  --wash: #f5eee5;
+  --accent: #a8472d;
+  --accent-dark: #713322;
+  --code: #241f1b;
+  --shadow: 0 18px 55px rgba(80, 47, 27, .09);
+}
+* { box-sizing: border-box; }
+html { scroll-behavior: smooth; }
+body {
+  margin: 0;
+  color: var(--ink);
+  background:
+    radial-gradient(circle at 8% 5%, rgba(168,71,45,.055), transparent 28rem),
+    var(--wash);
+  font: 16px/1.9 -apple-system, BlinkMacSystemFont, "Segoe UI", "Noto Sans SC",
+    "PingFang SC", "Microsoft YaHei", sans-serif;
+  text-rendering: optimizeLegibility;
+}
+a { color: var(--accent-dark); text-decoration-color: rgba(113,51,34,.38); text-underline-offset: .18em; }
+a:hover, a:focus-visible { color: var(--accent); text-decoration-color: currentColor; }
+.site-header {
+  position: sticky;
+  top: 0;
+  z-index: 10;
+  border-bottom: 1px solid rgba(231,222,210,.92);
+  background: rgba(245,238,229,.9);
+  backdrop-filter: blur(16px);
+}
+.nav-shell, .page-shell { width: min(1080px, calc(100% - 36px)); margin: 0 auto; }
+.nav-shell {
+  min-height: 64px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 24px;
+}
+.brand {
+  color: var(--ink);
+  font: 700 20px/1 Georgia, "Songti SC", serif;
+  text-decoration: none;
+  letter-spacing: -.02em;
+}
+.brand span { color: var(--accent); }
+.site-nav { display: flex; gap: 24px; }
+.site-nav a { color: var(--muted); font-size: 14px; text-decoration: none; }
+.page-shell { padding: 70px 0 100px; }
+.article {
+  max-width: 820px;
+  margin: 0 auto;
+  padding: 58px clamp(24px, 6vw, 76px) 76px;
+  background: var(--paper);
+  box-shadow: var(--shadow);
+  border: 1px solid rgba(231,222,210,.7);
+}
+.source-note {
+  margin: 0 0 18px;
+  color: var(--accent);
+  font-size: 12px;
+  font-weight: 750;
+  letter-spacing: .12em;
+  text-transform: uppercase;
+}
+h1, h2, h3, h4 {
+  font-family: Georgia, "Songti SC", "STSong", serif;
+  line-height: 1.28;
+  letter-spacing: -.025em;
+  text-wrap: balance;
+  scroll-margin-top: 84px;
+}
+h1 { margin: 0 0 24px; font-size: clamp(34px, 5vw, 55px); font-weight: 700; }
+h2 {
+  margin: 64px 0 18px;
+  padding-top: 14px;
+  border-top: 1px solid var(--line);
+  font-size: clamp(25px, 3vw, 33px);
+}
+h3 { margin: 38px 0 12px; font-size: 22px; }
+h4 { margin: 28px 0 10px; font-size: 18px; }
+p { margin: 0 0 20px; }
+h1 + p {
+  margin-bottom: 28px;
+  color: #5e554e;
+  font: 20px/1.8 Georgia, "Songti SC", serif;
+}
+strong { color: #181411; }
+hr { height: 1px; margin: 48px 0; border: 0; background: var(--line); }
+blockquote {
+  margin: 28px 0;
+  padding: 18px 22px;
+  border-left: 4px solid var(--accent);
+  background: #f8f0e7;
+  color: #554b43;
+}
+blockquote p:last-child { margin-bottom: 0; }
+ul, ol { margin: 8px 0 22px; padding-left: 1.55em; }
+li { margin: 5px 0; }
+code {
+  padding: .12em .36em;
+  border-radius: 4px;
+  background: #f1e8de;
+  color: var(--accent-dark);
+  font: .9em/1.5 ui-monospace, SFMono-Regular, Menlo, Consolas, monospace;
+  overflow-wrap: anywhere;
+}
+pre {
+  overflow: auto;
+  margin: 26px 0;
+  padding: 22px;
+  border-radius: 8px;
+  background: var(--code);
+  color: #eee4d8;
+  line-height: 1.65;
+  box-shadow: inset 0 0 0 1px rgba(255,255,255,.05);
+}
+pre code { padding: 0; background: transparent; color: inherit; white-space: pre; }
+.table-wrap {
+  overflow-x: auto;
+  margin: 24px 0 30px;
+  border: 1px solid var(--line);
+  border-radius: 7px;
+}
+table { width: 100%; border-collapse: collapse; font-size: 14px; line-height: 1.62; }
+th, td { min-width: 110px; padding: 12px 14px; border-bottom: 1px solid var(--line); text-align: left; vertical-align: top; }
+th { color: #4e443d; background: #f7f0e7; font-weight: 700; }
+tr:last-child td { border-bottom: 0; }
+figure { margin: 34px -18px; }
+figure img { display: block; width: 100%; max-width: 100%; height: auto; border: 1px solid var(--line); background: #fff; }
+figcaption { margin-top: 10px; color: var(--muted); font-size: 13px; line-height: 1.6; text-align: center; }
+.article-toc {
+  margin: 34px 0 40px;
+  padding: 16px 20px;
+  border: 1px solid var(--line);
+  background: #fbf7f1;
+}
+.article-toc summary { cursor: pointer; min-height: 30px; color: var(--accent-dark); font-weight: 750; }
+.article-toc ol { columns: 2; column-gap: 32px; margin: 12px 0 2px; padding-left: 1.25em; }
+.article-toc li { break-inside: avoid; margin: 4px 0; color: var(--muted); font-size: 13px; }
+.article-toc .toc-level-3 { margin-left: 12px; }
+.article-toc a { color: inherit; text-decoration: none; }
+.article-meta {
+  margin-top: 66px;
+  padding-top: 20px;
+  border-top: 1px solid var(--line);
+  color: var(--muted);
+  font-size: 12px;
+  overflow-wrap: anywhere;
+}
+.site-footer { padding: 0 18px 52px; color: var(--muted); font-size: 13px; text-align: center; }
+@media (max-width: 680px) {
+  .nav-shell, .page-shell { width: min(100% - 24px, 1080px); }
+  .nav-shell { min-height: 58px; }
+  .site-nav { gap: 14px; }
+  .site-nav a { font-size: 13px; }
+  .page-shell { padding: 18px 0 52px; }
+  .article { padding: 34px 20px 52px; }
+  h1 { font-size: 36px; }
+  h2 { margin-top: 52px; }
+  figure { margin-left: 0; margin-right: 0; }
+  .article-toc ol { columns: 1; }
+}
+@media (max-width: 360px) {
+  .brand { font-size: 18px; }
+  .site-nav { gap: 9px; }
+  .site-nav a { font-size: 12px; }
+}
+@media (prefers-reduced-motion: reduce) {
+  html { scroll-behavior: auto; }
+}
+</style>
+  <script>
+    window.MathJax = { tex: { inlineMath: [['$', '$']], displayMath: [['$$', '$$']] } };
+  </script>
+  <script defer src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
+</head>
+<body>
+  <header class="site-header">
+    <div class="nav-shell">
+      <a class="brand" href="#article">AgenticQwen<span>/</span>notes</a>
+      <nav class="site-nav" aria-label="主要导航">
+        <a href="#article">长文</a>
+        <a href="#复现账本">账本</a>
+        <a href="#面试怎么讲">面试</a>
+      </nav>
+    </div>
+  </header>
+  <main class="page-shell">
+    <article class="article" id="article">
+      <p class="source-note">A long-horizon Agentic RL reproduction note</p>
+      <h1 id="agenticqwen-long-horizon-curriculum-可审计完整复现报告">AgenticQwen Long-Horizon Curriculum：可审计完整复现报告</h1>
+<blockquote>✅ <strong>结论先行。</strong> 本次运行在 <code>NVIDIA RTX PRO 6000 Blackwell Server Edition</code> 上完成了 Qwen3-8B 的两阶段 response-token QLoRA-GRPO：Stage 1 产生真实失败与非零奖励方差，训练后 probe 达到满分时按 frontier taxonomy 升级难度并混入 replay，再从 Stage-1 adapter 继续 Stage 2。完整性审计为 <strong>PASS</strong>，官方 BFCL-V4 multi-turn smoke 为 <strong>NOT_RUN</strong>。这证明的是一条真实、可恢复、可复核的小规模 curriculum 链路；不等价于论文 100K 数据、八卡训练或 47.4 平均分。</blockquote>
+<p><strong>Run:</strong> <code>qwen3-8b-qlora-20260804-v2</code> <strong>模型:</strong> <code>Qwen/Qwen3-8B</code> · NF4 QLoRA rank 16 <strong>训练:</strong> Stage 1 <code>12</code> steps → Stage 2 <code>12</code> steps <strong>状态:</strong> curriculum 完整通过 · BFCL <code>NOT_RUN</code> · paper-scale claim <code>false</code></p><details class="article-toc" open><summary>这篇长文会讲什么</summary><ol><li class="toc-level-2"><a href="#1-这次到底复现了什么">1. 这次到底复现了什么</a></li><li class="toc-level-2"><a href="#2-从论文目标拆成-plan-execute-verify">2. 从论文目标拆成 Plan → Execute → Verify</a></li><li class="toc-level-3"><a href="#plan">Plan</a></li><li class="toc-level-3"><a href="#execute">Execute</a></li><li class="toc-level-3"><a href="#verify">Verify</a></li><li class="toc-level-2"><a href="#3-stateful-tool-environment">3. Stateful tool environment</a></li><li class="toc-level-2"><a href="#4-真正的-response-token-grpo">4. 真正的 response-token GRPO</a></li><li class="toc-level-2"><a href="#5-stage-1-先训练-再诚实看失败">5. Stage 1：先训练，再诚实看失败</a></li><li class="toc-level-3"><a href="#stage-1-probe-代表轨迹">Stage-1 probe 代表轨迹</a></li><li class="toc-level-2"><a href="#6-失败驱动的困难数据合成">6. 失败驱动的困难数据合成</a></li><li class="toc-level-2"><a href="#7-stage-2-从同一个-adapter-继续训练">7. Stage 2：从同一个 adapter 继续训练</a></li><li class="toc-level-3"><a href="#final-holdout-代表轨迹">Final holdout 代表轨迹</a></li><li class="toc-level-2"><a href="#8-独立评测-fresh-reload-已完成-官方-bfcl-v4-未运行">8. 独立评测：fresh reload 已完成，官方 BFCL-V4 未运行</a></li><li class="toc-level-2"><a href="#9-实验完整性与可恢复性">9. 实验完整性与可恢复性</a></li><li class="toc-level-2"><a href="#10-失败模式-项目为什么可能-训练了却没学会">10. 失败模式：项目为什么可能“训练了却没学会”</a></li><li class="toc-level-3"><a href="#group-saturation">Group saturation</a></li><li class="toc-level-3"><a href="#reward-hacking">Reward hacking</a></li><li class="toc-level-3"><a href="#curriculum-forgetting">Curriculum forgetting</a></li><li class="toc-level-3"><a href="#benchmark-mismatch">Benchmark mismatch</a></li><li class="toc-level-2"><a href="#11-一键复现与运行成本">11. 一键复现与运行成本</a></li><li class="toc-level-2"><a href="#12-简历与面试怎么讲">12. 简历与面试怎么讲</a></li><li class="toc-level-3"><a href="#简历-bullet-只有本报告-pass-后才能使用">简历 bullet（只有本报告 PASS 后才能使用）</a></li><li class="toc-level-3"><a href="#面试问题-1-这和-sft-有什么本质区别">面试问题 1：这和 SFT 有什么本质区别？</a></li><li class="toc-level-3"><a href="#面试问题-2-为什么过程奖励不会替代最终正确性">面试问题 2：为什么过程奖励不会替代最终正确性？</a></li><li class="toc-level-3"><a href="#面试问题-3-怎么证明第二阶段真的用了第一阶段">面试问题 3：怎么证明第二阶段真的用了第一阶段？</a></li><li class="toc-level-3"><a href="#面试问题-4-如果-stage-2-指标没提升怎么办">面试问题 4：如果 Stage 2 指标没提升怎么办？</a></li><li class="toc-level-2"><a href="#13-自我检查-仍未完成什么">13. 自我检查：仍未完成什么</a></li><li class="toc-level-2"><a href="#14-claim-boundary">14. Claim boundary</a></li><li class="toc-level-2"><a href="#参考资料">参考资料</a></li></ol></details>
+<h2 id="1-这次到底复现了什么">1. 这次到底复现了什么</h2>
+<p>这不是“写好一个框架”或“调用一次 API”的展示。训练过程中，Qwen3-8B 自己生成 assistant response token 和结构化工具调用；TRL 为每条 rollout 创建独立的 stateful environment；工具执行后把 observation 继续写回对话；episode 结束时由环境最终状态计算 outcome/process reward；四条同 prompt rollout 形成 GRPO group 并反向传播到 LoRA 参数。</p>
+<p>第二阶段的数据不是一份与运行无关的固定训练集。训练完成后先运行冻结 probe：若仍有 terminal failure，就按实际失败类型生成难例；若小 probe 已全对，就转入预定义的 frontier taxonomy，继续增加 decoy orders、瞬时失败和更紧的确认约束。两条路径都会保存 source trace hash，并混入旧任务 replay 再训练。本次实际走的是 <code>frontier_taxonomy_fallback</code>。</p>
+<div class="table-wrap"><table><thead><tr>
+<th>层次</th>
+<th>本次真实证据</th>
+<th>不能据此声称</th>
+</tr></thead><tbody>
+<tr>
+<td>多轮 policy</td>
+<td>Qwen3-8B response tokens + native tool calls</td>
+<td>不是单 token 四选一</td>
+</tr>
+<tr>
+<td>Environment</td>
+<td>身份、订单、支付、政策、确认、退款状态机</td>
+<td>不是模型自报“成功”</td>
+</tr>
+<tr>
+<td>RL update</td>
+<td>两阶段 optimizer steps、adapter hash、checkpoint</td>
+<td>不是只做 inference</td>
+</tr>
+<tr>
+<td>Curriculum</td>
+<td>Stage-1 trace hash → failure/frontier selection → hard tasks → Stage 2</td>
+<td>当前选择：<code>frontier_taxonomy_fallback</code></td>
+</tr>
+<tr>
+<td>Evaluation</td>
+<td>untouched final holdout + fresh reload</td>
+<td>BFCL smoke 当前为 <code>NOT_RUN</code></td>
+</tr>
+</tbody></table></div>
+<h2 id="2-从论文目标拆成-plan-execute-verify">2. 从论文目标拆成 Plan → Execute → Verify</h2>
+<h3 id="plan">Plan</h3>
+<ol>
+<li>锁定 final holdout，再生成训练数据，阻断 task-ID 泄漏。</li>
+<li>Stage 1 只训练基础安全退款任务；probe 专门暴露 decoy 与工具失败。</li>
+<li>失败诊断只读环境 state/event ledger，不让 LLM 充当 ground truth。</li>
+<li>Stage 2 从原 adapter 继续训练，混入 replay 避免只适配难例。</li>
+<li>独立进程重载 adapter；最后再进入官方 BFCL evaluator。</li>
+</ol>
+<h3 id="execute">Execute</h3>
+<pre><code class="language-text">Stage-1 train (8 tasks, group=4)
+    ↓
+Frozen probe rollouts (4 tasks)
+    ↓
+Failure taxonomy / frontier fallback + trace SHA-256
+    ↓
+Hard synthesis (8 tasks) + replay (4 tasks)
+    ↓
+Stage-2 continue training
+    ↓
+Untouched holdout (6 tasks)
+    ↓
+Fresh-process reload
+    ↓
+BFCL base/adapter smoke（本次状态：NOT_RUN）</code></pre>
+<h3 id="verify">Verify</h3>
+<div class="table-wrap"><table><thead><tr>
+<th>审计门</th>
+<th>状态</th>
+<th>证据</th>
+</tr></thead><tbody>
+<tr>
+<td>stage1 adapter exists</td>
+<td><strong>PASS</strong></td>
+<td><code>/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2/stage1/adapter</code></td>
+</tr>
+<tr>
+<td>stage2 adapter exists</td>
+<td><strong>PASS</strong></td>
+<td><code>/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2/stage2/adapter</code></td>
+</tr>
+<tr>
+<td>stage2 adapter differs from stage1</td>
+<td><strong>PASS</strong></td>
+<td><code>stage1=7d3c6d223209f26f26e39004c46afac8e6f123ed30992f8a97bc56f7c275bee0; stage2=920f76c8c0f35d8976ddf4a24ac77ae4fbcc5cd793ac942865942b01d9149c4d</code></td>
+</tr>
+<tr>
+<td>both GRPO stages changed trainable parameters</td>
+<td><strong>PASS</strong></td>
+<td><code>stage1=True; stage2=True</code></td>
+</tr>
+<tr>
+<td>training reward variance observed</td>
+<td><strong>PASS</strong></td>
+<td><code>stage1_std=0.5267711867027023; stage2_std=0.2673004453755907</code></td>
+</tr>
+<tr>
+<td>final holdout isolation</td>
+<td><strong>PASS</strong></td>
+<td><code>overlap=[]</code></td>
+</tr>
+<tr>
+<td>failure-driven synthesis has provenance</td>
+<td><strong>PASS</strong></td>
+<td><code>deterministic_failure_driven_curriculum</code></td>
+</tr>
+<tr>
+<td>stage2 consumed stage1 adapter</td>
+<td><strong>PASS</strong></td>
+<td><code>7d3c6d223209f26f26e39004c46afac8e6f123ed30992f8a97bc56f7c275bee0</code></td>
+</tr>
+<tr>
+<td>all planned optimizer steps completed</td>
+<td><strong>PASS</strong></td>
+<td><code>stage1=12/12; stage2=12/12</code></td>
+</tr>
+<tr>
+<td>evaluation traces contain complete episode sets</td>
+<td><strong>PASS</strong></td>
+<td><code>stage1_probe=4; stage2_holdout=6</code></td>
+</tr>
+<tr>
+<td>fresh-process adapter replay</td>
+<td><strong>PASS</strong></td>
+<td><code>episodes=6; success_rate=1.0; parent_pid=5643; child_pid=6913</code></td>
+</tr>
+</tbody></table></div>
+<h2 id="3-stateful-tool-environment">3. Stateful tool environment</h2>
+<p>环境有七个公开工具：<code>request_identity</code>、<code>lookup_customer</code>、<code>list_orders</code>、<code>get_payment_history</code>、<code>get_refund_policy</code>、<code>request_confirmation</code>、<code>create_refund</code>。它们不是一串无状态 mock：每一步读取或改变 episode state，后续工具会检查先决条件。</p>
+<p>写操作 <code>create_refund</code> 只有在以下条件同时成立时才通过：身份已验证、订单已读、支付历史已读、政策已读、用户对精确 order/charge/amount 明确确认、目标是 duplicate charge、金额精确、reason 合法、idempotency key 合法。模型无法绕过代码直接修改 state。</p>
+<p>奖励为：</p>
+<p>$$R = \mathbb{1}[\text{exact refund success}] + 0.30 \cdot R_{process}$$</p>
+<p><code>R_process</code> 奖励正确读取链、从 transient error 中恢复、任务绑定的幂等键、精确退款理由与参数简洁度；惩罚 premature write、schema error、重复调用与超出预期的工具步数。V1 把所有成功轨迹裁成同一个 <code>1.3</code>，导致 advantage 为零；V2 保留成功轨迹之间的可解释质量差异。</p>
+<h2 id="4-真正的-response-token-grpo">4. 真正的 response-token GRPO</h2>
+<p>每个 prompt 采样 $G=4$ 条完整轨迹。第 $i$ 条轨迹的 group-relative advantage 为：</p>
+<p>$$A_i = \frac{R_i - \mu(R_1,\ldots,R_G)}{\sigma(R_1,\ldots,R_G)+10^{-4}}$$</p>
+<p>优化使用 DAPO-style clipped objective；loss mask 只覆盖 assistant completion tokens，tool observations 与 prompt 不参与梯度。LoRA 覆盖 Q/K/V/O 与 gate/up/down projections，base 权重以 NF4 4-bit 加载，计算使用 bfloat16。</p>
+<div class="table-wrap"><table><thead><tr>
+<th>超参数</th>
+<th>值</th>
+</tr></thead><tbody>
+<tr>
+<td>Group size</td>
+<td>4</td>
+</tr>
+<tr>
+<td>Gradient accumulation</td>
+<td>4</td>
+</tr>
+<tr>
+<td>Max completion</td>
+<td>1400 tokens</td>
+</tr>
+<tr>
+<td>Max tool iterations</td>
+<td>10</td>
+</tr>
+<tr>
+<td>Stage-1 LR / steps</td>
+<td>5e-06 / 12</td>
+</tr>
+<tr>
+<td>Stage-2 LR / steps</td>
+<td>3e-06 / 12</td>
+</tr>
+<tr>
+<td>Loss</td>
+<td><code>dapo</code></td>
+</tr>
+</tbody></table></div>
+<h2 id="5-stage-1-先训练-再诚实看失败">5. Stage 1：先训练，再诚实看失败</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>指标</th>
+<th>Before</th>
+<th>After</th>
+<th>Δ</th>
+</tr></thead><tbody>
+<tr>
+<td>Probe success rate</td>
+<td>75.0%</td>
+<td>100.0%</td>
+<td>+25.0 pt</td>
+</tr>
+<tr>
+<td>Mean combined reward</td>
+<td>0.9041</td>
+<td>1.2502</td>
+<td>+0.3461</td>
+</tr>
+<tr>
+<td>Optimizer global step</td>
+<td>—</td>
+<td>12</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Training seconds</td>
+<td>—</td>
+<td>408.934</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Training rollout reward std</td>
+<td>—</td>
+<td>0.5268</td>
+<td>27 unique rewards</td>
+</tr>
+<tr>
+<td>Trainable parameters changed</td>
+<td>—</td>
+<td><code>True</code></td>
+<td>train loss <code>0.029398</code></td>
+</tr>
+</tbody></table></div>
+<div class="table-wrap"><table><thead><tr>
+<th>失败类型</th>
+<th>Before</th>
+<th>After</th>
+</tr></thead><tbody>
+<tr>
+<td><code>POLICY_NOT_INSPECTED</code></td>
+<td>1</td>
+<td>0</td>
+</tr>
+</tbody></table></div>
+<p>这里不因为“训练跑完”就自动写成进步。如果 success rate 或 mean reward 下降，报告仍保留负号；curriculum 的价值要由 Stage-2 unseen holdout 与 failure composition 判断，而不是挑一条漂亮轨迹。</p>
+<h3 id="stage-1-probe-代表轨迹">Stage-1 probe 代表轨迹</h3>
+<p>任务 <code>refund-curriculum_probe-0100</code>；成功：<code>True</code>；失败分类：<code>SUCCESS</code>；combined reward：<code>1.243</code>。</p>
+<div class="table-wrap"><table><thead><tr>
+<th>Turn</th>
+<th>Tool</th>
+<th>OK</th>
+<th>Observation / state evidence</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td><code>request_identity</code></td>
+<td>✅</td>
+<td><code>{&quot;email&quot;: &quot;customer0100@example.com&quot;, &quot;phone_last4&quot;: &quot;8521&quot;}</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>lookup_customer</code></td>
+<td>✅</td>
+<td><code>{&quot;customer_id&quot;: &quot;CUS-1100&quot;, &quot;verified&quot;: true}</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>list_orders</code></td>
+<td>✅</td>
+<td><code>{&quot;orders&quot;: [{&quot;amount&quot;: 349.0, &quot;currency&quot;: &quot;CNY&quot;, &quot;order_id&quot;: &quot;ORD-2026-4100&quot;}, {&quot;amount&quot;: 478.13, &quot;currency&quot;: &quot;CNY&quot;, &quot;order_id&quot;: &quot;ORD-DECOY-100-A&quot;}]}</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>get_payment_history</code></td>
+<td>✅</td>
+<td><code>{&quot;charges&quot;: [{&quot;amount&quot;: 349.0, &quot;captured_at&quot;: &quot;2026-07-25T09:31:08+08:00&quot;, &quot;charge_id&quot;: &quot;CHG-7200&quot;, &quot;currency&quot;: &quot;CNY&quot;, &quot;duplicate&quot;: false}, {&quot;amount&quot;: 349.0, &quot;captured_at&quot;: &quot;202…</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>get_refund_policy</code></td>
+<td>✅</td>
+<td><code>{&quot;arrival_window&quot;: &quot;3-5 business days&quot;, &quot;currency&quot;: &quot;CNY&quot;, &quot;eligible&quot;: true, &quot;max_refund&quot;: 349.0, &quot;requires_confirmation&quot;: true, &quot;target&quot;: &quot;duplicate charge only&quot;}</code></td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>request_confirmation</code></td>
+<td>✅</td>
+<td><code>{&quot;confirmed&quot;: true, &quot;user_message&quot;: &quot;I confirm refunding only CHG-7201 for CNY 349.00.&quot;}</code></td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>create_refund</code></td>
+<td>✅</td>
+<td><code>{&quot;amount&quot;: 349.0, &quot;arrival_window&quot;: &quot;3-5 business days&quot;, &quot;currency&quot;: &quot;CNY&quot;, &quot;refund_id&quot;: &quot;RF-55B751695E&quot;}</code></td>
+</tr>
+</tbody></table></div>
+<h2 id="6-失败驱动的困难数据合成">6. 失败驱动的困难数据合成</h2>
+<p>困难数据 manifest 记录 source trace 的绝对路径与 SHA-256：<code>ca0d54b78a400bab1de423e0bf2efc8cd1d68819925e926d16e2389c6d42b7bd</code>。本次 source selection 为 <code>frontier_taxonomy_fallback</code>。当 post-train probe 仍有失败时优先按残余失败合成；若小 probe 已全对，则升级到预定义 frontier taxonomy。生成器不把模型自然语言当答案，所有 customer/order/charge/amount、状态转移与 verifier target 都由代码确定。</p>
+<div class="table-wrap"><table><thead><tr>
+<th>合成项</th>
+<th>证据</th>
+</tr></thead><tbody>
+<tr>
+<td>Generator</td>
+<td><code>deterministic_failure_driven_curriculum</code></td>
+</tr>
+<tr>
+<td>Source selection</td>
+<td><code>frontier_taxonomy_fallback</code></td>
+</tr>
+<tr>
+<td>Hard tasks</td>
+<td>8</td>
+</tr>
+<tr>
+<td>Replay task IDs</td>
+<td><code>refund-stage1_train-0000, refund-stage1_train-0001, refund-stage1_train-0002, refund-stage1_train-0003</code></td>
+</tr>
+<tr>
+<td>Stage-2 train SHA-256</td>
+<td><code>5790304c792b7ef6bbcdf85b9eb2e40eb5f4ffd1ab2767c6e0007d085a96bf1d</code></td>
+</tr>
+<tr>
+<td>Ground-truth policy</td>
+<td>All identifiers, amounts, transitions, and verifier targets are generated deterministically from code; no model output is used as ground truth.</td>
+</tr>
+</tbody></table></div>
+<p>任务增强规则把 failure 转成可训练扰动：未读支付历史 → 增加第三个 decoy；policy failure → policy service 首次 timeout；identity failure → lookup 首次 timeout；loop/tool-error → 在读链或 write 上加入一次 retryable failure；confirmation missing → 保留精确确认硬门。</p>
+<h2 id="7-stage-2-从同一个-adapter-继续训练">7. Stage 2：从同一个 adapter 继续训练</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>指标</th>
+<th>Before</th>
+<th>After</th>
+<th>Δ</th>
+</tr></thead><tbody>
+<tr>
+<td>Final-holdout success rate</td>
+<td>66.7%</td>
+<td>100.0%</td>
+<td>+33.3 pt</td>
+</tr>
+<tr>
+<td>Mean combined reward</td>
+<td>0.8376</td>
+<td>1.2505</td>
+<td>+0.4128</td>
+</tr>
+<tr>
+<td>Optimizer global step</td>
+<td>—</td>
+<td>12</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Training seconds</td>
+<td>—</td>
+<td>396.218</td>
+<td>—</td>
+</tr>
+<tr>
+<td>Training rollout reward std</td>
+<td>—</td>
+<td>0.2673</td>
+<td>33 unique rewards</td>
+</tr>
+<tr>
+<td>Trainable parameters changed</td>
+<td>—</td>
+<td><code>True</code></td>
+<td>train loss <code>-0.029555</code></td>
+</tr>
+</tbody></table></div>
+<div class="table-wrap"><table><thead><tr>
+<th>失败类型</th>
+<th>Before</th>
+<th>After</th>
+</tr></thead><tbody>
+<tr>
+<td><code>IDENTITY_ERROR</code></td>
+<td>2</td>
+<td>0</td>
+</tr>
+</tbody></table></div>
+<p>Stage-2 summary 中的 <code>input_adapter_weights_sha256</code> 必须等于 Stage-1 <code>adapter_model.safetensors</code> hash；Stage-2 权重 hash 又必须不同。这两个条件分别排除“第二阶段从 base 重开”和“第二阶段根本没有更新”。</p>
+<h3 id="final-holdout-代表轨迹">Final holdout 代表轨迹</h3>
+<p>任务 <code>refund-final_holdout-0204</code>；成功：<code>True</code>；失败分类：<code>SUCCESS</code>；combined reward：<code>1.248</code>。</p>
+<div class="table-wrap"><table><thead><tr>
+<th>Turn</th>
+<th>Tool</th>
+<th>OK</th>
+<th>Observation / state evidence</th>
+</tr></thead><tbody>
+<tr>
+<td>1</td>
+<td><code>request_identity</code></td>
+<td>✅</td>
+<td><code>{&quot;email&quot;: &quot;customer0204@example.com&quot;, &quot;phone_last4&quot;: &quot;2369&quot;}</code></td>
+</tr>
+<tr>
+<td>2</td>
+<td><code>lookup_customer</code></td>
+<td>✅</td>
+<td><code>{&quot;customer_id&quot;: &quot;CUS-1204&quot;, &quot;verified&quot;: true}</code></td>
+</tr>
+<tr>
+<td>3</td>
+<td><code>list_orders</code></td>
+<td>✅</td>
+<td><code>{&quot;orders&quot;: [{&quot;amount&quot;: 349.0, &quot;currency&quot;: &quot;CNY&quot;, &quot;order_id&quot;: &quot;ORD-2026-4204&quot;}, {&quot;amount&quot;: 478.13, &quot;currency&quot;: &quot;CNY&quot;, &quot;order_id&quot;: &quot;ORD-DECOY-204-A&quot;}, {&quot;amount&quot;: 478.13, &quot;currency…</code></td>
+</tr>
+<tr>
+<td>4</td>
+<td><code>get_payment_history</code></td>
+<td>✅</td>
+<td><code>{&quot;charges&quot;: [{&quot;amount&quot;: 349.0, &quot;captured_at&quot;: &quot;2026-07-25T09:31:08+08:00&quot;, &quot;charge_id&quot;: &quot;CHG-7408&quot;, &quot;currency&quot;: &quot;CNY&quot;, &quot;duplicate&quot;: false}, {&quot;amount&quot;: 349.0, &quot;captured_at&quot;: &quot;202…</code></td>
+</tr>
+<tr>
+<td>5</td>
+<td><code>get_refund_policy</code></td>
+<td>✅</td>
+<td><code>{&quot;arrival_window&quot;: &quot;3-5 business days&quot;, &quot;currency&quot;: &quot;CNY&quot;, &quot;eligible&quot;: true, &quot;max_refund&quot;: 349.0, &quot;requires_confirmation&quot;: true, &quot;target&quot;: &quot;duplicate charge only&quot;}</code></td>
+</tr>
+<tr>
+<td>6</td>
+<td><code>request_confirmation</code></td>
+<td>✅</td>
+<td><code>{&quot;confirmed&quot;: true, &quot;user_message&quot;: &quot;I confirm refunding only CHG-7409 for CNY 349.00.&quot;}</code></td>
+</tr>
+<tr>
+<td>7</td>
+<td><code>create_refund</code></td>
+<td>✅</td>
+<td><code>{&quot;amount&quot;: 349.0, &quot;arrival_window&quot;: &quot;3-5 business days&quot;, &quot;currency&quot;: &quot;CNY&quot;, &quot;refund_id&quot;: &quot;RF-27582FA0BC&quot;}</code></td>
+</tr>
+</tbody></table></div>
+<h2 id="8-独立评测-fresh-reload-已完成-官方-bfcl-v4-未运行">8. 独立评测：fresh reload 已完成，官方 BFCL-V4 未运行</h2>
+<p>已完成的独立性来自 fresh-process reload：父训练进程释放模型后启动新的 Python 子进程，记录父/子 PID，再重新加载 base + Stage-2 PEFT adapter，在未触碰的 final holdout 上重新生成并计分。官方 BFCL-V4 multi-turn evaluator 的 base/adapter 对照路径已经实现，但本次没有运行，所以没有 result JSON、score CSV 或 benchmark 分数可报告。</p>
+<div class="table-wrap"><table><thead><tr>
+<th>Fresh replay evidence</th>
+<th>值</th>
+</tr></thead><tbody>
+<tr>
+<td>Parent PID</td>
+<td><code>5643</code></td>
+</tr>
+<tr>
+<td>Child PID</td>
+<td><code>6913</code></td>
+</tr>
+<tr>
+<td>Is fresh process</td>
+<td><code>True</code></td>
+</tr>
+<tr>
+<td>Episodes</td>
+<td><code>6</code></td>
+</tr>
+</tbody></table></div>
+<div class="table-wrap"><table><thead><tr>
+<th>Variant</th>
+<th>状态</th>
+<th>Episodes</th>
+<th>Official score</th>
+</tr></thead><tbody>
+<tr>
+<td>—</td>
+<td><strong>NOT_RUN</strong></td>
+<td>0</td>
+<td>BFCL artifact missing</td>
+</tr>
+</tbody></table></div>
+<p>BFCL 状态为 <code>NOT_RUN</code>。只有在 manifest、result JSON 和 score CSV 齐全后，才可声称官方接口、tool-call 格式、multi-turn execution 与 score pipeline 跑通；即便未来完成小样本 smoke，也不能替代每类 200 个任务的论文 profile，更不能与论文平均分直接比较。</p>
+<h2 id="9-实验完整性与可恢复性">9. 实验完整性与可恢复性</h2>
+<ul>
+<li>数据先落盘再训练；train/probe/final-holdout ID 分离并写入 manifest。</li>
+<li>每个 JSONL trace 同时记录 task hash、stage、failure type、reward 与完整 event ledger。</li>
+<li>Trainer 每半程保存 checkpoint；远程中断后从最大 <code>checkpoint-N</code> 恢复，旧 trace 不清空。</li>
+<li>已完成的 stage 只有在 summary 状态和 adapter 目录同时存在时才跳过。</li>
+<li>模型缓存、checkpoint、adapter、benchmark 与报告源分别持久化；下载后再次计算 SHA-256。</li>
+<li>日志写入前扫描疑似 <code>sk-</code> secret；API key 永远不进入 artifact。</li>
+</ul>
+<div class="table-wrap"><table><thead><tr>
+<th>Artifact</th>
+<th>Bytes</th>
+<th>SHA-256</th>
+</tr></thead><tbody>
+<tr>
+<td><code>data_manifest.json</code></td>
+<td>1683</td>
+<td><code>974ff3207c953dae…</code></td>
+</tr>
+<tr>
+<td><code>fresh_replay/summary.json</code></td>
+<td>1740</td>
+<td><code>2b9cec2aa8d206f5…</code></td>
+</tr>
+<tr>
+<td><code>fresh_replay/traces.jsonl</code></td>
+<td>23769</td>
+<td><code>77e47ef0b181b9b3…</code></td>
+</tr>
+<tr>
+<td><code>launch.json</code></td>
+<td>209</td>
+<td><code>81361460b3a078c9…</code></td>
+</tr>
+<tr>
+<td><code>model_snapshot_manifest.json</code></td>
+<td>2753</td>
+<td><code>da9d9484e5c83ae3…</code></td>
+</tr>
+<tr>
+<td><code>preflight.json</code></td>
+<td>2160</td>
+<td><code>7cb37aa7a6a542e3…</code></td>
+</tr>
+<tr>
+<td><code>process-exit.json</code></td>
+<td>74</td>
+<td><code>030d8c25cde9ead2…</code></td>
+</tr>
+<tr>
+<td><code>resolved_config.json</code></td>
+<td>1940</td>
+<td><code>ee814212f548ae3d…</code></td>
+</tr>
+<tr>
+<td><code>run_summary.json</code></td>
+<td>24388</td>
+<td><code>90c2258cc7491e9e…</code></td>
+</tr>
+<tr>
+<td><code>stage1/eval_before_traces.jsonl</code></td>
+<td>14764</td>
+<td><code>653b7653ed38aebd…</code></td>
+</tr>
+<tr>
+<td><code>stage1/eval_probe_traces.jsonl</code></td>
+<td>14549</td>
+<td><code>ca0d54b78a400bab…</code></td>
+</tr>
+<tr>
+<td><code>stage1/summary.json</code></td>
+<td>6370</td>
+<td><code>c9b8566fc869144a…</code></td>
+</tr>
+<tr>
+<td><code>stage1/train_traces.jsonl</code></td>
+<td>183657</td>
+<td><code>73e03318e92807d9…</code></td>
+</tr>
+<tr>
+<td><code>stage2/eval_before_traces.jsonl</code></td>
+<td>17954</td>
+<td><code>29b3bef16865f1b5…</code></td>
+</tr>
+<tr>
+<td><code>stage2/eval_final_traces.jsonl</code></td>
+<td>23763</td>
+<td><code>05b1c350702ea68c…</code></td>
+</tr>
+<tr>
+<td><code>stage2/summary.json</code></td>
+<td>6928</td>
+<td><code>9bd2ba39556d1351…</code></td>
+</tr>
+<tr>
+<td><code>stage2/synthesis_manifest.json</code></td>
+<td>2476</td>
+<td><code>ea218e668bea780b…</code></td>
+</tr>
+<tr>
+<td><code>stage2/train_traces.jsonl</code></td>
+<td>199747</td>
+<td><code>c555a2d9f57746f2…</code></td>
+</tr>
+<tr>
+<td><code>tasks/curriculum_probe.jsonl</code></td>
+<td>2695</td>
+<td><code>64c90346b92cf943…</code></td>
+</tr>
+<tr>
+<td><code>tasks/final_holdout.jsonl</code></td>
+<td>4145</td>
+<td><code>dc9c2fc8139dc7d8…</code></td>
+</tr>
+<tr>
+<td><code>tasks/stage1_train.jsonl</code></td>
+<td>5510</td>
+<td><code>afa55e2f00091ab1…</code></td>
+</tr>
+<tr>
+<td><code>tasks/stage2_hard.jsonl</code></td>
+<td>6232</td>
+<td><code>77a8e8484cd7b65a…</code></td>
+</tr>
+<tr>
+<td><code>tasks/stage2_train.jsonl</code></td>
+<td>8987</td>
+<td><code>5790304c792b7ef6…</code></td>
+</tr>
+<tr>
+<td><code>verification.json</code></td>
+<td>4708</td>
+<td><code>b623e4944131ffd7…</code></td>
+</tr>
+</tbody></table></div>
+<h2 id="10-失败模式-项目为什么可能-训练了却没学会">10. 失败模式：项目为什么可能“训练了却没学会”</h2>
+<h3 id="group-saturation">Group saturation</h3>
+<p>如果同一 group 四条 rollout 都成功或都失败，标准差接近零，relative advantage 变成零。过程奖励只能在轨迹真正产生不同读取/恢复行为时打破平局；若所有样本在第一个 token 就走同一路径，仍然没有信号。</p>
+<h3 id="reward-hacking">Reward hacking</h3>
+<p>模型可能反复调用读工具累积 progress。环境因此对 redundant call 和超过十步的序列施加惩罚，并且 outcome success 仍要求精确写状态；只刷过程分无法得到完整奖励。</p>
+<h3 id="curriculum-forgetting">Curriculum forgetting</h3>
+<p>只训练难例会破坏基础路径，因此 Stage 2 固定加入四个 Stage-1 replay tasks。更完整的实验应增加 replay ratio 消融与至少三 seeds；本次单次预算运行不能支持“普遍优于”的统计主张。</p>
+<h3 id="benchmark-mismatch">Benchmark mismatch</h3>
+<p>自建退款环境验证 causal curriculum，但 BFCL 测工具调用格式、缺函数/缺参数和长上下文；TAU-2 又依赖 user simulator。不同指标回答不同问题，不能用自建 success rate 替换官方 benchmark。</p>
+<h2 id="11-一键复现与运行成本">11. 一键复现与运行成本</h2>
+<pre><code class="language-bash"># AutoDL 实例中：复用 /root/autodl-tmp/models/Qwen3-8B
+./run_curriculum_autodl_remote.sh
+
+# 本地：把下载的 run root 渲染成 HTML + PPT
+./finalize_curriculum_project.sh /path/to/qwen3-8b-qlora-20260804-v2</code></pre>
+<p>本次实测硬件是单张 RTX PRO 6000 96GB；Qwen3-8B 以 NF4 运行时量化加载，Stage 1/2 都只训练 LoRA。模型、venv、run、日志和归档分别落在 AutoDL 数据盘与 <code>/root</code> 下载区，终态后再按 SHA-256 收集。</p>
+<h2 id="12-简历与面试怎么讲">12. 简历与面试怎么讲</h2>
+<h3 id="简历-bullet-只有本报告-pass-后才能使用">简历 bullet（只有本报告 PASS 后才能使用）</h3>
+<blockquote>基于 Qwen3-8B 与 TRL 实现 stateful multi-turn QLoRA-GRPO：构建身份验证—多工具读链—确认—幂等退款环境，诊断 reward saturation 后以过程质量打破零方差，并通过失败/能力边界选择合成含 decoy 与 transient failure 的困难数据继续 Stage-2 训练；加入 split hash、checkpoint resume 与 fresh-process verifier，形成可审计训练闭环。</blockquote>
+<h3 id="面试问题-1-这和-sft-有什么本质区别">面试问题 1：这和 SFT 有什么本质区别？</h3>
+<p>SFT 复制给定答案；这里模型自己采样完整 trajectory，reward 来自工具执行后的最终 state，同 prompt 的多个 trajectory 做 group-relative baseline。困难数据也由实际失败类型触发，而不是预先固定一份 instruction 数据。</p>
+<h3 id="面试问题-2-为什么过程奖励不会替代最终正确性">面试问题 2：为什么过程奖励不会替代最终正确性？</h3>
+<p>combined reward 的主项仍是 exact outcome；process 只占 0.30，而且对越权、schema error、循环有负项。最终 verifier 独立检查 charge ID、amount、确认与 refund state，所以“步骤看起来很努力”不能冒充成功。</p>
+<h3 id="面试问题-3-怎么证明第二阶段真的用了第一阶段">面试问题 3：怎么证明第二阶段真的用了第一阶段？</h3>
+<p>Stage-2 summary 保存 input adapter tree hash；审计要求它与 Stage-1 adapter hash 完全相等。同时 Stage-2 output hash 必须不同、global step 必须大于零，三条证据合在一起排除重开、未训练和只改 metadata。</p>
+<h3 id="面试问题-4-如果-stage-2-指标没提升怎么办">面试问题 4：如果 Stage 2 指标没提升怎么办？</h3>
+<p>把它作为负结果：比较 failure composition、group variance、hard/replay ratio 和 transient recovery；扩大 seeds。不能删除失败 run 或只展示一条成功轨迹。工程完整性 PASS 与算法效果提升是两个独立结论。</p>
+<h2 id="13-自我检查-仍未完成什么">13. 自我检查：仍未完成什么</h2>
+<div class="table-wrap"><table><thead><tr>
+<th>项目</th>
+<th>当前状态</th>
+<th>补完条件</th>
+</tr></thead><tbody>
+<tr>
+<td>两阶段 response-token curriculum</td>
+<td><strong>COMPLETE</strong></td>
+<td>verification 全门通过</td>
+</tr>
+<tr>
+<td>官方 BFCL multi-turn smoke</td>
+<td><strong>NOT_RUN</strong></td>
+<td>base/adapter result 与 score 齐全</td>
+</tr>
+<tr>
+<td>BFCL-V4 paper profile</td>
+<td><strong>CODE_READY / NOT_RUN</strong></td>
+<td>4 categories × 200，固定 decoding</td>
+</tr>
+<tr>
+<td>TAU-2 Avg@4</td>
+<td><strong>CODE_READY / NOT_RUN</strong></td>
+<td>全域任务 × 4，论文一致 user simulator</td>
+</tr>
+<tr>
+<td>3 seeds + ablation matrix</td>
+<td><strong>NOT_RUN</strong></td>
+<td>Vanilla/PRM/LATA/Joint × 3 seeds</td>
+</tr>
+<tr>
+<td>论文约 100K 数据</td>
+<td><strong>BLOCKED_RESOURCE</strong></td>
+<td>Qwen3-235B synthesis/simulator/judge</td>
+</tr>
+<tr>
+<td>论文八 H100 配方</td>
+<td><strong>BLOCKED_RESOURCE</strong></td>
+<td>同版本 veRL/SGLang 与多卡预算</td>
+</tr>
+</tbody></table></div>
+<h2 id="14-claim-boundary">14. Claim boundary</h2>
+<p>本报告支持：“一次真实 Qwen3-8B 多轮 response-token QLoRA-GRPO curriculum 在云端 GPU 执行；V1 的零方差失败被校验器捕获，V2 两阶段均出现非零 reward variance 与参数哈希变化，Stage-2 adapter 可在新进程独立重载。”</p>
+<p>本报告不支持：“完整复现论文 47.4、100K 数据、Qwen3-235B 数据飞轮、八 H100 recipe、TAU-2 Avg@4 或统计显著的普遍提升。”</p>
+<h2 id="参考资料">参考资料</h2>
+<ul>
+<li><a href="https://arxiv.org/abs/2604.21590">AgenticQwen paper</a></li>
+<li><a href="https://github.com/haruhi-sudo/data_synth_and_rl">Official data synthesis / RL code</a></li>
+<li><a href="https://huggingface.co/docs/trl/en/grpo_trainer">TRL GRPOTrainer stateful environments</a></li>
+<li><a href="https://github.com/ShishirPatil/gorilla/tree/main/berkeley-function-call-leaderboard">Official BFCL repository</a></li>
+<li><a href="https://github.com/sierra-research/tau2-bench/tree/v0.2.0">Official TAU-2 v0.2.0</a></li>
+<li><a href="https://github.com/qiqihezh/agentic-grpo-longhorizon">Agentic-GRPO-LongHorizon style reference</a></li>
+<li><a href="https://modal.com/docs/guide/gpu">Modal GPU documentation</a></li>
+<li><a href="https://modal.com/pricing">Modal pricing</a></li>
+</ul>
+      <div class="article-meta">
+        规范源：TECHNICAL_REPORT.md · SHA-256 dcd36401a6a494ef… · 生成于 2026-08-04T12:31:08+08:00
+      </div>
+    </article>
+  </main>
+  <footer class="site-footer">写给想真正理解 Agentic RL 的人，也写给要把项目讲进面试的人。</footer>
+  <script>
+    if (window.matchMedia('(max-width: 680px)').matches) {
+      document.querySelector('.article-toc')?.removeAttribute('open');
+    }
+  </script>
+</body>
+</html>

@@ -1,0 +1,34 @@
+{
+  "paper": {
+    "arxiv_id": "2604.21590",
+    "title": "AgenticQwen: Training Small Agentic Language Models with Dual Data Flywheels for Industrial-Scale Tool Use",
+    "paper_url": "https://arxiv.org/abs/2604.21590",
+    "official_code": "https://github.com/haruhi-sudo/data_synth_and_rl"
+  },
+  "run": {
+    "seed": 20260802,
+    "rounds": 3,
+    "train_tasks_per_round": 48,
+    "eval_tasks_per_level": 24,
+    "group_size": 12,
+    "updates_per_round": 500,
+    "learning_rate": 0.035,
+    "max_steps": 6
+  },
+  "qwen_inference": {
+    "model_id": "mlx-community/Qwen3-8B-4bit",
+    "max_tokens_per_step": 96,
+    "temperature": 0.0,
+    "scenarios": ["available", "sold_out", "delayed_standard_adversarial"]
+  },
+  "gates": {
+    "min_final_reward": 0.70,
+    "min_improvement": 0.10,
+    "require_determinism": true,
+    "require_qwen_inference": false
+  },
+  "paths": {
+    "artifacts": "artifacts",
+    "report": "agenticqwen_report"
+  }
+}
