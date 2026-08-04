@@ -51,6 +51,14 @@ Fresh-process reload
 BFCL base/adapter smoke（本次状态：NOT_RUN）
 ```
 
+### 一张图看懂几个 Stage 如何串起来
+
+下面这张图把基础工具链、失败轨迹审计、困难数据合成和第二阶段持续训练放在同一条因果链上。第一阶段学习线性的完整工具链；中间不是“随机加噪”，而是把失败类型映射为相似干扰项、临时超时、同参重试、确认硬门、先读后写和幂等校验；第二阶段把这些压力组合成带分支的受约束工作流，并让新轨迹继续回流。
+
+![第一阶段训练、失败轨迹审计、困难数据合成与第二阶段持续训练机制图](images/figure4_curriculum_stage_flow.png)
+
+> 图中 failure taxonomy 是可操作的课程标签；本次微型 run 的实际 source selection 记录为 `frontier_taxonomy_fallback`，具体 trace、任务和 SHA-256 见 `stage2/synthesis_manifest.json`。
+
 ### Verify
 
 | 审计门 | 状态 | 证据 |

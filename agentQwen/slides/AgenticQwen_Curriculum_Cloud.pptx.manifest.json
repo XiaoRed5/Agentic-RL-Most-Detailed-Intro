@@ -1,6 +1,6 @@
 {
   "status": "PASS",
-  "slides": 15,
+  "slides": 16,
   "run_root": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/cloud_runs/qwen3-8b-qlora-20260804-v2/evidence",
   "output": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/slides/AgenticQwen_Curriculum_Cloud.pptx",
   "preview": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/work/slides/curriculum-cloud-rendered",

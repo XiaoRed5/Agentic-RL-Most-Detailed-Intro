@@ -114,6 +114,7 @@ async function main() {
   await fs.mkdir(PREVIEW, { recursive: true });
   const p = Presentation.create({ slideSize: { width: W, height: H } });
   const paperFig = await bytes(path.join(PROJECT, "agenticqwen_report/images/figure1_dual_flywheel.png"));
+  const stageFigure = await bytes(path.join(PROJECT, "agenticqwen_report/images/figure4_curriculum_stage_flow.png"));
   const gpu = stage2.runtime?.gpu?.name || "Cloud GPU";
   const successTrace = traces.find((x) => x.success) || traces[0];
 
@@ -368,9 +369,21 @@ async function main() {
     note(s, "面试时最可信的讲法：先讲闭环与证据，再主动说 paper-scale 没做，最后给出扩展实验。", [path.join(RUN_ROOT, "run_summary.json"), path.join(PROJECT, "README.md")]);
   }
 
-  // 15 — closing
+  // 15 — mechanism figure
   {
-    const s = chapterSlide(p, 15, "✓", "从论文到可审计项目", "PLAN · EXECUTE · VERIFY · REPORT", "现在可以真实地讲：我实现并运行了一个 Qwen3-8B 长程 Agentic RL curriculum，模型经历了真实多轮工具环境、失败诊断、难例再训练与独立重载。下一步是运行官方 benchmark、扩大数据与 seeds，而不是补一个更漂亮的故事。");
+    const s = p.slides.add(); s.background.fill = C.paper;
+    rect(s, "mechanism-rail", { left: 0, top: 0, width: 30, height: H }, C.navy);
+    txt(s, "mechanism-title", "失败驱动的课程学习闭环", { left: 78, top: 24, width: 720, height: 45 }, { fontFamily: FONT.serif, fontSize: 32, bold: true, color: C.navy });
+    txt(s, "mechanism-subtitle", "基础工具链 → 轨迹审计 → 定向合成 → 带分支的持续训练", { left: 785, top: 34, width: 395, height: 28 }, { fontSize: 15, bold: true, color: C.teal2, alignment: "right" });
+    rule(s, 76, 76, 1104, C.line, 1);
+    s.images.add({ blob: stageFigure, contentType: "image/png", alt: "失败驱动的课程学习闭环机制图", fit: "contain", position: { left: 170, top: 88, width: 940, height: 584 } });
+    txt(s, "mechanism-page", "15", { left: 1125, top: 674, width: 55, height: 20 }, { fontFamily: FONT.display, fontSize: 12, color: C.muted, alignment: "right" });
+    note(s, "这张机制图解释为什么第二阶段数据不是随机扩充：失败路径被反译成新的环境状态、用户指令、智能体约束与分支工作流。", [path.join(PROJECT, "agenticqwen_report/images/figure4_curriculum_stage_flow.png"), path.join(RUN_ROOT, "stage2/synthesis_manifest.json")]);
+  }
+
+  // 16 — closing
+  {
+    const s = chapterSlide(p, 16, "✓", "从论文到可审计项目", "PLAN · EXECUTE · VERIFY · REPORT", "现在可以真实地讲：我实现并运行了一个 Qwen3-8B 长程 Agentic RL curriculum，模型经历了真实多轮工具环境、失败诊断、难例再训练与独立重载。下一步是运行官方 benchmark、扩大数据与 seeds，而不是补一个更漂亮的故事。");
     txt(s, "close-command", "./run_curriculum_modal.sh  →  ./finalize_curriculum_report.sh  →  build_curriculum_deck.mjs", { left: 86, top: 535, width: 950, height: 35 }, { fontFamily: FONT.mono, fontSize: 16, bold: true, color: C.cream });
     note(s, "结尾把项目浓缩成一句可用于简历和面试、但不越过证据边界的话。", [path.join(RUN_ROOT, "verification.json"), path.join(PROJECT, "docs/benchmark_protocol.md")]);
   }
