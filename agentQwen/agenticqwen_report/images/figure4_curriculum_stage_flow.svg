@@ -1,0 +1,161 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1900 1180" font-family="PingFang SC, sans-serif">
+<rect x="0" y="0" width="1900" height="1180" fill="#FFFDFC"/>
+<defs><marker id="ar" markerWidth="8" markerHeight="8" refX="6" refY="3" orient="auto"><path d="M0,0 L6,3 L0,6 Z" fill="#555"/></marker></defs>
+<rect x="42" y="28" width="1816" height="54" fill="#D9E8F3" stroke="#D9E8F3" stroke-width="0" rx="26"/>
+<text x="950.0" y="64" font-size="25" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">一、第一阶段：基础策略学习与线性工具链</text>
+<rect x="115" y="135" width="270" height="150" fill="#EAF3F9" stroke="#1D6590" stroke-width="2" rx="12"/>
+<text x="250.0" y="165" font-size="18" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">基础任务与环境</text>
+<text x="250.0" y="194" font-size="14" fill="#5E6F7D" text-anchor="middle" font-family="PingFang SC" font-weight="700">重复扣款诉求</text>
+<text x="250.0" y="214" font-size="14" fill="#5E6F7D" text-anchor="middle" font-family="PingFang SC" font-weight="700">客户、订单、支付、政策状态</text>
+<line x1="385" y1="210" x2="435" y2="210" stroke="#17628A" stroke-width="2.0" marker-end="url(#ar)"/>
+<rect x="435" y="120" width="300" height="180" fill="#EAF3F9" stroke="#1D6590" stroke-width="2" rx="12"/>
+<text x="585.0" y="150" font-size="18" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">策略模型训练</text>
+<text x="585.0" y="179" font-size="14" fill="#5E6F7D" text-anchor="middle" font-family="PingFang SC" font-weight="700">生成完整回复与工具调用</text>
+<text x="585.0" y="199" font-size="14" fill="#5E6F7D" text-anchor="middle" font-family="PingFang SC" font-weight="700">环境执行动作并返回观察</text>
+<text x="585.0" y="219" font-size="14" fill="#5E6F7D" text-anchor="middle" font-family="PingFang SC" font-weight="700">结果奖励 + 过程奖励</text>
+<rect x="790" y="108" width="1010" height="202" fill="#EAF3F9" stroke="#1D6590" stroke-width="2" rx="15"/>
+<text x="1295" y="140" font-size="21" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">期望的完整行为工作流</text>
+<rect x="815" y="190" width="120" height="58" fill="#E4F1D8" stroke="#2F7D32" stroke-width="2" rx="18"/>
+<text x="875.0" y="226.0" font-size="16" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">身份确认</text>
+<line x1="935" y1="219" x2="951" y2="219" stroke="#2F7D32" stroke-width="2.0" marker-end="url(#ar)"/>
+<rect x="955" y="190" width="120" height="58" fill="#E4F1D8" stroke="#2F7D32" stroke-width="2" rx="18"/>
+<text x="1015.0" y="226.0" font-size="16" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">查询客户</text>
+<line x1="1075" y1="219" x2="1091" y2="219" stroke="#2F7D32" stroke-width="2.0" marker-end="url(#ar)"/>
+<rect x="1095" y="190" width="120" height="58" fill="#E4F1D8" stroke="#2F7D32" stroke-width="2" rx="18"/>
+<text x="1155.0" y="226.0" font-size="16" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">查询订单</text>
+<line x1="1215" y1="219" x2="1231" y2="219" stroke="#2F7D32" stroke-width="2.0" marker-end="url(#ar)"/>
+<rect x="1235" y="190" width="120" height="58" fill="#E4F1D8" stroke="#2F7D32" stroke-width="2" rx="18"/>
+<text x="1295.0" y="226.0" font-size="16" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">读取支付记录</text>
+<line x1="1355" y1="219" x2="1371" y2="219" stroke="#2F7D32" stroke-width="2.0" marker-end="url(#ar)"/>
+<rect x="1375" y="190" width="120" height="58" fill="#E4F1D8" stroke="#2F7D32" stroke-width="2" rx="18"/>
+<text x="1435.0" y="226.0" font-size="16" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">读取退款政策</text>
+<line x1="1495" y1="219" x2="1511" y2="219" stroke="#2F7D32" stroke-width="2.0" marker-end="url(#ar)"/>
+<rect x="1515" y="190" width="120" height="58" fill="#E4F1D8" stroke="#2F7D32" stroke-width="2" rx="18"/>
+<text x="1575.0" y="226.0" font-size="16" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">请求用户确认</text>
+<line x1="1635" y1="219" x2="1651" y2="219" stroke="#2F7D32" stroke-width="2.0" marker-end="url(#ar)"/>
+<rect x="1655" y="190" width="120" height="58" fill="#E4F1D8" stroke="#2F7D32" stroke-width="2" rx="18"/>
+<text x="1715.0" y="226.0" font-size="16" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">创建正确退款</text>
+<text x="1295" y="286" font-size="14" fill="#2F7D32" text-anchor="middle" font-family="PingFang SC, sans-serif" font-weight="700">先读后写 · 精确确认 · 正确重复扣款 · 幂等写入</text>
+<line x1="735" y1="210" x2="785" y2="210" stroke="#17628A" stroke-width="2.0" marker-end="url(#ar)"/>
+<text x="525" y="330" font-size="15" fill="#17628A" text-anchor="middle" font-family="PingFang SC, sans-serif" font-weight="700">每条轨迹都保存工具事件、环境状态、终止原因与奖励分解</text>
+<line x1="740" y1="327" x2="920" y2="327" stroke="#17628A" stroke-width="2.0" marker-end="url(#ar)"/>
+<text x="830.0" y="319" font-size="13" fill="#17628A" text-anchor="middle" font-family="PingFang SC" font-style="italic">轨迹进入审计</text>
+<rect x="42" y="360" width="1816" height="54" fill="#F8DCC6" stroke="#F8DCC6" stroke-width="0" rx="26"/>
+<text x="950.0" y="396" font-size="25" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">二、失败驱动的数据飞轮：轨迹审计 → 失败标签 → 定向合成</text>
+<rect x="48" y="430" width="850" height="310" fill="#FFF1E4" stroke="#F8DCC6" stroke-width="2" rx="16"/>
+<text x="473" y="462" font-size="22" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">失败轨迹分析</text>
+<rect x="78" y="490" width="235" height="112" fill="#FFFFFF" stroke="#1D6590" stroke-width="2" rx="12"/>
+<text x="195.5" y="520" font-size="18" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">环境状态</text>
+<text x="195.5" y="549" font-size="14" fill="#5E6F7D" text-anchor="middle" font-family="PingFang SC" font-weight="700">哪些信息已经读取？</text>
+<text x="195.5" y="569" font-size="14" fill="#5E6F7D" text-anchor="middle" font-family="PingFang SC" font-weight="700">写操作是否满足前置条件？</text>
+<rect x="333" y="490" width="235" height="112" fill="#FFFFFF" stroke="#1D6590" stroke-width="2" rx="12"/>
+<text x="450.5" y="520" font-size="18" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">智能体行为</text>
+<text x="450.5" y="549" font-size="14" fill="#5E6F7D" text-anchor="middle" font-family="PingFang SC" font-weight="700">工具顺序是否正确？</text>
+<text x="450.5" y="569" font-size="14" fill="#5E6F7D" text-anchor="middle" font-family="PingFang SC" font-weight="700">临时错误是否得到恢复？</text>
+<rect x="588" y="490" width="235" height="112" fill="#FFFFFF" stroke="#1D6590" stroke-width="2" rx="12"/>
+<text x="705.5" y="520" font-size="18" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">用户确认状态</text>
+<text x="705.5" y="549" font-size="14" fill="#5E6F7D" text-anchor="middle" font-family="PingFang SC" font-weight="700">是否确认精确目标？</text>
+<text x="705.5" y="569" font-size="14" fill="#5E6F7D" text-anchor="middle" font-family="PingFang SC" font-weight="700">是否存在模糊或越权写入？</text>
+<rect x="78" y="628" width="745" height="80" fill="#FFFFFF" stroke="#C62828" stroke-width="2" rx="12"/>
+<text x="450" y="655" font-size="16" fill="#C62828" text-anchor="middle" font-family="PingFang SC, sans-serif" font-weight="700">轨迹审计器：读取状态／事件账本，不使用模型自报作为真值</text>
+<text x="450" y="683" font-size="14" fill="#5E6F7D" text-anchor="middle" font-family="PingFang SC, sans-serif" font-weight="700">输出可操作的失败分类与合成条件</text>
+<rect x="930" y="430" width="922" height="310" fill="#FFF1E4" stroke="#F8DCC6" stroke-width="2" rx="16"/>
+<text x="1391" y="462" font-size="22" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">失败标签如何变成困难样本</text>
+<rect x="965" y="500" width="170" height="48" fill="#FCE0DC" stroke="#C62828" stroke-width="1.6" rx="10"/>
+<text x="1050" y="530" font-size="14" fill="#C62828" text-anchor="middle" font-family="PingFang SC, sans-serif" font-weight="700">没有读取支付历史</text>
+<line x1="1139" y1="524" x2="1171" y2="524" stroke="#17628A" stroke-width="2.0" marker-end="url(#ar)"/>
+<rect x="1177" y="500" width="190" height="48" fill="#E4F1D8" stroke="#2F7D32" stroke-width="1.6" rx="10"/>
+<text x="1272" y="520" font-size="12" fill="#102A43" text-anchor="middle" font-family="PingFang SC" font-weight="700">加入相似订单与干扰扣款</text>
+<rect x="1395" y="500" width="170" height="48" fill="#FCE0DC" stroke="#C62828" stroke-width="1.6" rx="10"/>
+<text x="1480" y="530" font-size="14" fill="#C62828" text-anchor="middle" font-family="PingFang SC, sans-serif" font-weight="700">没有正确核对身份</text>
+<line x1="1569" y1="524" x2="1601" y2="524" stroke="#17628A" stroke-width="2.0" marker-end="url(#ar)"/>
+<rect x="1607" y="500" width="190" height="48" fill="#E4F1D8" stroke="#2F7D32" stroke-width="1.6" rx="10"/>
+<text x="1702" y="520" font-size="12" fill="#102A43" text-anchor="middle" font-family="PingFang SC" font-weight="700">身份查询首次返回临时超时</text>
+<rect x="965" y="572" width="170" height="48" fill="#FCE0DC" stroke="#C62828" stroke-width="1.6" rx="10"/>
+<text x="1050" y="602" font-size="14" fill="#C62828" text-anchor="middle" font-family="PingFang SC, sans-serif" font-weight="700">没有处理临时错误</text>
+<line x1="1139" y1="596" x2="1171" y2="596" stroke="#17628A" stroke-width="2.0" marker-end="url(#ar)"/>
+<rect x="1177" y="572" width="190" height="48" fill="#E4F1D8" stroke="#2F7D32" stroke-width="1.6" rx="10"/>
+<text x="1272" y="592" font-size="12" fill="#102A43" text-anchor="middle" font-family="PingFang SC" font-weight="700">要求使用相同参数进行一次重试</text>
+<rect x="1395" y="572" width="170" height="48" fill="#FCE0DC" stroke="#C62828" stroke-width="1.6" rx="10"/>
+<text x="1480" y="602" font-size="14" fill="#C62828" text-anchor="middle" font-family="PingFang SC, sans-serif" font-weight="700">没有请求用户确认</text>
+<line x1="1569" y1="596" x2="1601" y2="596" stroke="#17628A" stroke-width="2.0" marker-end="url(#ar)"/>
+<rect x="1607" y="572" width="190" height="48" fill="#E4F1D8" stroke="#2F7D32" stroke-width="1.6" rx="10"/>
+<text x="1702" y="592" font-size="12" fill="#102A43" text-anchor="middle" font-family="PingFang SC" font-weight="700">保留精确确认的不可绕过硬门</text>
+<rect x="965" y="644" width="170" height="48" fill="#FCE0DC" stroke="#C62828" stroke-width="1.6" rx="10"/>
+<text x="1050" y="674" font-size="14" fill="#C62828" text-anchor="middle" font-family="PingFang SC, sans-serif" font-weight="700">过早执行退款</text>
+<line x1="1139" y1="668" x2="1171" y2="668" stroke="#17628A" stroke-width="2.0" marker-end="url(#ar)"/>
+<rect x="1177" y="644" width="190" height="48" fill="#E4F1D8" stroke="#2F7D32" stroke-width="1.6" rx="10"/>
+<text x="1272" y="664" font-size="12" fill="#102A43" text-anchor="middle" font-family="PingFang SC" font-weight="700">加强先读后写与状态前置检查</text>
+<rect x="1395" y="644" width="170" height="48" fill="#FCE0DC" stroke="#C62828" stroke-width="1.6" rx="10"/>
+<text x="1480" y="674" font-size="14" fill="#C62828" text-anchor="middle" font-family="PingFang SC, sans-serif" font-weight="700">没有绑定幂等键</text>
+<line x1="1569" y1="668" x2="1601" y2="668" stroke="#17628A" stroke-width="2.0" marker-end="url(#ar)"/>
+<rect x="1607" y="644" width="190" height="48" fill="#E4F1D8" stroke="#2F7D32" stroke-width="1.6" rx="10"/>
+<text x="1702" y="664" font-size="12" fill="#102A43" text-anchor="middle" font-family="PingFang SC" font-weight="700">增加重复写风险与幂等键校验</text>
+<text x="950" y="772" font-size="20" fill="#C62828" text-anchor="middle" font-family="Songti SC" font-weight="700">从失败路径反译新的环境状态、用户指令与智能体约束</text>
+<line x1="1110" y1="785" x2="880" y2="785" stroke="#A7ADB2" stroke-width="2.0" marker-end="url(#ar)"/>
+<line x1="790" y1="785" x2="560" y2="785" stroke="#A7ADB2" stroke-width="2.0" marker-end="url(#ar)"/>
+<rect x="42" y="805" width="1816" height="54" fill="#EFBFBE" stroke="#EFBFBE" stroke-width="0" rx="26"/>
+<text x="950.0" y="841" font-size="25" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">三、第二阶段：带分支的困难工作流与持续训练</text>
+<rect x="48" y="875" width="820" height="250" fill="#FBE5E4" stroke="#EFBFBE" stroke-width="2" rx="16"/>
+<text x="458" y="907" font-size="22" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">困难任务上下文</text>
+<rect x="78" y="935" width="230" height="142" fill="#FFFFFF" stroke="#1D6590" stroke-width="2" rx="12"/>
+<text x="193.0" y="965" font-size="18" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">环境状态增强</text>
+<text x="193.0" y="994" font-size="14" fill="#5E6F7D" text-anchor="middle" font-family="PingFang SC" font-weight="700">多个相似订单</text>
+<text x="193.0" y="1014" font-size="14" fill="#5E6F7D" text-anchor="middle" font-family="PingFang SC" font-weight="700">真实与干扰扣款并存</text>
+<text x="193.0" y="1034" font-size="14" fill="#5E6F7D" text-anchor="middle" font-family="PingFang SC" font-weight="700">工具出现一次性超时</text>
+<rect x="328" y="935" width="230" height="142" fill="#FFFFFF" stroke="#1D6590" stroke-width="2" rx="12"/>
+<text x="443.0" y="965" font-size="18" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">智能体指令增强</text>
+<text x="443.0" y="994" font-size="14" fill="#5E6F7D" text-anchor="middle" font-family="PingFang SC" font-weight="700">相同参数重试</text>
+<text x="443.0" y="1014" font-size="14" fill="#5E6F7D" text-anchor="middle" font-family="PingFang SC" font-weight="700">严格先读后写</text>
+<text x="443.0" y="1034" font-size="14" fill="#5E6F7D" text-anchor="middle" font-family="PingFang SC" font-weight="700">写操作绑定幂等键</text>
+<rect x="578" y="935" width="230" height="142" fill="#FFFFFF" stroke="#1D6590" stroke-width="2" rx="12"/>
+<text x="693.0" y="965" font-size="18" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">用户指令增强</text>
+<text x="693.0" y="994" font-size="14" fill="#5E6F7D" text-anchor="middle" font-family="PingFang SC" font-weight="700">不允许猜测目标</text>
+<text x="693.0" y="1014" font-size="14" fill="#5E6F7D" text-anchor="middle" font-family="PingFang SC" font-weight="700">必须说明精确扣款</text>
+<text x="693.0" y="1034" font-size="14" fill="#5E6F7D" text-anchor="middle" font-family="PingFang SC" font-weight="700">明确确认后才能写入</text>
+<text x="443" y="1108" font-size="14" fill="#7B4FA3" text-anchor="middle" font-family="PingFang SC, sans-serif" font-weight="700">旧任务回放样本与困难任务混合，避免只适配新增分支</text>
+<rect x="900" y="875" width="952" height="250" fill="#FBE5E4" stroke="#EFBFBE" stroke-width="2" rx="16"/>
+<text x="1376" y="907" font-size="22" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">带分支的受约束行为树</text>
+<rect x="930" y="960" width="118" height="52" fill="#E4F1D8" stroke="#2F7D32" stroke-width="2" rx="18"/>
+<text x="989.0" y="993.0" font-size="16" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">身份确认</text>
+<rect x="1100" y="960" width="118" height="52" fill="#E4F1D8" stroke="#2F7D32" stroke-width="2" rx="18"/>
+<text x="1159.0" y="993.0" font-size="16" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">查询客户</text>
+<line x1="1048" y1="986" x2="1096" y2="986" stroke="#2F7D32" stroke-width="2.0" marker-end="url(#ar)"/>
+<rect x="1270" y="930" width="120" height="52" fill="#E4F1D8" stroke="#2F7D32" stroke-width="2" rx="18"/>
+<text x="1330.0" y="963.0" font-size="16" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">查询成功</text>
+<rect x="1270" y="1003" width="120" height="52" fill="#F8ECDC" stroke="#E8CBAA" stroke-width="2" rx="18"/>
+<text x="1330.0" y="1036.0" font-size="16" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">临时超时</text>
+<line x1="1218" y1="986" x2="1265" y2="956" stroke="#2F7D32" stroke-width="2.0" marker-end="url(#ar)"/>
+<line x1="1218" y1="986" x2="1265" y2="1029" stroke="#E8CBAA" stroke-width="2.0" marker-end="url(#ar)"/>
+<rect x="1438" y="1003" width="115" height="52" fill="#E4F1D8" stroke="#2F7D32" stroke-width="2" rx="18"/>
+<text x="1495.5" y="1036.0" font-size="16" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">同参重试</text>
+<line x1="1390" y1="1029" x2="1433" y2="1029" stroke="#2F7D32" stroke-width="2.0" marker-end="url(#ar)"/>
+<line x1="1495" y1="1003" x2="1495" y2="950" stroke="#2F7D32" stroke-width="2.0" marker-end="url(#ar)"/>
+<rect x="1438" y="930" width="118" height="52" fill="#E4F1D8" stroke="#2F7D32" stroke-width="2" rx="18"/>
+<text x="1497.0" y="963.0" font-size="16" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">查询订单</text>
+<line x1="1390" y1="956" x2="1433" y2="956" stroke="#2F7D32" stroke-width="2.0" marker-end="url(#ar)"/>
+<rect x="1605" y="904" width="120" height="52" fill="#E4F1D8" stroke="#2F7D32" stroke-width="2" rx="18"/>
+<text x="1665.0" y="937.0" font-size="16" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">目标订单</text>
+<rect x="1605" y="968" width="120" height="52" fill="#F8ECDC" stroke="#E8CBAA" stroke-width="2" rx="18"/>
+<text x="1665.0" y="1001.0" font-size="16" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">干扰订单</text>
+<line x1="1556" y1="956" x2="1600" y2="930" stroke="#2F7D32" stroke-width="2.0" marker-end="url(#ar)"/>
+<line x1="1556" y1="956" x2="1600" y2="994" stroke="#E8CBAA" stroke-width="2.0" marker-end="url(#ar)"/>
+<rect x="970" y="1070" width="130" height="52" fill="#E4F1D8" stroke="#2F7D32" stroke-width="2" rx="18"/>
+<text x="1035.0" y="1103.0" font-size="16" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">读取支付</text>
+<rect x="1150" y="1070" width="130" height="52" fill="#E4F1D8" stroke="#2F7D32" stroke-width="2" rx="18"/>
+<text x="1215.0" y="1103.0" font-size="16" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">读取政策</text>
+<rect x="1330" y="1070" width="130" height="52" fill="#E4F1D8" stroke="#2F7D32" stroke-width="2" rx="18"/>
+<text x="1395.0" y="1103.0" font-size="16" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">精确确认</text>
+<rect x="1510" y="1070" width="130" height="52" fill="#E4F1D8" stroke="#2F7D32" stroke-width="2" rx="18"/>
+<text x="1575.0" y="1103.0" font-size="16" fill="#102A43" text-anchor="middle" font-family="Songti SC" font-weight="700">幂等退款</text>
+<line x1="1100" y1="1096" x2="1146" y2="1096" stroke="#2F7D32" stroke-width="2.0" marker-end="url(#ar)"/>
+<line x1="1280" y1="1096" x2="1326" y2="1096" stroke="#2F7D32" stroke-width="2.0" marker-end="url(#ar)"/>
+<line x1="1460" y1="1096" x2="1506" y2="1096" stroke="#2F7D32" stroke-width="2.0" marker-end="url(#ar)"/>
+<rect x="1690" y="1070" width="125" height="52" fill="#FCE0DC" stroke="#C62828" stroke-width="2" rx="18"/>
+<text x="1752.5" y="1103.0" font-size="16" fill="#C62828" text-anchor="middle" font-family="Songti SC" font-weight="700">写入被阻断</text>
+<line x1="1725" y1="1020" x2="1752" y2="1065" stroke="#C62828" stroke-width="2.0" marker-end="url(#ar)"/>
+<text x="1738.5" y="1012" font-size="13" fill="#C62828" text-anchor="middle" font-family="PingFang SC" font-style="italic">跳过读取 / 模糊确认</text>
+<line x1="1745" y1="1140" x2="1035" y2="1140" stroke="#17628A" stroke-width="2.0" marker-end="url(#ar)"/>
+<text x="1390.0" y="1132" font-size="13" fill="#17628A" text-anchor="middle" font-family="PingFang SC" font-style="italic">新轨迹回流，进入下一轮失败审计</text>
+<text x="950.0" y="1170" font-size="16" fill="#5E6F7D" text-anchor="middle" font-family="PingFang SC, sans-serif" font-weight="700">训练 → 轨迹审计 → 失败标签 → 定向合成 → 再训练；数据难度沿真实能力边界逐轮扩展</text>
+</svg>
