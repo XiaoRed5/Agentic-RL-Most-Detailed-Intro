@@ -1,0 +1,24 @@
+{
+  "model_path": "../../work/models/Qwen3-8B-MLX-4bit",
+  "dataset_path": "../../work/data/agenticqwen/agenticqwen_synthetic_data.parquet",
+  "seed": 260421590,
+  "task_count": 16,
+  "train_task_count": 12,
+  "policy_chars": 2600,
+  "max_prompt_tokens": 768,
+  "lora_num_layers": 2,
+  "lora_rank": 4,
+  "lora_scale": 8.0,
+  "lora_keys": [
+    "self_attn.q_proj",
+    "self_attn.v_proj"
+  ],
+  "gradient_checkpointing": true,
+  "learning_rate": 0.00005,
+  "training_repeats": 2,
+  "group_size": 16,
+  "ppo_epochs": 2,
+  "rollout_temperature": 2.0,
+  "clip_epsilon": 0.2,
+  "entropy_beta": 0.002
+}

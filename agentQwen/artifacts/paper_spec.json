@@ -1,0 +1,22 @@
+{
+  "paper_claims": [
+    "reasoning RL uses final-answer verifiability",
+    "agentic RL uses rubric-completion reward in [0,1]",
+    "linear workflows are expanded into behavior trees",
+    "branch-to-task inversion turns a chosen branch into state, user and agent instructions",
+    "adversarial users push the policy toward an incorrect branch",
+    "paper reports about 100K training samples and three flywheel rounds"
+  ],
+  "local_mapping": {
+    "mock environment": "deterministic airline state machine",
+    "behavior tree": "available / sold-out / delayed membership branches",
+    "rubric reward": "five executable subgoals",
+    "GRPO": "group-normalized reward policy gradient on a transparent smoke policy",
+    "policy inference": "Qwen3-8B 4-bit via MLX, no cloud endpoint"
+  },
+  "non_equivalences": [
+    "the smoke policy is not a language model",
+    "Qwen3-8B is used for inference, not locally RL-trained",
+    "the local task suite is diagnostic and not TAU-2/BFCL-V4"
+  ]
+}

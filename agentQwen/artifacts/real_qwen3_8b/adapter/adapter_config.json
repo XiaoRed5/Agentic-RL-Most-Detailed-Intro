@@ -1,0 +1,14 @@
+{
+  "fine_tune_type": "lora",
+  "num_layers": 2,
+  "lora_parameters": {
+    "rank": 4,
+    "scale": 8.0,
+    "dropout": 0.0,
+    "keys": [
+      "self_attn.q_proj",
+      "self_attn.v_proj"
+    ]
+  },
+  "training_algorithm": "action-masked LoRA-GRPO"
+}

@@ -1,0 +1,116 @@
+{
+  "schema_version": "1.0",
+  "created_at": "2026-08-02T08:15:11.114671+00:00",
+  "paper": {
+    "arxiv_id": "2604.21590",
+    "title": "AgenticQwen: Training Small Agentic Language Models with Dual Data Flywheels for Industrial-Scale Tool Use",
+    "paper_url": "https://arxiv.org/abs/2604.21590",
+    "official_code": "https://github.com/haruhi-sudo/data_synth_and_rl"
+  },
+  "reproduction_claim": {
+    "target": "AgenticQwen agentic data flywheel and agentic tool-use behavior",
+    "local_scope": "structural smoke RL plus real Qwen3-8B inference",
+    "excluded": "paper-scale 8B/30B RL training and benchmark-number replication"
+  },
+  "dag": [
+    {
+      "id": "P0",
+      "owner": "planner",
+      "task": "Lock paper identity, method components, evidence levels and gates",
+      "depends_on": [],
+      "outputs": [
+        "artifacts/plan.json",
+        "artifacts/paper_spec.json"
+      ],
+      "acceptance": [
+        "arXiv ID is 2604.21590",
+        "claim boundary is explicit"
+      ]
+    },
+    {
+      "id": "E1",
+      "owner": "executor",
+      "task": "Generate executable linear, branch and adversarial airline tasks",
+      "depends_on": [
+        "P0"
+      ],
+      "outputs": [
+        "artifacts/tasks.jsonl"
+      ],
+      "acceptance": [
+        "levels 0, 1 and 2 present",
+        "each task has a verifiable target action"
+      ]
+    },
+    {
+      "id": "E2",
+      "owner": "executor",
+      "task": "Run multi-round GRPO-style smoke policy optimization",
+      "depends_on": [
+        "E1"
+      ],
+      "outputs": [
+        "artifacts/metrics.json",
+        "artifacts/smoke_policy.json"
+      ],
+      "acceptance": [
+        "reward in [0,1]",
+        "fixed seed",
+        "round metrics recorded"
+      ]
+    },
+    {
+      "id": "E3",
+      "owner": "executor",
+      "task": "Run local Qwen3-8B tool-use rollouts through MLX",
+      "depends_on": [
+        "E1"
+      ],
+      "outputs": [
+        "artifacts/qwen3_8b_inference.json"
+      ],
+      "acceptance": [
+        "actual model identifier recorded",
+        "raw outputs and tool events retained"
+      ]
+    },
+    {
+      "id": "V1",
+      "owner": "verifier",
+      "task": "Audit artifacts, determinism, reward semantics, inference provenance and gates",
+      "depends_on": [
+        "E2",
+        "E3"
+      ],
+      "outputs": [
+        "artifacts/verification.json"
+      ],
+      "acceptance": [
+        "no hidden cloud fallback",
+        "all hard gates pass"
+      ]
+    },
+    {
+      "id": "R1",
+      "owner": "reporter",
+      "task": "Build evidence-linked HTML report and presentation",
+      "depends_on": [
+        "V1"
+      ],
+      "outputs": [
+        "agenticqwen_report/index.html",
+        "slides/AgenticQwen_reproduction.pptx"
+      ],
+      "acceptance": [
+        "paper results and local results are visually separated",
+        "sources traceable"
+      ]
+    }
+  ],
+  "runtime": {
+    "seed": 20260802,
+    "rounds": 3,
+    "group_size": 12,
+    "max_steps": 6
+  }
+}

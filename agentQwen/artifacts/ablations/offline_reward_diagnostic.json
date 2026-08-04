@@ -1,0 +1,4525 @@
+{
+  "status": "OFFLINE_COUNTERFACTUAL_DIAGNOSTIC",
+  "paper_comparable": false,
+  "group_count": 24,
+  "process_reward_weight": 0.3,
+  "outcome_nonzero_variance_groups": 4,
+  "shaped_nonzero_variance_groups": 4,
+  "newly_activated_groups": 0,
+  "outcome_zero_variance_rate": 0.8333333333333334,
+  "shaped_zero_variance_rate": 0.8333333333333334,
+  "interpretation": "Re-scores previously sampled actions only. It does not update the model and must not be reported as an ablation accuracy result.",
+  "rules": [
+    {
+      "rule": "P1_placeholder_argument",
+      "value": -0.05,
+      "fired": false
+    },
+    {
+      "rule": "P2_redundant_tool",
+      "value": -0.03,
+      "fired": false
+    },
+    {
+      "rule": "P3_tool_error",
+      "value": -0.04,
+      "fired": false
+    },
+    {
+      "rule": "P4_repeated_error",
+      "value": -0.06,
+      "fired": false
+    },
+    {
+      "rule": "P5_malformed_schema",
+      "value": -0.08,
+      "fired": false
+    },
+    {
+      "rule": "P6_unsafe_action",
+      "value": -0.15,
+      "fired": false
+    },
+    {
+      "rule": "P7_skipped_required_read",
+      "value": -0.08,
+      "fired": false
+    },
+    {
+      "rule": "P8_excessive_tools",
+      "value": -0.02,
+      "fired": false
+    },
+    {
+      "rule": "B1_error_recovery",
+      "value": 0.05,
+      "fired": false
+    },
+    {
+      "rule": "B2_data_dependency",
+      "value": 0.08,
+      "fired": false
+    },
+    {
+      "rule": "B3_distinct_read",
+      "value": 0.02,
+      "fired": false
+    },
+    {
+      "rule": "B4_valid_schema",
+      "value": 0.02,
+      "fired": true
+    },
+    {
+      "rule": "B5_policy_confirmation",
+      "value": 0.03,
+      "fired": false
+    },
+    {
+      "rule": "B6_bounded_reasoning",
+      "value": 0.03,
+      "fired": false
+    },
+    {
+      "rule": "B7_task_completion",
+      "value": 0.12,
+      "fired": false
+    }
+  ],
+  "groups": [
+    {
+      "task_id": "40282350-b4c4-4846-bedd-a7dc8f042be3-2718",
+      "outcome_variance": 0.0,
+      "shaped_variance": 0.0,
+      "outcome_rewards": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "shaped_rewards": [
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039
+      ],
+      "process_rows": [
+        {
+          "action": "get_paper_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_paper_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_paper_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_paper_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_paper_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_paper_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_paper_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_paper_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_paper_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_paper_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_paper_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_paper_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_paper_metadata",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_paper_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_paper_metadata",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_paper_metadata",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "2ebdae94-f7d6-4e5b-a087-e0b930db94d8-3625",
+      "outcome_variance": 0.0,
+      "shaped_variance": 0.0,
+      "outcome_rewards": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "shaped_rewards": [
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006
+      ],
+      "process_rows": [
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "e47157bd-3adc-4927-a85e-e4fcb69b4b69-4770",
+      "outcome_variance": 0.0,
+      "shaped_variance": 0.0,
+      "outcome_rewards": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "shaped_rewards": [
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006
+      ],
+      "process_rows": [
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "reverse_payment",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "5ca4ccea-c435-40d3-9b9b-f76b6d07b214-3954",
+      "outcome_variance": 0.15234375,
+      "shaped_variance": 0.1635099375,
+      "outcome_rewards": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "shaped_rewards": [
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        1.042,
+        0.006,
+        0.006,
+        0.006,
+        1.042,
+        0.006,
+        0.006,
+        0.006,
+        1.042,
+        0.006,
+        0.006,
+        0.006
+      ],
+      "process_rows": [
+        {
+          "action": "ask_user_for_missing_information",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "add_to_quarantine_registry",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "add_to_quarantine_registry",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "ask_user_for_missing_information",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "query_quarantine_status",
+          "outcome": 1.0,
+          "process_score": 0.13999999999999999,
+          "fired_rules": [
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "ask_user_for_missing_information",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "ask_user_for_missing_information",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "add_to_quarantine_registry",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "query_quarantine_status",
+          "outcome": 1.0,
+          "process_score": 0.13999999999999999,
+          "fired_rules": [
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "ask_user_for_missing_information",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "ask_user_for_missing_information",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "add_to_quarantine_registry",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "query_quarantine_status",
+          "outcome": 1.0,
+          "process_score": 0.13999999999999999,
+          "fired_rules": [
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "add_to_quarantine_registry",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "add_to_quarantine_registry",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "add_to_quarantine_registry",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "92112a84-41cf-4234-865a-57e9412e0697-1988",
+      "outcome_variance": 0.0,
+      "shaped_variance": 0.0,
+      "outcome_rewards": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "shaped_rewards": [
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039
+      ],
+      "process_rows": [
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "6645b5db-c71c-4db1-9248-d9609681ed23-4487",
+      "outcome_variance": 0.0,
+      "shaped_variance": 0.0,
+      "outcome_rewards": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "shaped_rewards": [
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006
+      ],
+      "process_rows": [
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "cbbfb044-da2a-4cea-b407-271ceb74087c-4178",
+      "outcome_variance": 0.0,
+      "shaped_variance": 0.0,
+      "outcome_rewards": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "shaped_rewards": [
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997
+      ],
+      "process_rows": [
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "81d7c6ef-76d8-459b-8164-451aa4c1649e-4317",
+      "outcome_variance": 0.0,
+      "shaped_variance": 0.0,
+      "outcome_rewards": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "shaped_rewards": [
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997
+      ],
+      "process_rows": [
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "36dabca8-4176-46f3-a363-f8925c9f73e7-2798",
+      "outcome_variance": 0.05859375,
+      "shaped_variance": 0.0628884375,
+      "outcome_rewards": [
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "shaped_rewards": [
+        0.997,
+        0.997,
+        -0.039,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997
+      ],
+      "process_rows": [
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "enroll_participant",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "47517a69-9819-46c5-97f4-7a8ff775d374-1532",
+      "outcome_variance": 0.0,
+      "shaped_variance": 0.0,
+      "outcome_rewards": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "shaped_rewards": [
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039
+      ],
+      "process_rows": [
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "write_book_recommendation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "b3e43546-4e43-4e9d-864c-fbf0d719af48-3477",
+      "outcome_variance": 0.0,
+      "shaped_variance": 0.0,
+      "outcome_rewards": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "shaped_rewards": [
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006
+      ],
+      "process_rows": [
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "58abe0c8-c22c-4ab8-9479-4f5342fa79ef-477",
+      "outcome_variance": 0.0,
+      "shaped_variance": 0.0,
+      "outcome_rewards": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "shaped_rewards": [
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039
+      ],
+      "process_rows": [
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "6645b5db-c71c-4db1-9248-d9609681ed23-4487",
+      "outcome_variance": 0.0,
+      "shaped_variance": 0.0,
+      "outcome_rewards": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "shaped_rewards": [
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006
+      ],
+      "process_rows": [
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_approved_organizations",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "b3e43546-4e43-4e9d-864c-fbf0d719af48-3477",
+      "outcome_variance": 0.0,
+      "shaped_variance": 0.0,
+      "outcome_rewards": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "shaped_rewards": [
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006
+      ],
+      "process_rows": [
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "check_transfer_eligibility",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "40282350-b4c4-4846-bedd-a7dc8f042be3-2718",
+      "outcome_variance": 0.0,
+      "shaped_variance": 0.0,
+      "outcome_rewards": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "shaped_rewards": [
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039
+      ],
+      "process_rows": [
+        {
+          "action": "update_paper_metadata",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_paper_metadata",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_paper_metadata",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_paper_metadata",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_paper_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_paper_metadata",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_paper_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_paper_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_paper_metadata",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "get_paper_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_paper_metadata",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_paper_metadata",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_paper_metadata",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_paper_metadata",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_paper_metadata",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_paper_metadata",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "cbbfb044-da2a-4cea-b407-271ceb74087c-4178",
+      "outcome_variance": 0.0,
+      "shaped_variance": 0.0,
+      "outcome_rewards": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "shaped_rewards": [
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997
+      ],
+      "process_rows": [
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_applicant_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "47517a69-9819-46c5-97f4-7a8ff775d374-1532",
+      "outcome_variance": 0.0,
+      "shaped_variance": 0.0,
+      "outcome_rewards": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "shaped_rewards": [
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039
+      ],
+      "process_rows": [
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_reading_status",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "36dabca8-4176-46f3-a363-f8925c9f73e7-2798",
+      "outcome_variance": 0.05859375,
+      "shaped_variance": 0.0628884375,
+      "outcome_rewards": [
+        1.0,
+        0.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "shaped_rewards": [
+        0.997,
+        -0.039,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997
+      ],
+      "process_rows": [
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "enroll_participant",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_participant_status",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "92112a84-41cf-4234-865a-57e9412e0697-1988",
+      "outcome_variance": 0.0,
+      "shaped_variance": 0.0,
+      "outcome_rewards": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "shaped_rewards": [
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039
+      ],
+      "process_rows": [
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "update_subsidy_claim",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "e47157bd-3adc-4927-a85e-e4fcb69b4b69-4770",
+      "outcome_variance": 0.0,
+      "shaped_variance": 0.0,
+      "outcome_rewards": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "shaped_rewards": [
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006
+      ],
+      "process_rows": [
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "reverse_payment",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "flag_suspicious_transaction",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "58abe0c8-c22c-4ab8-9479-4f5342fa79ef-477",
+      "outcome_variance": 0.0,
+      "shaped_variance": 0.0,
+      "outcome_rewards": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "shaped_rewards": [
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039,
+        -0.039
+      ],
+      "process_rows": [
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "modify_hike_reservation",
+          "outcome": 0.0,
+          "process_score": -0.13,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "81d7c6ef-76d8-459b-8164-451aa4c1649e-4317",
+      "outcome_variance": 0.0,
+      "shaped_variance": 0.0,
+      "outcome_rewards": [
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0,
+        1.0
+      ],
+      "shaped_rewards": [
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997,
+        0.997
+      ],
+      "process_rows": [
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_patient_eligibility",
+          "outcome": 1.0,
+          "process_score": -0.009999999999999998,
+          "fired_rules": [
+            "P6_unsafe_action",
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "2ebdae94-f7d6-4e5b-a087-e0b930db94d8-3625",
+      "outcome_variance": 0.0,
+      "shaped_variance": 0.0,
+      "outcome_rewards": [
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0,
+        0.0
+      ],
+      "shaped_rewards": [
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006,
+        0.006
+      ],
+      "process_rows": [
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "delete_strategy_config",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        }
+      ]
+    },
+    {
+      "task_id": "5ca4ccea-c435-40d3-9b9b-f76b6d07b214-3954",
+      "outcome_variance": 0.24609375,
+      "shaped_variance": 0.2641314375,
+      "outcome_rewards": [
+        1.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        0.0,
+        0.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        1.0,
+        1.0,
+        0.0,
+        1.0,
+        0.0
+      ],
+      "shaped_rewards": [
+        1.042,
+        0.006,
+        1.042,
+        1.042,
+        0.006,
+        0.006,
+        0.006,
+        1.042,
+        1.042,
+        0.006,
+        1.042,
+        1.042,
+        1.042,
+        0.006,
+        1.042,
+        0.006
+      ],
+      "process_rows": [
+        {
+          "action": "query_quarantine_status",
+          "outcome": 1.0,
+          "process_score": 0.13999999999999999,
+          "fired_rules": [
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "ask_user_for_missing_information",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "query_quarantine_status",
+          "outcome": 1.0,
+          "process_score": 0.13999999999999999,
+          "fired_rules": [
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_quarantine_status",
+          "outcome": 1.0,
+          "process_score": 0.13999999999999999,
+          "fired_rules": [
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "add_to_quarantine_registry",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "ask_user_for_missing_information",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "ask_user_for_missing_information",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "query_quarantine_status",
+          "outcome": 1.0,
+          "process_score": 0.13999999999999999,
+          "fired_rules": [
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_quarantine_status",
+          "outcome": 1.0,
+          "process_score": 0.13999999999999999,
+          "fired_rules": [
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "add_to_quarantine_registry",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "query_quarantine_status",
+          "outcome": 1.0,
+          "process_score": 0.13999999999999999,
+          "fired_rules": [
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_quarantine_status",
+          "outcome": 1.0,
+          "process_score": 0.13999999999999999,
+          "fired_rules": [
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "query_quarantine_status",
+          "outcome": 1.0,
+          "process_score": 0.13999999999999999,
+          "fired_rules": [
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "add_to_quarantine_registry",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        },
+        {
+          "action": "query_quarantine_status",
+          "outcome": 1.0,
+          "process_score": 0.13999999999999999,
+          "fired_rules": [
+            "B4_valid_schema",
+            "B7_task_completion"
+          ]
+        },
+        {
+          "action": "ask_user_for_missing_information",
+          "outcome": 0.0,
+          "process_score": 0.02,
+          "fired_rules": [
+            "B4_valid_schema"
+          ]
+        }
+      ]
+    }
+  ]
+}

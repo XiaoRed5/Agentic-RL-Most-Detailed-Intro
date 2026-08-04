@@ -1,0 +1,19 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "agenticqwen-repro"
+version = "0.1.0"
+description = "Auditable plan-execute-verify reproduction of the AgenticQwen data flywheel"
+requires-python = ">=3.10"
+dependencies = []
+
+[project.optional-dependencies]
+dashscope = ["dashscope>=1.24.5"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]

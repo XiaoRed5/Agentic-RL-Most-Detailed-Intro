@@ -1,0 +1,128 @@
+{
+  "checks": [
+    {
+      "detail": "/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2/stage1/adapter",
+      "name": "stage1 adapter exists",
+      "status": "PASS"
+    },
+    {
+      "detail": "/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2/stage2/adapter",
+      "name": "stage2 adapter exists",
+      "status": "PASS"
+    },
+    {
+      "detail": "stage1=7d3c6d223209f26f26e39004c46afac8e6f123ed30992f8a97bc56f7c275bee0; stage2=920f76c8c0f35d8976ddf4a24ac77ae4fbcc5cd793ac942865942b01d9149c4d",
+      "name": "stage2 adapter differs from stage1",
+      "status": "PASS"
+    },
+    {
+      "detail": "stage1=True; stage2=True",
+      "name": "both GRPO stages changed trainable parameters",
+      "status": "PASS"
+    },
+    {
+      "detail": "stage1_std=0.5267711867027023; stage2_std=0.2673004453755907",
+      "name": "training reward variance observed",
+      "status": "PASS"
+    },
+    {
+      "detail": "overlap=[]",
+      "name": "final holdout isolation",
+      "status": "PASS"
+    },
+    {
+      "detail": "deterministic_failure_driven_curriculum",
+      "name": "failure-driven synthesis has provenance",
+      "status": "PASS"
+    },
+    {
+      "detail": "7d3c6d223209f26f26e39004c46afac8e6f123ed30992f8a97bc56f7c275bee0",
+      "name": "stage2 consumed stage1 adapter",
+      "status": "PASS"
+    },
+    {
+      "detail": "stage1=12/12; stage2=12/12",
+      "name": "all planned optimizer steps completed",
+      "status": "PASS"
+    },
+    {
+      "detail": "stage1_probe=4; stage2_holdout=6",
+      "name": "evaluation traces contain complete episode sets",
+      "status": "PASS"
+    },
+    {
+      "detail": "episodes=6; success_rate=1.0; parent_pid=5643; child_pid=6913",
+      "name": "fresh-process adapter replay",
+      "status": "PASS"
+    }
+  ],
+  "fresh_replay": {
+    "command": [
+      "/root/autodl-tmp/venvs/agenticqwen-qwen3-8b-qlora-v2/bin/python",
+      "-m",
+      "agentic_repro.curriculum_train",
+      "--config",
+      "/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2/resolved_config.json",
+      "--output-root",
+      "/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2",
+      "--mode",
+      "evaluate",
+      "--adapter-dir",
+      "/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2/stage2/adapter",
+      "--tasks-path",
+      "/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2/tasks/final_holdout.jsonl",
+      "--eval-output-dir",
+      "/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2/fresh_replay",
+      "--label",
+      "fresh_replay"
+    ],
+    "episodes": 6,
+    "failure_counts": {},
+    "label": "fresh_replay",
+    "log": "/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2/fresh_replay/process.log",
+    "mean_reward": 1.2504506666666666,
+    "metrics": {
+      "epoch": 0,
+      "eval_clip_ratio/high_max": 0.0,
+      "eval_clip_ratio/high_mean": 0.0,
+      "eval_clip_ratio/low_mean": 0.0,
+      "eval_clip_ratio/low_min": 0.0,
+      "eval_clip_ratio/region_mean": 0.0,
+      "eval_completions/clipped_ratio": 0.0,
+      "eval_completions/max_length": 344.8333333333333,
+      "eval_completions/max_terminated_length": 344.8333333333333,
+      "eval_completions/mean_length": 344.8333333333333,
+      "eval_completions/mean_terminated_length": 344.8333333333333,
+      "eval_completions/min_length": 344.8333333333333,
+      "eval_completions/min_terminated_length": 344.8333333333333,
+      "eval_entropy": 0.03156356979161501,
+      "eval_frac_reward_zero_std": 1.0,
+      "eval_kl": 0.0,
+      "eval_num_tokens": 0.0,
+      "eval_reward": 1.2504507899284363,
+      "eval_reward_std": null,
+      "eval_rewards/StatefulRefundEnvironment/mean": 1.2504507899284363,
+      "eval_rewards/StatefulRefundEnvironment/std": null,
+      "eval_tools/call_frequency": 7.5,
+      "eval_tools/failure_frequency": 0.0,
+      "fresh_replay_loss": 0.0,
+      "fresh_replay_model_preparation_time": 0.0216,
+      "fresh_replay_runtime": 118.5697,
+      "fresh_replay_samples_per_second": 0.051,
+      "fresh_replay_steps_per_second": 0.051
+    },
+    "process": {
+      "is_fresh_process": true,
+      "parent_pid": 5643,
+      "pid": 6913,
+      "python": "/root/autodl-tmp/venvs/agenticqwen-qwen3-8b-qlora-v2/bin/python"
+    },
+    "reward_std": 0.011198107588139909,
+    "success_rate": 1.0,
+    "successes": 6,
+    "trace": "/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2/fresh_replay/traces.jsonl",
+    "unique_reward_count": 5
+  },
+  "overall_status": "PASS",
+  "schema_version": 1
+}

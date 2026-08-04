@@ -1,0 +1,157 @@
+{
+  "algorithm": "group-relative policy gradient smoke reproduction",
+  "claim_level": "structural/algorithmic smoke test; not 8B RL training",
+  "seed": 20260802,
+  "baseline": {
+    "overall": {
+      "mean_reward": 0.533333,
+      "success_rate": 0.0,
+      "safety_rate": 1.0,
+      "mean_steps": 6.0
+    },
+    "by_level": {
+      "0": {
+        "mean_reward": 0.6,
+        "success_rate": 0.0,
+        "safety_rate": 1.0,
+        "mean_steps": 6.0
+      },
+      "1": {
+        "mean_reward": 0.4,
+        "success_rate": 0.0,
+        "safety_rate": 1.0,
+        "mean_steps": 6.0
+      },
+      "2": {
+        "mean_reward": 0.6,
+        "success_rate": 0.0,
+        "safety_rate": 1.0,
+        "mean_steps": 6.0
+      }
+    }
+  },
+  "rounds": [
+    {
+      "round": 1,
+      "train_levels": [
+        0
+      ],
+      "mean_reward": 0.466667,
+      "success_rate": 0.333333,
+      "safety_rate": 0.333333,
+      "by_level": {
+        "0": {
+          "mean_reward": 1.0,
+          "success_rate": 1.0,
+          "safety_rate": 1.0,
+          "mean_steps": 3.0
+        },
+        "1": {
+          "mean_reward": 0.2,
+          "success_rate": 0.0,
+          "safety_rate": 0.0,
+          "mean_steps": 6.0
+        },
+        "2": {
+          "mean_reward": 0.2,
+          "success_rate": 0.0,
+          "safety_rate": 0.0,
+          "mean_steps": 6.0
+        }
+      },
+      "train_mean_reward": 0.995933
+    },
+    {
+      "round": 2,
+      "train_levels": [
+        0,
+        1
+      ],
+      "mean_reward": 0.666667,
+      "success_rate": 0.333333,
+      "safety_rate": 1.0,
+      "by_level": {
+        "0": {
+          "mean_reward": 1.0,
+          "success_rate": 1.0,
+          "safety_rate": 1.0,
+          "mean_steps": 3.0
+        },
+        "1": {
+          "mean_reward": 0.6,
+          "success_rate": 0.0,
+          "safety_rate": 1.0,
+          "mean_steps": 6.0
+        },
+        "2": {
+          "mean_reward": 0.4,
+          "success_rate": 0.0,
+          "safety_rate": 1.0,
+          "mean_steps": 6.0
+        }
+      },
+      "train_mean_reward": 0.7853
+    },
+    {
+      "round": 3,
+      "train_levels": [
+        0,
+        1,
+        2
+      ],
+      "mean_reward": 1.0,
+      "success_rate": 1.0,
+      "safety_rate": 1.0,
+      "by_level": {
+        "0": {
+          "mean_reward": 1.0,
+          "success_rate": 1.0,
+          "safety_rate": 1.0,
+          "mean_steps": 3.0
+        },
+        "1": {
+          "mean_reward": 1.0,
+          "success_rate": 1.0,
+          "safety_rate": 1.0,
+          "mean_steps": 4.0
+        },
+        "2": {
+          "mean_reward": 1.0,
+          "success_rate": 1.0,
+          "safety_rate": 1.0,
+          "mean_steps": 4.0
+        }
+      },
+      "train_mean_reward": 0.878433
+    }
+  ],
+  "final": {
+    "overall": {
+      "mean_reward": 1.0,
+      "success_rate": 1.0,
+      "safety_rate": 1.0,
+      "mean_steps": 3.666667
+    },
+    "by_level": {
+      "0": {
+        "mean_reward": 1.0,
+        "success_rate": 1.0,
+        "safety_rate": 1.0,
+        "mean_steps": 3.0
+      },
+      "1": {
+        "mean_reward": 1.0,
+        "success_rate": 1.0,
+        "safety_rate": 1.0,
+        "mean_steps": 4.0
+      },
+      "2": {
+        "mean_reward": 1.0,
+        "success_rate": 1.0,
+        "safety_rate": 1.0,
+        "mean_steps": 4.0
+      }
+    }
+  },
+  "eval_task_count": 72
+}

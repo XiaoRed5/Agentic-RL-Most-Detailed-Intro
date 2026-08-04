@@ -1,0 +1,51 @@
+{
+  "schema_version": 1,
+  "seeds": [42, 43, 44],
+  "checkpoints": [50, 100, 150, 200, 250, 300],
+  "primary_metric": "generalization_pass_at_1",
+  "secondary_metrics": [
+    "overall_pass_at_1",
+    "zero_variance_group_rate",
+    "tool_error_rate",
+    "median_reasoning_tokens_per_turn"
+  ],
+  "experiments": [
+    {
+      "name": "vanilla",
+      "process_reward_weight": 0.0,
+      "credit_assignment": "linear",
+      "turn_discount_alpha": null,
+      "hypothesis": "Binary outcome reward and A/L expose group saturation and length dilution."
+    },
+    {
+      "name": "turn_discount",
+      "process_reward_weight": 0.0,
+      "credit_assignment": "turn_discount",
+      "turn_discount_alpha": 1.05,
+      "hypothesis": "Earlier turns retain more credit and late-stage guessing is suppressed."
+    },
+    {
+      "name": "prm_lite",
+      "process_reward_weight": 0.3,
+      "credit_assignment": "linear",
+      "turn_discount_alpha": null,
+      "hypothesis": "Dense rule rewards reduce all-zero/all-one groups but may be diluted by A/L."
+    },
+    {
+      "name": "lata",
+      "process_reward_weight": 0.0,
+      "credit_assignment": "sqrt_length",
+      "turn_discount_alpha": null,
+      "hypothesis": "A/sqrt(L) preserves learning signal for long reasoning turns."
+    },
+    {
+      "name": "joint",
+      "process_reward_weight": 0.3,
+      "credit_assignment": "sqrt_length",
+      "turn_discount_alpha": null,
+      "hypothesis": "PRM-Lite supplies local signal and LATA transmits it without linear dilution."
+    }
+  ],
+  "execution_status": "CODE_READY_NOT_RUN",
+  "execution_note": "The pure reward and credit-assignment kernels are tested. A paper-comparable training matrix requires unrestricted multi-turn trajectories; the current four-way one-token run cannot validate LATA."
+}

@@ -1,0 +1,18 @@
+{
+  "overall_status": "PASS",
+  "checks": [
+    {"name": "stage1 adapter exists", "status": "PASS", "detail": "fixture"},
+    {"name": "stage2 adapter exists", "status": "PASS", "detail": "fixture"},
+    {"name": "stage2 adapter differs from stage1", "status": "PASS", "detail": "fixture"},
+    {"name": "final holdout isolation", "status": "PASS", "detail": "fixture"},
+    {"name": "failure-driven synthesis has provenance", "status": "PASS", "detail": "fixture"},
+    {"name": "stage2 consumed stage1 adapter", "status": "PASS", "detail": "fixture"},
+    {"name": "all planned optimizer steps completed", "status": "PASS", "detail": "fixture"},
+    {"name": "fresh-process adapter replay", "status": "PASS", "detail": "fixture"}
+  ],
+  "fresh_replay": {
+    "episodes": 6,
+    "success_rate": 0.6667,
+    "process": {"pid": 22222, "parent_pid": 11111, "is_fresh_process": true}
+  }
+}

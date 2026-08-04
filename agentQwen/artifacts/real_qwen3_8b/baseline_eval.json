@@ -1,0 +1,676 @@
+{
+  "train": {
+    "split": "train",
+    "prompt_variant": "train",
+    "task_count": 12,
+    "accuracy": 0.25,
+    "mean_correct_action_probability": 0.26775895083333334,
+    "elapsed_seconds": 68.6298,
+    "rows": [
+      {
+        "task_id": "2ebdae94-f7d6-4e5b-a087-e0b930db94d8-3625",
+        "prompt_sha256": "497f0a288905b06cd4567a4d46659d4e6be2cbc0517943d656d9e678f573e298",
+        "prompt_tokens": 531,
+        "candidates": [
+          "get_strategy_config",
+          "delete_strategy_config",
+          "ask_user_for_missing_information",
+          "refuse_request"
+        ],
+        "correct_index": 0,
+        "correct_action": "get_strategy_config",
+        "predicted_index": 1,
+        "predicted_action": "delete_strategy_config",
+        "correct": false,
+        "action_probabilities": [
+          1.76e-06,
+          0.99987411,
+          7e-08,
+          0.00012339
+        ],
+        "correct_action_probability": 1.76e-06
+      },
+      {
+        "task_id": "58abe0c8-c22c-4ab8-9479-4f5342fa79ef-477",
+        "prompt_sha256": "a6cb156658ea09679f989fb9788d3d19a8ec60d3a6525ee1002ee2fff370d12f",
+        "prompt_tokens": 600,
+        "candidates": [
+          "book_hike_reservation",
+          "query_hike_availability",
+          "modify_hike_reservation",
+          "notify_partner_service"
+        ],
+        "correct_index": 1,
+        "correct_action": "query_hike_availability",
+        "predicted_index": 2,
+        "predicted_action": "modify_hike_reservation",
+        "correct": false,
+        "action_probabilities": [
+          7.89e-06,
+          1.013e-05,
+          0.99998093,
+          3.1e-07
+        ],
+        "correct_action_probability": 1.013e-05
+      },
+      {
+        "task_id": "92112a84-41cf-4234-865a-57e9412e0697-1988",
+        "prompt_sha256": "2b2bf43f7837d71f6801ca78a2183d57c5051591ed158c09630e584b03d952bb",
+        "prompt_tokens": 571,
+        "candidates": [
+          "submit_subsidy_claim",
+          "update_subsidy_claim",
+          "check_farm_eligibility",
+          "log_action"
+        ],
+        "correct_index": 2,
+        "correct_action": "check_farm_eligibility",
+        "predicted_index": 1,
+        "predicted_action": "update_subsidy_claim",
+        "correct": false,
+        "action_probabilities": [
+          0.00042876,
+          0.99540621,
+          0.004068,
+          9.567e-05
+        ],
+        "correct_action_probability": 0.004068
+      },
+      {
+        "task_id": "36dabca8-4176-46f3-a363-f8925c9f73e7-2798",
+        "prompt_sha256": "f1c9ccf5b8056c8230259a259ad9f31cf27788f24055e61b5d161300fb8859a8",
+        "prompt_tokens": 579,
+        "candidates": [
+          "enroll_participant",
+          "ask_user_for_missing_information",
+          "refuse_request",
+          "query_participant_status"
+        ],
+        "correct_index": 3,
+        "correct_action": "query_participant_status",
+        "predicted_index": 3,
+        "predicted_action": "query_participant_status",
+        "correct": true,
+        "action_probabilities": [
+          0.06008652,
+          1.65e-06,
+          6.1e-07,
+          0.93991131
+        ],
+        "correct_action_probability": 0.93991131
+      },
+      {
+        "task_id": "81d7c6ef-76d8-459b-8164-451aa4c1649e-4317",
+        "prompt_sha256": "8625eb62de15f503057f27733ef0b780e51a26a9b2400fd7b3b6368efe485f5d",
+        "prompt_tokens": 533,
+        "candidates": [
+          "query_patient_eligibility",
+          "create_patient_profile",
+          "schedule_cryotherapy_sessions",
+          "log_informed_consent"
+        ],
+        "correct_index": 0,
+        "correct_action": "query_patient_eligibility",
+        "predicted_index": 0,
+        "predicted_action": "query_patient_eligibility",
+        "correct": true,
+        "action_probabilities": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "correct_action_probability": 1.0
+      },
+      {
+        "task_id": "6645b5db-c71c-4db1-9248-d9609681ed23-4487",
+        "prompt_sha256": "51ec890ef79a0686419a79003101b97143f92f38a1d2809da380e1e780608236",
+        "prompt_tokens": 576,
+        "candidates": [
+          "get_approved_organizations",
+          "get_inventory",
+          "record_donation",
+          "ask_user_for_missing_information"
+        ],
+        "correct_index": 1,
+        "correct_action": "get_inventory",
+        "predicted_index": 0,
+        "predicted_action": "get_approved_organizations",
+        "correct": false,
+        "action_probabilities": [
+          0.99999613,
+          1.37e-06,
+          0.0,
+          8.3e-07
+        ],
+        "correct_action_probability": 1.37e-06
+      },
+      {
+        "task_id": "40282350-b4c4-4846-bedd-a7dc8f042be3-2718",
+        "prompt_sha256": "9da9f89ed9856189526e9ea26c1969527199badd2a1f5f21a9817aabb79ef50e",
+        "prompt_tokens": 600,
+        "candidates": [
+          "get_paper_status",
+          "update_paper_metadata",
+          "check_author_eligibility",
+          "ask_user_for_missing_information"
+        ],
+        "correct_index": 2,
+        "correct_action": "check_author_eligibility",
+        "predicted_index": 1,
+        "predicted_action": "update_paper_metadata",
+        "correct": false,
+        "action_probabilities": [
+          0.4376483,
+          0.56195152,
+          0.00039908,
+          3.6e-07
+        ],
+        "correct_action_probability": 0.00039908
+      },
+      {
+        "task_id": "b3e43546-4e43-4e9d-864c-fbf0d719af48-3477",
+        "prompt_sha256": "8347c5e71c34b4fbc6d6065a8f18fdb14cb3e66680c3b3f669ba7466a3938306",
+        "prompt_tokens": 568,
+        "candidates": [
+          "register_player_with_club",
+          "update_contract_status",
+          "check_transfer_eligibility",
+          "get_player_profile"
+        ],
+        "correct_index": 3,
+        "correct_action": "get_player_profile",
+        "predicted_index": 2,
+        "predicted_action": "check_transfer_eligibility",
+        "correct": false,
+        "action_probabilities": [
+          7e-08,
+          1.1e-07,
+          0.99983984,
+          0.00015844
+        ],
+        "correct_action_probability": 0.00015844
+      },
+      {
+        "task_id": "e47157bd-3adc-4927-a85e-e4fcb69b4b69-4770",
+        "prompt_sha256": "c252f83aa996faaed4c7cc7d98b3dcd905ecf09e40f4fd98c5a8007992999e60",
+        "prompt_tokens": 547,
+        "candidates": [
+          "query_transaction_log",
+          "flag_suspicious_transaction",
+          "reverse_payment",
+          "quarantine_account"
+        ],
+        "correct_index": 0,
+        "correct_action": "query_transaction_log",
+        "predicted_index": 1,
+        "predicted_action": "flag_suspicious_transaction",
+        "correct": false,
+        "action_probabilities": [
+          6.09e-06,
+          0.99141586,
+          0.00857743,
+          2e-08
+        ],
+        "correct_action_probability": 6.09e-06
+      },
+      {
+        "task_id": "5ca4ccea-c435-40d3-9b9b-f76b6d07b214-3954",
+        "prompt_sha256": "f10861d13628dfa43816d6e75868654db6a8a07f70a526cd93b05cb27bbc6fe1",
+        "prompt_tokens": 610,
+        "candidates": [
+          "add_to_quarantine_registry",
+          "query_quarantine_status",
+          "log_public_health_action",
+          "ask_user_for_missing_information"
+        ],
+        "correct_index": 1,
+        "correct_action": "query_quarantine_status",
+        "predicted_index": 0,
+        "predicted_action": "add_to_quarantine_registry",
+        "correct": false,
+        "action_probabilities": [
+          0.56852788,
+          0.26855356,
+          3.314e-05,
+          0.16288598
+        ],
+        "correct_action_probability": 0.26855356
+      },
+      {
+        "task_id": "47517a69-9819-46c5-97f4-7a8ff775d374-1532",
+        "prompt_sha256": "55253205cf86d83e2e5983cdc6c608b92ece849c048c09ede69ef2311ed8b9fa",
+        "prompt_tokens": 540,
+        "candidates": [
+          "write_book_recommendation",
+          "update_reading_status",
+          "query_literary_profile",
+          "delete_discussion_log"
+        ],
+        "correct_index": 2,
+        "correct_action": "query_literary_profile",
+        "predicted_index": 1,
+        "predicted_action": "update_reading_status",
+        "correct": false,
+        "action_probabilities": [
+          0.0085738,
+          0.99099606,
+          1.54e-06,
+          0.00042686
+        ],
+        "correct_action_probability": 1.54e-06
+      },
+      {
+        "task_id": "cbbfb044-da2a-4cea-b407-271ceb74087c-4178",
+        "prompt_sha256": "e8a8ff1d082b85fcc1e0948bf0b7d755cbecb2d99b467436516efd77d2405746",
+        "prompt_tokens": 544,
+        "candidates": [
+          "submit_training_video",
+          "create_application_record",
+          "update_user_status",
+          "query_applicant_eligibility"
+        ],
+        "correct_index": 3,
+        "correct_action": "query_applicant_eligibility",
+        "predicted_index": 3,
+        "predicted_action": "query_applicant_eligibility",
+        "correct": true,
+        "action_probabilities": [
+          9e-08,
+          8.3e-07,
+          1.07e-06,
+          0.99999613
+        ],
+        "correct_action_probability": 0.99999613
+      }
+    ]
+  },
+  "holdout": {
+    "split": "same_tasks_prompt_holdout",
+    "prompt_variant": "holdout",
+    "task_count": 12,
+    "accuracy": 0.25,
+    "mean_correct_action_probability": 0.24367478583333335,
+    "elapsed_seconds": 72.8218,
+    "rows": [
+      {
+        "task_id": "2ebdae94-f7d6-4e5b-a087-e0b930db94d8-3625",
+        "prompt_sha256": "8c6738c874ba24efd440cde7219710119291a2b866825ef4c637a74909dbef82",
+        "prompt_tokens": 529,
+        "candidates": [
+          "get_strategy_config",
+          "delete_strategy_config",
+          "ask_user_for_missing_information",
+          "refuse_request"
+        ],
+        "correct_index": 0,
+        "correct_action": "get_strategy_config",
+        "predicted_index": 1,
+        "predicted_action": "delete_strategy_config",
+        "correct": false,
+        "action_probabilities": [
+          6.4e-07,
+          0.99140447,
+          1.656e-05,
+          0.00857733
+        ],
+        "correct_action_probability": 6.4e-07
+      },
+      {
+        "task_id": "58abe0c8-c22c-4ab8-9479-4f5342fa79ef-477",
+        "prompt_sha256": "098654fa9bdb8ffeddc652207f148627adff30042bec981bb8b7eb49019709b4",
+        "prompt_tokens": 598,
+        "candidates": [
+          "book_hike_reservation",
+          "query_hike_availability",
+          "modify_hike_reservation",
+          "notify_partner_service"
+        ],
+        "correct_index": 1,
+        "correct_action": "query_hike_availability",
+        "predicted_index": 2,
+        "predicted_action": "modify_hike_reservation",
+        "correct": false,
+        "action_probabilities": [
+          7.89e-06,
+          2.754e-05,
+          0.99996185,
+          3.73e-06
+        ],
+        "correct_action_probability": 2.754e-05
+      },
+      {
+        "task_id": "92112a84-41cf-4234-865a-57e9412e0697-1988",
+        "prompt_sha256": "6eac6993aba6af8a2c5d521d6dd143d11858f89a95aa49ea6968218b518a0b14",
+        "prompt_tokens": 569,
+        "candidates": [
+          "submit_subsidy_claim",
+          "update_subsidy_claim",
+          "check_farm_eligibility",
+          "log_action"
+        ],
+        "correct_index": 2,
+        "correct_action": "check_farm_eligibility",
+        "predicted_index": 2,
+        "predicted_action": "check_farm_eligibility",
+        "correct": true,
+        "action_probabilities": [
+          4.522e-05,
+          0.22226195,
+          0.77577043,
+          0.00192294
+        ],
+        "correct_action_probability": 0.77577043
+      },
+      {
+        "task_id": "36dabca8-4176-46f3-a363-f8925c9f73e7-2798",
+        "prompt_sha256": "a5e65f6459f6d20011a2d1684e29052b83079ac07addc27e77fb6c5c7a0584b3",
+        "prompt_tokens": 577,
+        "candidates": [
+          "enroll_participant",
+          "ask_user_for_missing_information",
+          "refuse_request",
+          "query_participant_status"
+        ],
+        "correct_index": 3,
+        "correct_action": "query_participant_status",
+        "predicted_index": 0,
+        "predicted_action": "enroll_participant",
+        "correct": false,
+        "action_probabilities": [
+          0.88079512,
+          9.4e-07,
+          2.7e-07,
+          0.11920266
+        ],
+        "correct_action_probability": 0.11920266
+      },
+      {
+        "task_id": "81d7c6ef-76d8-459b-8164-451aa4c1649e-4317",
+        "prompt_sha256": "92569cfb1a19e72cd0a388d2c0d8482d74262e84f49a0ef66a111ee372c2cb8c",
+        "prompt_tokens": 531,
+        "candidates": [
+          "query_patient_eligibility",
+          "create_patient_profile",
+          "schedule_cryotherapy_sessions",
+          "log_informed_consent"
+        ],
+        "correct_index": 0,
+        "correct_action": "query_patient_eligibility",
+        "predicted_index": 0,
+        "predicted_action": "query_patient_eligibility",
+        "correct": true,
+        "action_probabilities": [
+          1.0,
+          0.0,
+          0.0,
+          0.0
+        ],
+        "correct_action_probability": 1.0
+      },
+      {
+        "task_id": "6645b5db-c71c-4db1-9248-d9609681ed23-4487",
+        "prompt_sha256": "cb2892a7d10a13796d53f4ba51a7b2d0b829dc630ac0890947b9bbda7b773daf",
+        "prompt_tokens": 574,
+        "candidates": [
+          "get_approved_organizations",
+          "get_inventory",
+          "record_donation",
+          "ask_user_for_missing_information"
+        ],
+        "correct_index": 1,
+        "correct_action": "get_inventory",
+        "predicted_index": 0,
+        "predicted_action": "get_approved_organizations",
+        "correct": false,
+        "action_probabilities": [
+          0.99997324,
+          1.67e-05,
+          0.0,
+          1.013e-05
+        ],
+        "correct_action_probability": 1.67e-05
+      },
+      {
+        "task_id": "40282350-b4c4-4846-bedd-a7dc8f042be3-2718",
+        "prompt_sha256": "7732ef599f4234bc7ac345d72189c6c5f8b26bbaa369d1d8d39baa6e05cc425a",
+        "prompt_tokens": 598,
+        "candidates": [
+          "get_paper_status",
+          "update_paper_metadata",
+          "check_author_eligibility",
+          "ask_user_for_missing_information"
+        ],
+        "correct_index": 2,
+        "correct_action": "check_author_eligibility",
+        "predicted_index": 0,
+        "predicted_action": "get_paper_status",
+        "correct": false,
+        "action_probabilities": [
+          0.97399223,
+          0.0229061,
+          0.0031,
+          2.2e-06
+        ],
+        "correct_action_probability": 0.0031
+      },
+      {
+        "task_id": "b3e43546-4e43-4e9d-864c-fbf0d719af48-3477",
+        "prompt_sha256": "6de941df13cc970f1678cc46bb11cc4edb3af88fb99fe8c6116169f43b6172a0",
+        "prompt_tokens": 566,
+        "candidates": [
+          "register_player_with_club",
+          "update_contract_status",
+          "check_transfer_eligibility",
+          "get_player_profile"
+        ],
+        "correct_index": 3,
+        "correct_action": "get_player_profile",
+        "predicted_index": 2,
+        "predicted_action": "check_transfer_eligibility",
+        "correct": false,
+        "action_probabilities": [
+          0.0,
+          1e-08,
+          0.99994278,
+          5.829e-05
+        ],
+        "correct_action_probability": 5.829e-05
+      },
+      {
+        "task_id": "e47157bd-3adc-4927-a85e-e4fcb69b4b69-4770",
+        "prompt_sha256": "c6cd7e3e51d006d86d784f94f61fa03c1548674372f0084b40e32c5b39d97913",
+        "prompt_tokens": 545,
+        "candidates": [
+          "query_transaction_log",
+          "flag_suspicious_transaction",
+          "reverse_payment",
+          "quarantine_account"
+        ],
+        "correct_index": 0,
+        "correct_action": "query_transaction_log",
+        "predicted_index": 1,
+        "predicted_action": "flag_suspicious_transaction",
+        "correct": false,
+        "action_probabilities": [
+          3.9e-07,
+          0.99999613,
+          1.76e-06,
+          1e-08
+        ],
+        "correct_action_probability": 3.9e-07
+      },
+      {
+        "task_id": "5ca4ccea-c435-40d3-9b9b-f76b6d07b214-3954",
+        "prompt_sha256": "d1bb65797063ddb554f14141b6db5918a67828955f8c5c089b5ca848c18c64c0",
+        "prompt_tokens": 608,
+        "candidates": [
+          "add_to_quarantine_registry",
+          "query_quarantine_status",
+          "log_public_health_action",
+          "ask_user_for_missing_information"
+        ],
+        "correct_index": 1,
+        "correct_action": "query_quarantine_status",
+        "predicted_index": 0,
+        "predicted_action": "add_to_quarantine_registry",
+        "correct": false,
+        "action_probabilities": [
+          0.85796946,
+          0.02590843,
+          6.77e-06,
+          0.11611354
+        ],
+        "correct_action_probability": 0.02590843
+      },
+      {
+        "task_id": "47517a69-9819-46c5-97f4-7a8ff775d374-1532",
+        "prompt_sha256": "a8abc86d0cd5b048657c98e565cc2f425e800242ed018e53a3f79a915d078c9f",
+        "prompt_tokens": 538,
+        "candidates": [
+          "write_book_recommendation",
+          "update_reading_status",
+          "query_literary_profile",
+          "delete_discussion_log"
+        ],
+        "correct_index": 2,
+        "correct_action": "query_literary_profile",
+        "predicted_index": 1,
+        "predicted_action": "update_reading_status",
+        "correct": false,
+        "action_probabilities": [
+          0.04728188,
+          0.949682,
+          1.235e-05,
+          0.00302263
+        ],
+        "correct_action_probability": 1.235e-05
+      },
+      {
+        "task_id": "cbbfb044-da2a-4cea-b407-271ceb74087c-4178",
+        "prompt_sha256": "2eab13f1a571ef2ebad5427e3517cda54f6b8a9b0ffac4744c413cba795ee2d2",
+        "prompt_tokens": 542,
+        "candidates": [
+          "submit_training_video",
+          "create_application_record",
+          "update_user_status",
+          "query_applicant_eligibility"
+        ],
+        "correct_index": 3,
+        "correct_action": "query_applicant_eligibility",
+        "predicted_index": 3,
+        "predicted_action": "query_applicant_eligibility",
+        "correct": true,
+        "action_probabilities": [
+          0.0,
+          0.0,
+          2e-08,
+          1.0
+        ],
+        "correct_action_probability": 1.0
+      }
+    ]
+  },
+  "unseen": {
+    "split": "unseen_tasks",
+    "prompt_variant": "unseen",
+    "task_count": 4,
+    "accuracy": 0.25,
+    "mean_correct_action_probability": 0.250225685,
+    "elapsed_seconds": 22.1477,
+    "rows": [
+      {
+        "task_id": "6f177163-48ac-4d44-aee7-7d0c4a86ac3a-2729",
+        "prompt_sha256": "9970824bc53af33d36e0326dbb778d962932864113a42c44d466f3bccca4c34a",
+        "prompt_tokens": 564,
+        "candidates": [
+          "query_text_database",
+          "log_access_or_action",
+          "modify_work_metadata",
+          "ask_user_for_missing_information"
+        ],
+        "correct_index": 0,
+        "correct_action": "query_text_database",
+        "predicted_index": 2,
+        "predicted_action": "modify_work_metadata",
+        "correct": false,
+        "action_probabilities": [
+          5.829e-05,
+          8.3e-07,
+          0.99993896,
+          9e-08
+        ],
+        "correct_action_probability": 5.829e-05
+      },
+      {
+        "task_id": "0d2ae07a-bc24-481e-9e5c-48db0a724cb8-729",
+        "prompt_sha256": "d3b718de4ee61ec9e5246367db610e4529c94697020fa4c8d63b8a3ccc28f00b",
+        "prompt_tokens": 564,
+        "candidates": [
+          "upload_application_documents",
+          "query_university_admissions",
+          "submit_scholarship_application",
+          "delete_draft_applications"
+        ],
+        "correct_index": 1,
+        "correct_action": "query_university_admissions",
+        "predicted_index": 1,
+        "predicted_action": "query_university_admissions",
+        "correct": true,
+        "action_probabilities": [
+          1.9e-07,
+          0.99993515,
+          6.14e-06,
+          5.829e-05
+        ],
+        "correct_action_probability": 0.99993515
+      },
+      {
+        "task_id": "dcc87f43-6b55-4ac6-bca1-9d37bae4c726-1081",
+        "prompt_sha256": "0c608a6c39605e87dc48f4df50d56d17a582dd1af34879956327caa60f9d4e9e",
+        "prompt_tokens": 578,
+        "candidates": [
+          "remove_from_resilience_library",
+          "query_book_catalog",
+          "get_resilience_library_contents",
+          "add_to_resilience_library"
+        ],
+        "correct_index": 2,
+        "correct_action": "get_resilience_library_contents",
+        "predicted_index": 1,
+        "predicted_action": "query_book_catalog",
+        "correct": false,
+        "action_probabilities": [
+          2.26e-06,
+          0.99999613,
+          1e-08,
+          0.0
+        ],
+        "correct_action_probability": 1e-08
+      },
+      {
+        "task_id": "aadf930e-9e2c-4e9b-8e38-8021113cdbc4-4169",
+        "prompt_sha256": "f0b6692b9d4a6fdcd0c8f6cd949f570058b56fdf06156148e5fcb14f741268c7",
+        "prompt_tokens": 629,
+        "candidates": [
+          "register_labour_case",
+          "update_case_status",
+          "query_labour_law_provision",
+          "query_existing_case"
+        ],
+        "correct_index": 3,
+        "correct_action": "query_existing_case",
+        "predicted_index": 0,
+        "predicted_action": "register_labour_case",
+        "correct": false,
+        "action_probabilities": [
+          0.77659059,
+          0.22249694,
+          2.89e-06,
+          0.00090929
+        ],
+        "correct_action_probability": 0.00090929
+      }
+    ]
+  }
+}

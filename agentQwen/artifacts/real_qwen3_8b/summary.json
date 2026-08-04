@@ -1,0 +1,68 @@
+{
+  "status": "completed",
+  "scope": "real Qwen3-8B 4-bit, local action-masked small-scale GRPO reproduction",
+  "paper_scale_claimed": false,
+  "model": {
+    "id": "Qwen/Qwen3-8B-MLX-4bit",
+    "path": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/work/models/Qwen3-8B-MLX-4bit",
+    "weights_bytes": 4351884216,
+    "weights_sha256": "fcc83d7537bee76cc143be3e25f8954b816798f93528103db1cddb02977c5617",
+    "load_seconds": 2.2727,
+    "quantization": "4-bit MLX"
+  },
+  "dataset": {
+    "source": "alibaba-pai/AgenticQwen-Data",
+    "parquet_path": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/work/data/agenticqwen/agenticqwen_synthetic_data.parquet",
+    "parquet_sha256": "044648e2ffbed9b50029b165bce6585fb13c8e940feefdfcbc37a5c25d2a0b53",
+    "source_rows": 37401,
+    "selected_rows": 16,
+    "selection_seed": 260421590
+  },
+  "training": {
+    "algorithm": "group-relative policy optimization over executable next-tool rewards",
+    "action_space": "four task-specific candidate tool calls, emitted as one token",
+    "train_tasks": 12,
+    "unseen_tasks": 4,
+    "group_size": 16,
+    "attempted_groups": 24,
+    "updated_groups": 4,
+    "optimizer_steps": 8,
+    "training_seconds": 194.7914,
+    "lora_b_norm_before": 0.0,
+    "lora_b_norm_after": 0.2673622987288703,
+    "adapter_initial_sha256": "d1a3ed8b77ba83bd1c9515e27d8cd3b866b032fd29b970e32925fe4cd4799363",
+    "adapter_final_sha256": "64301c0b81ec5af89c59b359f5f17aced54387701c933c0f38a37fb80b31e0ab"
+  },
+  "metrics": {
+    "train": {
+      "accuracy_before": 0.25,
+      "accuracy_after": 0.3333333333333333,
+      "mean_correct_probability_before": 0.26775895083333334,
+      "mean_correct_probability_after": 0.3267506475
+    },
+    "holdout": {
+      "accuracy_before": 0.25,
+      "accuracy_after": 0.4166666666666667,
+      "mean_correct_probability_before": 0.24367478583333335,
+      "mean_correct_probability_after": 0.3563734883333333
+    },
+    "unseen": {
+      "accuracy_before": 0.25,
+      "accuracy_after": 0.25,
+      "mean_correct_probability_before": 0.250225685,
+      "mean_correct_probability_after": 0.2500284225
+    }
+  },
+  "runtime": {
+    "platform": "macOS-26.2-arm64-arm-64bit",
+    "machine": "arm64",
+    "python": "3.12.13",
+    "peak_memory_gib": 5.055
+  },
+  "limitations": [
+    "Action-masked four-way next-tool selection replaces unrestricted JSON/function-call generation.",
+    "Only a deterministic subset of the official synthetic dataset is used.",
+    "No 7B-task online flywheel, multi-node verl training, or production environment is reproduced.",
+    "Unseen-task metrics are reported separately from same-task prompt holdout metrics."
+  ]
+}

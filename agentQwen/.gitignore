@@ -1,0 +1,14 @@
+.DS_Store
+__pycache__/
+.pytest_cache/
+*.py[cod]
+.venv*/
+models/
+checkpoints/
+*.safetensors
+*.bin
+*.pt
+*.pth
+*.tar.gz
+~$*.pptx
+artifacts/cloud_runs/*/extracted/

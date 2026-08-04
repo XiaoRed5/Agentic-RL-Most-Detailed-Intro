@@ -1,0 +1,3 @@
+# Kept in a separate venv from vLLM because the two packages require
+# incompatible NumPy major versions as of the pinned releases below.
+bfcl-eval==2026.3.23

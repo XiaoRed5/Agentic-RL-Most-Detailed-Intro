@@ -1,0 +1,82 @@
+{
+  "verified_at": "2026-08-02T08:15:14.497617+00:00",
+  "overall_status": "PASS",
+  "checks": [
+    {
+      "name": "artifact_completeness",
+      "status": "PASS",
+      "detail": "missing=[]",
+      "evidence": {
+        "required": [
+          "plan.json",
+          "paper_spec.json",
+          "tasks.jsonl",
+          "metrics.json",
+          "smoke_policy.json",
+          "qwen3_8b_inference.json"
+        ]
+      }
+    },
+    {
+      "name": "reward_bounds",
+      "status": "PASS",
+      "detail": "checked 5 aggregate rewards",
+      "evidence": {
+        "values": [
+          0.533333,
+          1.0,
+          0.466667,
+          0.666667,
+          1.0
+        ]
+      }
+    },
+    {
+      "name": "learning_signal",
+      "status": "PASS",
+      "detail": "baseline=0.533, final=1.000, delta=0.467",
+      "evidence": {
+        "minimum_delta": 0.1
+      }
+    },
+    {
+      "name": "final_reward_gate",
+      "status": "PASS",
+      "detail": "final=1.000, gate=0.700",
+      "evidence": {}
+    },
+    {
+      "name": "behavior_tree_coverage",
+      "status": "PASS",
+      "detail": "levels=['0', '1', '2']",
+      "evidence": {}
+    },
+    {
+      "name": "deterministic_rerun",
+      "status": "PASS",
+      "detail": "rerun={'mean_reward': 1.0, 'success_rate': 1.0, 'safety_rate': 1.0, 'mean_steps': 3.666667}",
+      "evidence": {
+        "recorded": {
+          "mean_reward": 1.0,
+          "success_rate": 1.0,
+          "safety_rate": 1.0,
+          "mean_steps": 3.666667
+        }
+      }
+    },
+    {
+      "name": "local_qwen3_8b_inference",
+      "status": "WARN",
+      "detail": "status=skipped, backend=n/a",
+      "evidence": {
+        "network_fallback": false,
+        "model_id": "mlx-community/Qwen3-8B-4bit"
+      }
+    }
+  ],
+  "summary": {
+    "pass": 6,
+    "warn": 1,
+    "fail": 0
+  }
+}

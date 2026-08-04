@@ -1,0 +1,181 @@
+{
+  "adapter_dir": "/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2/stage2/adapter",
+  "adapter_tree_sha256": "51510a2145bf639e35600c591aa05e0485935f351e3218e67fd31faac3369849",
+  "adapter_weights_file": "/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2/stage2/adapter/adapter_model.safetensors",
+  "adapter_weights_sha256": "920f76c8c0f35d8976ddf4a24ac77ae4fbcc5cd793ac942865942b01d9149c4d",
+  "algorithm": "multi-turn response-token QLoRA-GRPO with stateful tools",
+  "environment_factory": "StatefulRefundEnvironment",
+  "eval_tasks": {
+    "count": 6,
+    "path": "/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2/tasks/final_holdout.jsonl",
+    "sha256": "dc9c2fc8139dc7d81c52559bc04ed2ce2722d7976576f2bb5f6d48e918ed1533",
+    "task_ids": [
+      "refund-final_holdout-0200",
+      "refund-final_holdout-0201",
+      "refund-final_holdout-0202",
+      "refund-final_holdout-0203",
+      "refund-final_holdout-0204",
+      "refund-final_holdout-0205"
+    ]
+  },
+  "failure_summary_after": {
+    "episodes": 6,
+    "failure_counts": {},
+    "mean_reward": 1.2504506666666666,
+    "reward_std": 0.011198107588139909,
+    "success_rate": 1.0,
+    "successes": 6,
+    "unique_reward_count": 5
+  },
+  "failure_summary_before": {
+    "episodes": 6,
+    "failure_counts": {
+      "IDENTITY_ERROR": 2
+    },
+    "mean_reward": 0.8376056666666667,
+    "reward_std": 0.592298710887411,
+    "success_rate": 0.6666666666666666,
+    "successes": 4,
+    "unique_reward_count": 4
+  },
+  "global_step": 12,
+  "input_adapter": "/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2/stage1/adapter",
+  "input_adapter_tree_sha256": "c32cd5e1f0b0a6a824d705d0dd968339cda6f81fa2d05061eb0b2c14a40ae6a2",
+  "input_adapter_weights_sha256": "7d3c6d223209f26f26e39004c46afac8e6f123ed30992f8a97bc56f7c275bee0",
+  "metrics_after": {
+    "after_loss": 8.576560503570363e-06,
+    "after_model_preparation_time": 0.0231,
+    "after_runtime": 116.984,
+    "after_samples_per_second": 0.051,
+    "after_steps_per_second": 0.051,
+    "epoch": 1.0,
+    "eval_clip_ratio/high_max": 0.0,
+    "eval_clip_ratio/high_mean": 0.0,
+    "eval_clip_ratio/low_mean": 0.0,
+    "eval_clip_ratio/low_min": 0.0,
+    "eval_clip_ratio/region_mean": 0.0,
+    "eval_completions/clipped_ratio": 0.0,
+    "eval_completions/max_length": 344.8333333333333,
+    "eval_completions/max_terminated_length": 344.8333333333333,
+    "eval_completions/mean_length": 344.8333333333333,
+    "eval_completions/mean_terminated_length": 344.8333333333333,
+    "eval_completions/min_length": 344.8333333333333,
+    "eval_completions/min_terminated_length": 344.8333333333333,
+    "eval_entropy": 0.03156356979161501,
+    "eval_frac_reward_zero_std": 1.0,
+    "eval_kl": 0.0008576560261038443,
+    "eval_num_tokens": 72141.0,
+    "eval_reward": 1.2504507899284363,
+    "eval_reward_std": null,
+    "eval_rewards/StatefulRefundEnvironment/mean": 1.2504507899284363,
+    "eval_rewards/StatefulRefundEnvironment/std": null,
+    "eval_tools/call_frequency": 7.5,
+    "eval_tools/failure_frequency": 0.0
+  },
+  "metrics_before": {
+    "before_loss": 0.0,
+    "before_model_preparation_time": 0.0231,
+    "before_runtime": 83.805,
+    "before_samples_per_second": 0.072,
+    "before_steps_per_second": 0.072,
+    "epoch": 0,
+    "eval_clip_ratio/high_max": 0.0,
+    "eval_clip_ratio/high_mean": 0.0,
+    "eval_clip_ratio/low_mean": 0.0,
+    "eval_clip_ratio/low_min": 0.0,
+    "eval_clip_ratio/region_mean": 0.0,
+    "eval_completions/clipped_ratio": 0.0,
+    "eval_completions/max_length": 248.5,
+    "eval_completions/max_terminated_length": 248.5,
+    "eval_completions/mean_length": 248.5,
+    "eval_completions/mean_terminated_length": 248.5,
+    "eval_completions/min_length": 248.5,
+    "eval_completions/min_terminated_length": 248.5,
+    "eval_entropy": 0.07571564987301826,
+    "eval_frac_reward_zero_std": 1.0,
+    "eval_kl": 0.0,
+    "eval_num_tokens": 0.0,
+    "eval_reward": 0.8376057147979736,
+    "eval_reward_std": null,
+    "eval_rewards/StatefulRefundEnvironment/mean": 0.8376057147979736,
+    "eval_rewards/StatefulRefundEnvironment/std": null,
+    "eval_tools/call_frequency": 5.166666666666667,
+    "eval_tools/failure_frequency": 0.0
+  },
+  "model_id": "Qwen/Qwen3-8B",
+  "model_load_path": "/root/autodl-tmp/models/Qwen3-8B",
+  "paper_scale_claimed": false,
+  "resumed_from_checkpoint": null,
+  "runtime": {
+    "accelerate": "1.14.0",
+    "bitsandbytes": "0.50.0",
+    "cuda": "12.8",
+    "datasets": "5.0.1",
+    "gpu": {
+      "capability": [
+        12,
+        0
+      ],
+      "count": 1,
+      "memory_gib": 94.971,
+      "name": "NVIDIA RTX PRO 6000 Blackwell Server Edition"
+    },
+    "peft": "0.20.0",
+    "platform": "Linux-5.15.0-78-generic-x86_64-with-glibc2.35",
+    "python": "3.12.3",
+    "torch": "2.8.0+cu128",
+    "transformers": "5.14.1",
+    "trl": "1.9.2"
+  },
+  "schema_version": 1,
+  "stage": "stage2",
+  "status": "completed",
+  "trace_files": {
+    "after": "/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2/stage2/eval_final_traces.jsonl",
+    "before": "/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2/stage2/eval_before_traces.jsonl",
+    "train": "/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2/stage2/train_traces.jsonl"
+  },
+  "train_output": {
+    "epoch": 1.0,
+    "total_flos": 0.0,
+    "train_loss": -0.029554672772064805,
+    "train_runtime": 395.9631,
+    "train_samples_per_second": 0.121,
+    "train_steps_per_second": 0.03
+  },
+  "train_tasks": {
+    "count": 12,
+    "path": "/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2/tasks/stage2_train.jsonl",
+    "sha256": "5790304c792b7ef6bbcdf85b9eb2e40eb5f4ffd1ab2767c6e0007d085a96bf1d",
+    "task_ids": [
+      "refund-stage2_synthetic-1000",
+      "refund-stage2_synthetic-1001",
+      "refund-stage2_synthetic-1002",
+      "refund-stage2_synthetic-1003",
+      "refund-stage2_synthetic-1004",
+      "refund-stage2_synthetic-1005",
+      "refund-stage2_synthetic-1006",
+      "refund-stage2_synthetic-1007",
+      "refund-stage1_train-0000",
+      "refund-stage1_train-0001",
+      "refund-stage1_train-0002",
+      "refund-stage1_train-0003"
+    ]
+  },
+  "trainable_parameter_hash_after": "453501b82693defe6a19ea0c0da9d9aba993fc185f60e5a0d835a182777e815f",
+  "trainable_parameter_hash_before": "a3664da51f1c1958274a5d05a910f19bd1e1ab06e04dd52341d4c107a7ca1834",
+  "trainable_parameters_changed": true,
+  "training_rollout_summary": {
+    "episodes": 48,
+    "failure_counts": {
+      "IDENTITY_ERROR": 1,
+      "POLICY_NOT_INSPECTED": 1
+    },
+    "mean_reward": 1.2099442708333334,
+    "reward_std": 0.2673004453755907,
+    "success_rate": 0.9583333333333334,
+    "successes": 46,
+    "unique_reward_count": 33
+  },
+  "training_seconds": 396.218
+}

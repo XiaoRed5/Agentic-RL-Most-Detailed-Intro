@@ -1,0 +1,126 @@
+{
+  "schema_version": 2,
+  "reference_style": "https://github.com/qiqihezh/agentic-grpo-longhorizon",
+  "status_definitions": {
+    "COMPLETE": "实际运行并有独立证据",
+    "PARTIAL_RUN": "实际运行，但规模或语义弱于论文",
+    "CODE_READY": "代码、配置和 dry-run 已验证，尚无模型结果",
+    "BLOCKED_RESOURCE": "需要当前 24GB Mac 之外的模型或算力"
+  },
+  "items": [
+    {
+      "area": "论文、源码与主张锁定",
+      "status": "COMPLETE",
+      "evidence": "arXiv 2604.21590 PDF + LaTeX；论文表 1 与算法逐项提取",
+      "completion": "—"
+    },
+    {
+      "area": "真实 Qwen3-8B 权重加载",
+      "status": "COMPLETE",
+      "evidence": "8.19B parameters；4.35 GB MLX 4-bit；SHA-256",
+      "completion": "—"
+    },
+    {
+      "area": "官方 AgenticQwen 数据 provenance",
+      "status": "COMPLETE",
+      "evidence": "37,401 rows；parquet SHA-256；固定 seed 与 task IDs",
+      "completion": "—"
+    },
+    {
+      "area": "真实 LoRA-GRPO 参数更新",
+      "status": "COMPLETE",
+      "evidence": "LoRA-B 0 → 0.267；adapter hash 改变",
+      "completion": "—"
+    },
+    {
+      "area": "独立 checkpoint 重放",
+      "status": "COMPLETE",
+      "evidence": "fresh process；9 PASS / 0 FAIL",
+      "completion": "—"
+    },
+    {
+      "area": "真实 API 多轮工具轨迹",
+      "status": "COMPLETE",
+      "evidence": "Qwen3.7-Flash；8 agent turns；5 tool calls；9/9 verifier PASS",
+      "completion": "—"
+    },
+    {
+      "area": "Agentic 工具动作训练",
+      "status": "PARTIAL_RUN",
+      "evidence": "官方任务 + normal/hack path，但策略仅输出四选一 action token",
+      "completion": "改为 unrestricted JSON tool call，并训练 arguments 与多步状态"
+    },
+    {
+      "area": "GRPO group rollout",
+      "status": "PARTIAL_RUN",
+      "evidence": "24 groups × 16 samples；4 组可更新；20 组饱和",
+      "completion": "在真实多轮轨迹上重跑并报告每 checkpoint 的 group variance"
+    },
+    {
+      "area": "OOD / 泛化评测",
+      "status": "PARTIAL_RUN",
+      "evidence": "4 unseen tasks；accuracy 25% → 25%",
+      "completion": "扩大为 covered / uncovered / unseen 分层且至少 3 seeds"
+    },
+    {
+      "area": "失败轨迹与 saturation 诊断",
+      "status": "PARTIAL_RUN",
+      "evidence": "24 组完整 JSONL；离线 PRM 诊断 4 → 4 激活组",
+      "completion": "补 50/100/…/300 checkpoint 曲线与失败 taxonomy"
+    },
+    {
+      "area": "一键环境与资产自举",
+      "status": "PARTIAL_RUN",
+      "evidence": "训练、验证、报告、PPT 可一键；model/data 仍假设已缓存",
+      "completion": "加入断点下载、lockfile、disk/memory preflight 与 resume"
+    },
+    {
+      "area": "BFCL-V4 Multi-Turn evaluator",
+      "status": "CODE_READY",
+      "evidence": "官方 bfcl-eval 2026.3.23；4 categories；base/adapter；partial/full commands",
+      "completion": "执行 800 tasks 并保存 result/score/inference logs"
+    },
+    {
+      "area": "TAU-2 evaluator",
+      "status": "CODE_READY",
+      "evidence": "官方 v0.2.0；airline/retail/telecom；smoke 与 Avg@4 full profile",
+      "completion": "配置论文一致 user simulator 后执行全部 tasks × 4"
+    },
+    {
+      "area": "PRM-Lite process reward",
+      "status": "CODE_READY",
+      "evidence": "15 条可解释规则、[-0.5,0.5] clip、逐规则 fired ledger、单测",
+      "completion": "接到 multi-turn rollout 在线训练；做 anti-hacking audit"
+    },
+    {
+      "area": "LATA / turn-discount credit",
+      "status": "CODE_READY",
+      "evidence": "A/L、A/√L、normalized turn-discount kernels + 单测",
+      "completion": "必须在多 token、多 turn response mask 上训练才可验证"
+    },
+    {
+      "area": "Vanilla / PRM / LATA / Joint 消融",
+      "status": "CODE_READY",
+      "evidence": "5 experiments × 3 seeds × 6 checkpoints 的固定矩阵",
+      "completion": "运行训练与独立 evaluator；禁止用离线重打分代替精度结果"
+    },
+    {
+      "area": "Long-horizon multi-turn RL environment",
+      "status": "PARTIAL_RUN",
+      "evidence": "状态化 user/tool sandbox 已运行 1 条完整轨迹；当前 GRPO 训练仍是单步 action-masked",
+      "completion": "把 trajectory rollout 接入 response-token GRPO，扩到任务集、group sampling 与 checkpoint eval"
+    },
+    {
+      "area": "论文规模 data flywheel",
+      "status": "BLOCKED_RESOURCE",
+      "evidence": "12 train vs paper ≈100K；未运行 Round 0–3",
+      "completion": "Qwen3-235B synthesis/simulator/judge + multi-round expansion"
+    },
+    {
+      "area": "论文同规模系统",
+      "status": "BLOCKED_RESOURCE",
+      "evidence": "本机 24GB；没有多机 veRL/SGLang 与 235B serving",
+      "completion": "获得多卡 GPU 与同版本推理/训练栈"
+    }
+  ]
+}

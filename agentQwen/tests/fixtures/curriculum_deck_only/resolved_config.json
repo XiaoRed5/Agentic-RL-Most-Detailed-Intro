@@ -1,0 +1,15 @@
+{
+  "model": {"id": "Qwen/Qwen3-8B", "lora_rank": 16},
+  "training": {
+    "num_generations": 4,
+    "gradient_accumulation_steps": 4,
+    "max_completion_length": 1400,
+    "max_tool_calling_iterations": 10,
+    "learning_rate": 0.000005,
+    "loss_type": "dapo"
+  },
+  "stages": {
+    "stage1": {"max_steps": 12},
+    "stage2": {"max_steps": 12, "learning_rate": 0.000003}
+  }
+}
