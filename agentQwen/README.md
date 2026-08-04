@@ -5,6 +5,12 @@
 
 **Deliverables:** `agenticqwen_report/TECHNICAL_REPORT.md` is the canonical report source and `agenticqwen_report/index.html` is its yyhdbl-style view; `slides/AgenticQwen_Curriculum_Cloud.pptx` is the project presentation; `artifacts/cloud_runs/qwen3-8b-qlora-20260804-v2/evidence/` contains compact, machine-readable cloud evidence.
 
+## 🧭 失败驱动的 Agentic RL 数据飞轮
+
+项目先在基础退款任务上学习受约束的线性工具链，再由轨迹审计器读取真实环境状态与事件账本，将失败归因到缺失读取、身份核对、临时错误恢复、用户确认、写入时机和幂等控制等具体环节。数据合成器据此增加相似订单、干扰订单、一次性超时和确认门等压力条件，生成带分支的困难工作流，并进入下一阶段持续训练。
+
+![失败驱动的 Agentic RL 课程学习闭环](agenticqwen_report/images/figure4_curriculum_stage_flow.png)
+
 ## 🔥 Key Results
 
 The cloud micro-run proves that the two-stage optimization loop, curriculum handoff, parameter updates, and fresh-process reload are real. It does **not** reproduce the paper's benchmark claim.
