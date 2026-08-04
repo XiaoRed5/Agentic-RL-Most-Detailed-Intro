@@ -233,14 +233,20 @@ PROFILE=paper ./run_benchmarks.sh
 
 ## ✅ Completion Summary
 
-| Status | Count | Meaning |
-|---|---:|---|
-| COMPLETE | 6 | actually run with independent evidence |
-| PARTIAL_RUN | 6 | actually run, but weaker or smaller than the paper |
-| CODE_READY | 5 | implementation, config, tests, and dry-run complete |
-| BLOCKED_RESOURCE | 2 | needs the paper-scale 235B flywheel or multi-GPU compute |
+| Component | Status | Evidence boundary |
+|---|---|---|
+| Stage-1 response-token QLoRA-GRPO | COMPLETE (micro) | 12 steps; reward std 0.5268; trainable hash changed |
+| V1 failure diagnosis → V2 repair | COMPLETE | zero-variance/identical-hash failure preserved; V2 verifier PASS |
+| Frontier hard-task synthesis + replay | COMPLETE (micro) | frozen trace hash → 8 hard + 4 replay tasks |
+| Stage-2 continuation from Stage 1 | COMPLETE (micro) | input hash matches Stage 1; output hash differs |
+| Untouched holdout + fresh reload | COMPLETE (micro) | 4/6 → 6/6; new-process replay 6/6 |
+| BFCL-V4 / TAU-2 | CODE_READY / NOT_RUN | no official score is claimed |
+| Three seeds and online ablations | NOT_RUN | required for statistical and mechanism claims |
+| ≈100K / 235B / 8×H100 paper recipe | BLOCKED_RESOURCE | outside this reproduction budget |
 
-The machine-readable ledger is `artifacts/real_qwen3_8b/completion_matrix.json`.
+`docs/claims_and_evidence.md` is the current claim ledger. The older
+`artifacts/real_qwen3_8b/completion_matrix.json` describes the retained local
+one-token diagnostic only; it is not the ledger for the cloud curriculum run.
 
 ## 🧾 Claim Boundary
 
