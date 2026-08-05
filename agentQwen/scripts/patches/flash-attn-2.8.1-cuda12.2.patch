@@ -1,0 +1,10 @@
+--- a/setup.py
++++ b/setup.py
+@@ -208,7 +208,6 @@
+     "--use_fast_math",
+     "-Xfatbin",
+     "-compress-all",
+-    "-compress-mode=size",
+     # "--ptxas-options=-v",
+     # "--ptxas-options=-O2",
+     # "-lineinfo",

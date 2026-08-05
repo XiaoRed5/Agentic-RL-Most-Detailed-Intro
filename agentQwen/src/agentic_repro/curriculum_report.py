@@ -329,9 +329,9 @@ Stage-2 summary 中的 `input_adapter_weights_sha256` 必须等于 Stage-1 `adap
 
 {_trace_section(s2_traces, 'Final holdout 代表轨迹')}
 
-## 8. 独立评测：fresh reload 已完成，官方 BFCL-V4 未运行
+## 8. 独立评测：fresh reload 与官方 BFCL-V4 smoke
 
-已完成的独立性来自 fresh-process reload：父训练进程释放模型后启动新的 Python 子进程，记录父/子 PID，再重新加载 base + Stage-2 PEFT adapter，在未触碰的 final holdout 上重新生成并计分。官方 BFCL-V4 multi-turn evaluator 的 base/adapter 对照路径已经实现，但本次没有运行，所以没有 result JSON、score CSV 或 benchmark 分数可报告。
+已完成的独立性来自 fresh-process reload：父训练进程释放模型后启动新的 Python 子进程，记录父/子 PID，再重新加载 base + Stage-2 PEFT adapter，在未触碰的 final holdout 上重新生成并计分。官方 BFCL-V4 multi-turn evaluator 使用官方数据、官方生成器和官方 checker；当前状态由下表中的 manifest 决定，未通过时不会被包装成成功。
 
 | Fresh replay evidence | 值 |
 |---|---|
@@ -342,7 +342,7 @@ Stage-2 summary 中的 `input_adapter_weights_sha256` 必须等于 Stage-1 `adap
 
 {_bfcl_table(bfcl)}
 
-BFCL 状态为 `{bfcl_status}`。只有在 manifest、result JSON 和 score CSV 齐全后，才可声称官方接口、tool-call 格式、multi-turn execution 与 score pipeline 跑通；即便未来完成小样本 smoke，也不能替代每类 200 个任务的论文 profile，更不能与论文平均分直接比较。
+BFCL 状态为 `{bfcl_status}`。本次 manifest、result JSON 和 score CSV 已齐全，因此官方接口、tool-call 格式、multi-turn execution 与 score pipeline 确实跑通；但这组 smoke 的 base 与 Stage-2 adapter `Overall Acc`/`Multi Turn Acc` 都是 **0.00%**，说明当前模型没有通过所选的 4 个 BFCL 题目，不能把“流水线 PASS”误读为模型质量 PASS。它仍不能替代每类 200 个任务的论文 profile，更不能与论文平均分直接比较。
 
 ## 9. 实验完整性与可恢复性
 
@@ -383,7 +383,7 @@ BFCL 状态为 `{bfcl_status}`。只有在 manifest、result JSON 和 score CSV 
 ./finalize_curriculum_project.sh /path/to/qwen3-8b-qlora-20260804-v2
 ```
 
-本次实测硬件是单张 RTX PRO 6000 96GB；Qwen3-8B 以 NF4 运行时量化加载，Stage 1/2 都只训练 LoRA。模型、venv、run、日志和归档分别落在 AutoDL 数据盘与 `/root` 下载区，终态后再按 SHA-256 收集。
+本次实测硬件是单张 `{gpu.get('name', 'unknown GPU')}`（显存约 `{gpu.get('memory_gib', '—')}` GiB）；Qwen3-8B 以 NF4 运行时量化加载，Stage 1/2 都只训练 LoRA。模型、venv、run、日志和归档分别落在 CodeLab 数据盘与项目目录，终态后再按 SHA-256 收集。
 
 ## 12. 简历与面试怎么讲
 

@@ -1,0 +1,36 @@
+--- a/RL/verl/experimental/agent_loop/tool_parser.py
++++ b/RL/verl/experimental/agent_loop/tool_parser.py
+@@ -141,12 +141,31 @@ class UserHermesToolParser(ToolParser):
+                 visible_text = regex.sub(r"<think>.*?</think>", "", text, flags=regex.DOTALL).strip()
+-                if visible_text:
+-                    logger.warning("Missing <question> tag; forwarding visible assistant text to mock_user")
++                clarification_pattern = regex.compile(
++                    r"(?:\?|\b(?:could|can|would|will|may)\s+you\b|"
++                    r"\bplease\s+(?:provide|share|confirm|tell|specify|clarify)\b|"
++                    r"\b(?:what|which|who|where|when|how)\s+(?:is|are|do|does|did|should|would|can)\b|"
++                    r"\bi\s+need\s+(?:your|the)\b|\bneed\s+you\s+to\b)",
++                    regex.IGNORECASE,
++                )
++                if visible_text and clarification_pattern.search(visible_text):
++                    logger.warning(
++                        "Missing <question> tag; routing untagged clarification to mock_user"
++                    )
+                     function_calls = [
+                         FunctionCall(
+                             name="mock_user",
+                             arguments=json.dumps({"agent_query": visible_text}, ensure_ascii=False),
+                         )
+                     ]
++                elif visible_text:
++                    # A plain declarative response is a final answer.  The
++                    # released prompt likewise does not document <answer> for
++                    # the base model, so ending the loop matches normal chat
++                    # semantics and prevents an adversarial user from extending
++                    # a task that the policy has already completed.
++                    logger.warning(
++                        "Missing <answer> tag; treating untagged declarative response as final"
++                    )
++                    function_calls = []
+                 else:
+                     logger.error("Failed to extract a user-facing clarification from assistant response")
+                     function_calls = []

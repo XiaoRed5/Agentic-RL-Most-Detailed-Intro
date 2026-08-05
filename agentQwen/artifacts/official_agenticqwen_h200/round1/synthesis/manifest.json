@@ -1,0 +1,112 @@
+{
+  "api_audit": [
+    {
+      "attempt": 1,
+      "latency_seconds": 33.134,
+      "ok": true,
+      "phase": "branch_to_task_inversion",
+      "request_sha256": "2f89bc40e4e4882ed67ca36eff06559af7ea1275c49dac76a9c3faf60dc65786",
+      "response_chars": 14536,
+      "response_sha256": "ce4b62784c9be276111f75720015a9bef33a962d1a12802345e549e110f6d1fb",
+      "status_code": 200
+    },
+    {
+      "attempt": 1,
+      "latency_seconds": 3.458,
+      "ok": true,
+      "phase": "teacher_solve_1",
+      "request_sha256": "af7ffae740723042862433329dcf2c16436fdc5a5535c57ac05f41de5af7dd2c",
+      "response_chars": 933,
+      "response_sha256": "ef63e2b55349ec13bc74284cdcd616c4960633319b9e012f49eb6396a4008bf1",
+      "status_code": 200
+    },
+    {
+      "attempt": 1,
+      "error": "The read operation timed out",
+      "error_type": "ReadTimeout",
+      "latency_seconds": 180.128,
+      "ok": false,
+      "phase": "branch_to_task_inversion",
+      "request_sha256": "fc3cf32c228f78335cb7ef707c2ef4fb1ca430e58ac62f4b30dfd99dec73f8e5"
+    },
+    {
+      "attempt": 2,
+      "latency_seconds": 30.724,
+      "ok": true,
+      "phase": "branch_to_task_inversion",
+      "request_sha256": "fc3cf32c228f78335cb7ef707c2ef4fb1ca430e58ac62f4b30dfd99dec73f8e5",
+      "response_chars": 13293,
+      "response_sha256": "8c6151b5ab733ad92a88ec4c46768f6ce8b3f7daa05b0fd25dd842fd61d51703",
+      "status_code": 200
+    }
+  ],
+  "cap_respected": true,
+  "max_new_tasks": 2,
+  "output": "/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/artifacts/curriculum_round1/synthetic_hard_cases_v3.json",
+  "output_sha256": "41a9d23e9b18e70f5cc8a812205cfd87de4fabd70f92bab6fc29b243af85aaa3",
+  "rejected_output": "/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/artifacts/curriculum_round1/rejected_candidates_v3.json",
+  "rejected_output_sha256": "37517e5f3dc66819f61f5a7bb8ace1921282415f10551d2defa5c3eb0985b570",
+  "rejected_tasks": 0,
+  "requested_candidates": 2,
+  "retained_tasks": 1,
+  "schema_version": 1,
+  "secret_persisted": false,
+  "source_failure_manifest": "/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/artifacts/official_round0_single_tool_smoke_v3/failure_candidates_v2.json",
+  "source_failure_sha256": "8fe97fee890bbb2578aec6965ade9abe62528ef344e702fabc4b4f7877b60e80",
+  "status": "PASS",
+  "teacher_model": "deepseek-v4-flash-sa-256k",
+  "teacher_solved_and_branch_hit_required": true,
+  "teacher_substitution": "DeepSeek-v4-flash replaces Qwen3-235B for this bounded reproduction",
+  "timestamp": "2026-08-05T11:41:02.268032+00:00",
+  "validations": [
+    {
+      "branch_hit_diagnostics": {
+        "actual_tool_calls": [
+          {
+            "arguments": {
+              "authorized_by": "Dr. Anya Petrova",
+              "deletion_reason": "data error",
+              "record_id": "FR2023RO015"
+            },
+            "name": "delete_field_record"
+          }
+        ],
+        "expected_path": [
+          {
+            "expected_output": {
+              "audit_log_id": "AUDIT-2025-04-09-001",
+              "record_id": "FR2023RO015",
+              "status": "deleted",
+              "timestamp": "2025-04-09T12:00:00Z"
+            },
+            "input": {
+              "authorized_by": "Dr. Anya Petrova",
+              "deletion_reason": "data error",
+              "record_id": "FR2023RO015"
+            },
+            "tool_name": "delete_field_record"
+          }
+        ],
+        "matched_expected_calls": 1,
+        "reason": "matched",
+        "solvable": true,
+        "terminal": "###STOP"
+      },
+      "candidate_id": "curriculum-cdea6931-7cc9-40fa-8d7c-ee4c5c890a2b-1224-42d539f6e4",
+      "candidate_sha256": "1eb1434e62b8f563d2a5513911e7bff411784981dba03cbb5679fd1030dd07df",
+      "intended_branch_hit": true,
+      "retained": true,
+      "schema_valid": true,
+      "solution_sha256": "6a6cba3ae81d9b72b6c278471644589724a3732ef55037b1aa29c3252e76ac64",
+      "source_task_id": "cdea6931-7cc9-40fa-8d7c-ee4c5c890a2b-1224",
+      "teacher_solvable": true,
+      "teacher_solve_attempts": 1
+    },
+    {
+      "error": "candidate normal_path does not add a new branch",
+      "error_type": "ValueError",
+      "retained": false,
+      "source_task_id": "e1e7ec42-8a22-4ba1-8a50-4cf9178cc8f0-2266"
+    }
+  ]
+}

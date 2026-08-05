@@ -1,0 +1,68 @@
+{
+  "checks": [
+    {
+      "name": "round1_tree_sha256",
+      "path": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/agenticqwen_paper_micro/flywheel/round_1/behavior_tree.json",
+      "status": "PASS"
+    },
+    {
+      "name": "round1_tasks_sha256",
+      "path": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/agenticqwen_paper_micro/flywheel/round_1/training_tasks.jsonl",
+      "status": "PASS"
+    },
+    {
+      "name": "round1_validation_sha256",
+      "path": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/agenticqwen_paper_micro/flywheel/round_1/teacher_validation.jsonl",
+      "status": "PASS"
+    },
+    {
+      "candidates": 2,
+      "name": "round1_teacher_filter",
+      "retained": 2,
+      "status": "PASS"
+    },
+    {
+      "name": "round2_tree_sha256",
+      "path": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/agenticqwen_paper_micro/flywheel/round_2/behavior_tree.json",
+      "status": "PASS"
+    },
+    {
+      "name": "round2_tasks_sha256",
+      "path": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/agenticqwen_paper_micro/flywheel/round_2/training_tasks.jsonl",
+      "status": "PASS"
+    },
+    {
+      "name": "round2_validation_sha256",
+      "path": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/agenticqwen_paper_micro/flywheel/round_2/teacher_validation.jsonl",
+      "status": "PASS"
+    },
+    {
+      "candidates": 4,
+      "name": "round2_teacher_filter",
+      "retained": 4,
+      "status": "PASS"
+    },
+    {
+      "name": "round3_tree_sha256",
+      "path": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/agenticqwen_paper_micro/flywheel/round_3/behavior_tree.json",
+      "status": "PASS"
+    },
+    {
+      "name": "round3_tasks_sha256",
+      "path": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/agenticqwen_paper_micro/flywheel/round_3/training_tasks.jsonl",
+      "status": "PASS"
+    },
+    {
+      "name": "round3_validation_sha256",
+      "path": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/agenticqwen_paper_micro/flywheel/round_3/teacher_validation.jsonl",
+      "status": "PASS"
+    },
+    {
+      "candidates": 5,
+      "name": "round3_teacher_filter",
+      "retained": 5,
+      "status": "PASS"
+    }
+  ],
+  "overall_status": "PASS"
+}

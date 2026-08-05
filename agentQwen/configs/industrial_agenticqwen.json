@@ -1,0 +1,71 @@
+{
+  "schema_version": 1,
+  "upstream": {
+    "repo": "${AGENTICQWEN_UPSTREAM_REPO}",
+    "expected_remote": "github.com/haruhi-sudo/data_synth_and_rl",
+    "source_commit": "760825ccab31c6383ea6bc51e0594141a27905ce",
+    "source_remote": "https://github.com/haruhi-sudo/data_synth_and_rl.git"
+  },
+  "provider": {
+    "teacher_model": "deepseek-v4-flash-sa-256k",
+    "teacher_substitution": "DeepSeek-v4-flash replaces the paper's Qwen3-235B-A22B teacher/simulator/judge; paper-number claims remain disabled.",
+    "base_url_env": "AIGC_BASE_URL",
+    "api_key_envs": ["AIGC_APP_ID", "AGENTICQWEN_TEACHER_API_KEY", "DASHSCOPE_API_KEY"],
+    "api_key_files": ["${AGENTICQWEN_TEACHER_API_KEY_FILE}"]
+  },
+  "resource_contract": {
+    "policy_model": "Qwen/Qwen3-8B",
+    "policy_gpu": "single H200 is supported for a bounded profile; paper recipe is 8xH100",
+    "teacher": "external OpenAI-compatible endpoint; credential is injected at runtime",
+    "paper_scale": "requires approximately 100K tasks, multi-GPU verl/SGLang, and the exact teacher family"
+  },
+  "stages": {
+    "data_gen": {
+      "cwd": "${AGENTICQWEN_UPSTREAM_REPO}/tool_use_data_synthesis",
+      "command": ["${PYTHON_BIN}", "run_data_gen.py", "--config", "${PROJECT_ROOT}/configs/official_ds_v4_bounded10_data_gen.yaml"],
+      "output_paths": ["${AGENTICQWEN_UPSTREAM_REPO}/tool_use_data_synthesis/output"],
+      "env_names": ["AIGC_APP_ID", "AIGC_BASE_URL", "REWARD_API_KEY"]
+    },
+    "solve": {
+      "cwd": "${AGENTICQWEN_UPSTREAM_REPO}/tool_use_data_synthesis",
+      "command": ["${PYTHON_BIN}", "run_solve_task.py", "--config", "${PROJECT_ROOT}/configs/official_ds_v4_bounded10_solve.yaml"],
+      "output_paths": ["${AGENTICQWEN_UPSTREAM_REPO}/tool_use_data_synthesis/output"],
+      "env_names": ["AIGC_APP_ID", "AIGC_BASE_URL", "REWARD_API_KEY"]
+    },
+    "rubric": {
+      "cwd": "${AGENTICQWEN_UPSTREAM_REPO}/tool_use_data_synthesis",
+      "command": ["${PYTHON_BIN}", "run_rubrics.py", "--config", "${PROJECT_ROOT}/configs/official_ds_v4_bounded10_rubrics.yaml"],
+      "output_paths": ["${AGENTICQWEN_UPSTREAM_REPO}/tool_use_data_synthesis/output"],
+      "env_names": ["AIGC_APP_ID", "AIGC_BASE_URL", "REWARD_API_KEY"]
+    },
+    "filter": {
+      "cwd": "${PROJECT_ROOT}",
+      "command": ["${PYTHON_BIN}", "scripts/prepare_official_agentic_data.py", "--official-data", "${AGENTICQWEN_RUN_ROOT}/data/official/agenticqwen_synthetic_data.parquet", "--official-train-count", "512", "--synthetic-data", "${AGENTICQWEN_UPSTREAM_REPO}/tool_use_data_synthesis/output/agenticqwen_ds_v4_filtered.json", "--allow-missing-synthetic", "--synthetic-cap", "10", "--validation-count", "64", "--seed", "agenticqwen-official-holdout-v1", "--output-dir", "${AGENTICQWEN_UPSTREAM_REPO}/RL/my_data/raw/tool_use/industrial_official_pool_bounded10"],
+      "output_paths": ["${AGENTICQWEN_UPSTREAM_REPO}/RL/my_data/raw/tool_use/industrial_official_pool_bounded10/tool_use_data_train.json", "${AGENTICQWEN_UPSTREAM_REPO}/RL/my_data/raw/tool_use/industrial_official_pool_bounded10/tool_use_data_val.json", "${AGENTICQWEN_UPSTREAM_REPO}/RL/my_data/raw/tool_use/industrial_official_pool_bounded10/dataset_manifest.json"],
+      "env_names": []
+    },
+    "convert": {
+      "cwd": "${AGENTICQWEN_UPSTREAM_REPO}/RL",
+      "command": ["${PYTHON_BIN}", "my_script/data_process/virtual_tool_use_convert_parquet.py", "--local_dir", "my_data/tmp/industrial_official_pool_bounded10", "--train_data_source", "my_data/raw/tool_use/industrial_official_pool_bounded10/tool_use_data_train.json", "--test_data_source", "my_data/raw/tool_use/industrial_official_pool_bounded10/tool_use_data_val.json"],
+      "output_paths": ["${AGENTICQWEN_UPSTREAM_REPO}/RL/my_data/tmp/industrial_official_pool_bounded10/train.parquet", "${AGENTICQWEN_UPSTREAM_REPO}/RL/my_data/tmp/industrial_official_pool_bounded10/val.parquet"],
+      "env_names": []
+    },
+    "train": {
+      "cwd": "${PROJECT_ROOT}",
+      "command": ["bash", "scripts/run_official_agenticqwen_h200.sh"],
+      "output_paths": ["${AGENTICQWEN_RUN_ROOT}/artifacts/official_grpo_h200/checkpoints", "${AGENTICQWEN_RUN_ROOT}/artifacts/official_grpo_h200/rollouts", "${AGENTICQWEN_RUN_ROOT}/artifacts/official_grpo_h200/validation"],
+      "env_names": ["AIGC_APP_ID_FILE", "AGENTICQWEN_API_BASE", "AGENTICQWEN_TEACHER_MODEL"]
+    },
+    "evaluate": {
+      "cwd": "${PROJECT_ROOT}",
+      "command": ["${PYTHON_BIN}", "-m", "agentic_repro.cloud_bfcl", "--run-root", "${AGENTICQWEN_RUN_ROOT}", "--tasks-per-category", "200"],
+      "output_paths": ["${AGENTICQWEN_RUN_ROOT}/benchmarks"],
+      "env_names": ["AGENTICQWEN_MODEL_PATH", "AGENTICQWEN_BFCL_SERVER_SCRIPT"]
+    }
+  },
+  "stage_env": {
+    "AIGC_BASE_URL": "https://aigc.sankuai.com/v1/openai/native",
+    "REWARD_API_BASE": "https://aigc.sankuai.com/v1/openai/native",
+    "REWARD_MODEL_NAME": "deepseek-v4-flash-sa-256k"
+  }
+}

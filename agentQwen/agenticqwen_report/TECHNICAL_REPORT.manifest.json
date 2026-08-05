@@ -1,12 +1,14 @@
 {
-  "bfcl_verification": "NOT_RUN",
-  "claim_boundary": "small-scale real run; paper-scale not claimed",
+  "bfcl_verification": "PASS",
+  "claim_boundary": "official two-round micro run plus earlier QLoRA run; paper-scale and holdout improvement not claimed",
   "curriculum_verification": "PASS",
   "independent_review": "REVIEW_UNAVAILABLE",
-  "run_root": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/cloud_runs/qwen3-8b-qlora-20260804-v2/evidence",
-  "run_summary_sha256": "90c2258cc7491e9eee1da6e12724d35bd3b09ee540b2c0abefed12d2370411c5",
+  "official_run_root": "artifacts/official_agenticqwen_h200",
+  "earlier_qlora_run_root": "artifacts/cloud_codelab/agenticqwen_codelab_curriculum_run1",
+  "run_summary_sha256": "6dbcb6b01a818e0dab1f166e8730148cf7dabff5843415a900426b046db8bae8",
   "schema_version": 1,
   "source": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/agenticqwen_report/TECHNICAL_REPORT.md",
-  "source_sha256": "dcd36401a6a494ef8a3230b0c1e955574363ac9615c6798bcd8981b5dd807dd3",
-  "status": "READY_FOR_RENDER"
+  "source_sha256": "4862b0f998a0fcae0a499a4be6b52996087daf8e2f16536fca58b9f401c3406a",
+  "status": "GENERATED",
+  "html_sha256": "4126ab52aba4ab8b0c62d21cd2961b7d763c0719adec8eadccef7ab0a7cf1c0f"
 }

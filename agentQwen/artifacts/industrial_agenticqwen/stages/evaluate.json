@@ -1,0 +1,49 @@
+{
+  "command": {
+    "argv": [
+      "python3",
+      "-m",
+      "agentic_repro.cloud_bfcl",
+      "--run-root",
+      "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/industrial_agenticqwen",
+      "--tasks-per-category",
+      "200"
+    ],
+    "command": "python3 -m agentic_repro.cloud_bfcl --run-root /Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/industrial_agenticqwen --tasks-per-category 200",
+    "cwd": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction",
+    "env_configured": {
+      "AGENTICQWEN_BFCL_SERVER_SCRIPT": false,
+      "AGENTICQWEN_MODEL_PATH": false,
+      "AGENTICQWEN_TEACHER_API_KEY": false,
+      "AIGC_APP_ID": false,
+      "DASHSCOPE_API_KEY": false
+    },
+    "env_names": [
+      "AGENTICQWEN_BFCL_SERVER_SCRIPT",
+      "AGENTICQWEN_MODEL_PATH",
+      "AGENTICQWEN_TEACHER_API_KEY",
+      "AIGC_APP_ID",
+      "DASHSCOPE_API_KEY"
+    ]
+  },
+  "finished_at": "2026-08-05T08:45:15.691779+00:00",
+  "log": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/industrial_agenticqwen/stages/evaluate.log",
+  "outputs": [
+    {
+      "bytes": 0,
+      "exists": false,
+      "files": 0,
+      "path": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/industrial_agenticqwen/benchmarks"
+    }
+  ],
+  "resource_contract": {
+    "paper_scale": "requires approximately 100K tasks, multi-GPU verl/SGLang, and the exact teacher family",
+    "policy_gpu": "single H200 is supported for a bounded profile; paper recipe is 8xH100",
+    "policy_model": "Qwen/Qwen3-8B",
+    "teacher": "external OpenAI-compatible endpoint; credential is injected at runtime"
+  },
+  "schema_version": 1,
+  "stage": "evaluate",
+  "started_at": "2026-08-05T08:45:15.691666+00:00",
+  "status": "dry_run"
+}

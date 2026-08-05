@@ -1,0 +1,22 @@
+{
+  "api_base": "https://aigc.sankuai.com/v1/openai/native",
+  "attempt_count": 1,
+  "attempts": [
+    {
+      "attempt": 1,
+      "latency_seconds": 0.49,
+      "ok": true,
+      "response_chars": 2,
+      "response_sha256": "565339bc4d33d72817b583024112eb7f5cdf3e5eef0252d6ec1b9c9a94e12bb3",
+      "status_code": 200
+    }
+  ],
+  "max_attempts": 1,
+  "model": "deepseek-v4-flash-sa-256k",
+  "schema_version": 1,
+  "secret_persisted": false,
+  "status": "PASS",
+  "stop_after_success": true,
+  "successes": 1,
+  "timestamp": "2026-08-05T11:15:34.400738+00:00"
+}

@@ -1,0 +1,51 @@
+{
+  "algorithm": "AgenticQwen §3.3 behavior-tree data flywheel",
+  "paper_scale_claimed": false,
+  "round_count": 3,
+  "rounds": [
+    {
+      "candidate_count": 2,
+      "paths": {
+        "tasks": "round_1/training_tasks.jsonl",
+        "tree": "round_1/behavior_tree.json",
+        "validation": "round_1/teacher_validation.jsonl"
+      },
+      "retained_count": 2,
+      "round_index": 1,
+      "tasks_sha256": "cd88774f48e924b951ebb0c5fdc8212619fa79133e8fe40d1b84f12ba732881d",
+      "tree_revision": 1,
+      "tree_sha256": "59635af1f646cf95d13a13ad3a6b74c51d81b7ef07a61f711790c0572a42d1e5",
+      "validation_sha256": "475945ed8b01f319a591f8efbc863862a56e9b43a1889a9f8055ccb6ce1f37ad"
+    },
+    {
+      "candidate_count": 4,
+      "paths": {
+        "tasks": "round_2/training_tasks.jsonl",
+        "tree": "round_2/behavior_tree.json",
+        "validation": "round_2/teacher_validation.jsonl"
+      },
+      "retained_count": 4,
+      "round_index": 2,
+      "tasks_sha256": "dc7fe23e037180ce9386ee4576ebc90d918578c08467c2f9abb3b28b9452b413",
+      "tree_revision": 2,
+      "tree_sha256": "17243c4a2b87968db9d6cf40bd9709578bac085ab265da4dfb3d998579d33f84",
+      "validation_sha256": "f949ece5e24371ccd406383db77e3be3b8a8d0d61b15a3c278b7c9f0da18e7f1"
+    },
+    {
+      "candidate_count": 5,
+      "paths": {
+        "tasks": "round_3/training_tasks.jsonl",
+        "tree": "round_3/behavior_tree.json",
+        "validation": "round_3/teacher_validation.jsonl"
+      },
+      "retained_count": 5,
+      "round_index": 3,
+      "tasks_sha256": "a37dbcbb534eea751322b1cf05364079842326c344af0ae4825dba6be3b62e71",
+      "tree_revision": 3,
+      "tree_sha256": "203b125720dc8dd25f6d3f2700b8e4090b2ffacede4c961e27ea59107d496a5e",
+      "validation_sha256": "e784b5b3fe1a0008b85619f2dc9a3b3705b75e569f31e93db1ee11e4d8c34a14"
+    }
+  ],
+  "schema_version": 1,
+  "teacher_model": "deterministic-contract-backend"
+}

@@ -1,0 +1,111 @@
+{
+  "artifact_manifest_sha256": "1e292b65e416e8a9ab673e5f81d21cbfdd1f38d8378b99f01450b3ca1f852575",
+  "flywheel_hash_checks": [
+    {
+      "actual": "59635af1f646cf95d13a13ad3a6b74c51d81b7ef07a61f711790c0572a42d1e5",
+      "expected": "59635af1f646cf95d13a13ad3a6b74c51d81b7ef07a61f711790c0572a42d1e5",
+      "kind": "tree",
+      "passed": true,
+      "round": 1
+    },
+    {
+      "actual": "cd88774f48e924b951ebb0c5fdc8212619fa79133e8fe40d1b84f12ba732881d",
+      "expected": "cd88774f48e924b951ebb0c5fdc8212619fa79133e8fe40d1b84f12ba732881d",
+      "kind": "tasks",
+      "passed": true,
+      "round": 1
+    },
+    {
+      "actual": "475945ed8b01f319a591f8efbc863862a56e9b43a1889a9f8055ccb6ce1f37ad",
+      "expected": "475945ed8b01f319a591f8efbc863862a56e9b43a1889a9f8055ccb6ce1f37ad",
+      "kind": "validation",
+      "passed": true,
+      "round": 1
+    },
+    {
+      "actual": "17243c4a2b87968db9d6cf40bd9709578bac085ab265da4dfb3d998579d33f84",
+      "expected": "17243c4a2b87968db9d6cf40bd9709578bac085ab265da4dfb3d998579d33f84",
+      "kind": "tree",
+      "passed": true,
+      "round": 2
+    },
+    {
+      "actual": "dc7fe23e037180ce9386ee4576ebc90d918578c08467c2f9abb3b28b9452b413",
+      "expected": "dc7fe23e037180ce9386ee4576ebc90d918578c08467c2f9abb3b28b9452b413",
+      "kind": "tasks",
+      "passed": true,
+      "round": 2
+    },
+    {
+      "actual": "f949ece5e24371ccd406383db77e3be3b8a8d0d61b15a3c278b7c9f0da18e7f1",
+      "expected": "f949ece5e24371ccd406383db77e3be3b8a8d0d61b15a3c278b7c9f0da18e7f1",
+      "kind": "validation",
+      "passed": true,
+      "round": 2
+    },
+    {
+      "actual": "203b125720dc8dd25f6d3f2700b8e4090b2ffacede4c961e27ea59107d496a5e",
+      "expected": "203b125720dc8dd25f6d3f2700b8e4090b2ffacede4c961e27ea59107d496a5e",
+      "kind": "tree",
+      "passed": true,
+      "round": 3
+    },
+    {
+      "actual": "a37dbcbb534eea751322b1cf05364079842326c344af0ae4825dba6be3b62e71",
+      "expected": "a37dbcbb534eea751322b1cf05364079842326c344af0ae4825dba6be3b62e71",
+      "kind": "tasks",
+      "passed": true,
+      "round": 3
+    },
+    {
+      "actual": "e784b5b3fe1a0008b85619f2dc9a3b3705b75e569f31e93db1ee11e4d8c34a14",
+      "expected": "e784b5b3fe1a0008b85619f2dc9a3b3705b75e569f31e93db1ee11e4d8c34a14",
+      "kind": "validation",
+      "passed": true,
+      "round": 3
+    }
+  ],
+  "paper_scale_claimed": false,
+  "runtime": {
+    "executable": "/home/hadoop-aipnlp/.conda/envs/agenticqwen-py310/bin/python",
+    "gpu_probe": {
+      "command": [
+        "nvidia-smi",
+        "--query-gpu=name,memory.total,driver_version",
+        "--format=csv,noheader"
+      ],
+      "output": "NVIDIA H200, 143771 MiB, 550.127.08\n",
+      "returncode": 0
+    },
+    "platform": "Linux-5.10.0-218.0.0.mt20250120.565.mt2203sp4.x86_64-x86_64-with-glibc2.28",
+    "python": "3.10.14"
+  },
+  "schema_version": 1,
+  "scope": "CodeLab CPU contract/debug validation; no model weights downloaded and no GRPO optimizer run",
+  "source_sha256": {
+    "configs/agenticqwen_paper_micro.json": "a24ee60a7e98cd4003342a609eecaf40563d79fad9a99fed7c4ae25a8d8112f9",
+    "src/agentic_repro/paper_flywheel.py": "a9a3e59d99dc8bd30f4600de4c8e7fa4c64228f6d187c165d7c8e5108f5509ac",
+    "src/agentic_repro/paper_flywheel_env.py": "1334fdd2b6fca46565ea11bc3db6a85f191ba03ed94a2d4167835244af3401f7",
+    "src/agentic_repro/paper_flywheel_schema.py": "6654909cb3fcc160f31f64ab19c3fe2134d265646c12a7b0bf364d3bee2d157f",
+    "src/agentic_repro/paper_grpo_train.py": "3b668ba4d25296c9e73250f4a9e3aab806d0bea8980d4adf0920c568f1d8a018",
+    "tests/test_paper_flywheel.py": "1a542762dbeb3f7f4e1afb453791e134ef5ab088c6d3ac7c8205b236874f8b7b"
+  },
+  "status": "PASS",
+  "tests": {
+    "command": [
+      "/home/hadoop-aipnlp/.conda/envs/agenticqwen-py310/bin/python",
+      "-m",
+      "unittest",
+      "discover",
+      "-s",
+      "tests",
+      "-p",
+      "test_*.py",
+      "-v"
+    ],
+    "output": "test_branch_to_task_inversion_has_three_inputs_and_auditable_paths (test_paper_flywheel.PaperFlywheelTests) ... ok\ntest_contract_artifacts_have_hash_verifiable_round_files (test_paper_flywheel.PaperFlywheelTests) ... ok\ntest_environment_exposes_no_audit_backdoor_as_a_tool (test_paper_flywheel.PaperFlywheelTests) ... ok\ntest_every_adversarial_candidate_exercises_mock_user (test_paper_flywheel.PaperFlywheelTests) ... ok\ntest_full_train_refuses_contract_teacher_by_default (test_paper_flywheel.PaperFlywheelTests) ... ok\ntest_json_extractor_accepts_fenced_teacher_output (test_paper_flywheel.PaperFlywheelTests) ... ok\ntest_micro_config_has_round_zero_through_three (test_paper_flywheel.PaperFlywheelTests) ... ok\ntest_policy_trace_reader_enforces_normalized_reward (test_paper_flywheel.PaperFlywheelTests) ... ok\ntest_round_zero_instantiates_linear_seed_in_multiple_contexts (test_paper_flywheel.PaperFlywheelTests) ... ok\ntest_seed_tree_is_exactly_one_synthagent_happy_path (test_paper_flywheel.PaperFlywheelTests) ... ok\ntest_standard_member_adversary_cannot_turn_voucher_into_cash (test_paper_flywheel.PaperFlywheelTests) ... ok\ntest_task_rows_do_not_leak_ground_truth_path_into_policy_prompt (test_paper_flywheel.PaperFlywheelTests) ... ok\ntest_teacher_gate_rejects_candidate_that_misses_selected_branch (test_paper_flywheel.PaperFlywheelTests) ... ok\ntest_three_rounds_grow_linear_workflow_into_behavior_tree (test_paper_flywheel.PaperFlywheelTests) ... ok\ntest_lata_dilutes_less_than_linear (test_pipeline.AblationKernelTests) ... ok\ntest_prm_lite_penalizes_unsafe_action (test_pipeline.AblationKernelTests) ... ok\ntest_process_reward_breaks_all_wrong_tie (test_pipeline.AblationKernelTests) ... ok\ntest_turn_discount_is_normalized (test_pipeline.AblationKernelTests) ... ok\ntest_bfcl_partial_eval_uses_official_subset_flags (test_pipeline.BenchmarkCommandTests) ... ok\ntest_cloud_bfcl_adapter_is_served_under_the_base_model_id (test_pipeline.BenchmarkCommandTests) ... ok\ntest_cloud_bfcl_uses_local_snapshot_but_preserves_served_model_id (test_pipeline.BenchmarkCommandTests) ... ok\ntest_tau2_paper_command_omits_task_cap (test_pipeline.BenchmarkCommandTests) ... ok\ntest_failure_driven_synthesis_preserves_ground_truth_isolation (test_pipeline.CurriculumEnvironmentTests) ... ok\ntest_retry_after_transient_error_is_not_classified_as_unrecovered (test_pipeline.CurriculumEnvironmentTests) ... ok\ntest_stateful_curriculum_episode_reaches_verified_write (test_pipeline.CurriculumEnvironmentTests) ... ok\ntest_unrecovered_transient_error_is_classified_before_missing_read (test_pipeline.CurriculumEnvironmentTests) ... ok\ntest_write_before_reads_is_blocked_and_penalized (test_pipeline.CurriculumEnvironmentTests) ... ok\ntest_adapter_integrity_uses_exact_safetensors_payload (test_pipeline.CurriculumIntegrityTests) ... ok\ntest_curriculum_copies_modelscope_snapshot_manifest (test_pipeline.CurriculumIntegrityTests) ... ok\ntest_curriculum_model_path_override_changes_location_only (test_pipeline.CurriculumIntegrityTests) ... ok\ntest_final_report_rejects_synthetic_pass_fixture (test_pipeline.CurriculumIntegrityTests) ... ok\ntest_layout_fixture_requires_explicit_override (test_pipeline.CurriculumIntegrityTests) ... ok\ntest_stage1_and_failure_driven_tasks_include_frontier_perturbations (test_pipeline.CurriculumIntegrityTests) ... ok\ntest_stage_skip_rejects_legacy_summary_without_weight_hash (test_pipeline.CurriculumIntegrityTests) ... ok\ntest_success_reward_distinguishes_task_bound_write_arguments (test_pipeline.CurriculumIntegrityTests) ... ok\ntest_adversarial_standard_member_gets_voucher (test_pipeline.EnvironmentTests) ... ok\ntest_wrong_cash_is_unsafe (test_pipeline.EnvironmentTests) ... ok\ntest_complete_refund_trajectory_passes_verifier (test_pipeline.LongHorizonEnvironmentTests) ... ok\ntest_refund_write_is_blocked_before_verification (test_pipeline.LongHorizonEnvironmentTests) ... ok\ntest_parser_accepts_json_after_think (test_pipeline.PolicyTests) ... ok\ntest_training_is_deterministic (test_pipeline.PolicyTests) ... ok\n\n----------------------------------------------------------------------\nRan 41 tests in 0.273s\n\nOK\n",
+    "passed": true,
+    "returncode": 0,
+    "test_count": 41
+  }
+}

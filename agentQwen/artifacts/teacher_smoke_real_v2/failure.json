@@ -1,0 +1,7 @@
+{
+  "elapsed_seconds": 657.086,
+  "error": "Strong model could not produce a valid behavior-tree expansion after retries",
+  "error_type": "RuntimeError",
+  "status": "failed",
+  "traceback": "Traceback (most recent call last):\n  File \"/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/src/agentic_repro/paper_flywheel.py\", line 807, in evolve_one\n    expanded = self.strong_model.expand_behavior_tree(tree, rollouts)\n  File \"/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/src/agentic_repro/paper_flywheel.py\", line 501, in expand_behavior_tree\n    expanded = BehaviorTree.from_dict(self._complete_json(prompt))\n  File \"/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/src/agentic_repro/paper_flywheel_schema.py\", line 170, in from_dict\n    tree.validate()\n  File \"/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/src/agentic_repro/paper_flywheel_schema.py\", line 80, in validate\n    raise ValueError(\"Behavior tree nodes must have at most one parent\")\nValueError: Behavior tree nodes must have at most one parent\n\nThe above exception was the direct cause of the following exception:\n\nTraceback (most recent call last):\n  File \"/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/scripts/teacher_smoke.py\", line 57, in main\n    evolution = flywheel.evolve_one(\n  File \"/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/src/agentic_repro/paper_flywheel.py\", line 813, in evolve_one\n    raise RuntimeError(\nRuntimeError: Strong model could not produce a valid behavior-tree expansion after retries\n"
+}

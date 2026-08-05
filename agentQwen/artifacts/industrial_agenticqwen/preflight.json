@@ -1,0 +1,65 @@
+{
+  "credentials": {
+    "api_key_envs": [
+      "AIGC_APP_ID",
+      "AGENTICQWEN_TEACHER_API_KEY",
+      "DASHSCOPE_API_KEY"
+    ],
+    "api_key_files": [
+      {
+        "exists": false,
+        "path": "${AGENTICQWEN_TEACHER_API_KEY_FILE}"
+      }
+    ],
+    "base_url_env": "AIGC_BASE_URL",
+    "configured": false,
+    "configured_envs": [],
+    "teacher_model": "deepseek-v4-flash-sa-256k",
+    "teacher_substitution": "DeepSeek-v4-flash replaces the paper's Qwen3-235B-A22B teacher/simulator/judge; paper-number claims remain disabled."
+  },
+  "missing": {},
+  "platform": {
+    "platform": "macOS-26.2-arm64-arm-64bit",
+    "python": "3.9.6 (default, Jan  9 2026, 11:03:41) \n[Clang 17.0.0 (clang-1700.6.4.2)]"
+  },
+  "required_scripts": {
+    "convert": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/work/upstream/data_synth_and_rl/RL/my_script/data_process/virtual_tool_use_convert_parquet.py",
+    "data_gen": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/work/upstream/data_synth_and_rl/tool_use_data_synthesis/run_data_gen.py",
+    "filter": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/work/upstream/data_synth_and_rl/tool_use_data_synthesis/make_filtered_verl_data.py",
+    "rubric": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/work/upstream/data_synth_and_rl/tool_use_data_synthesis/run_rubrics.py",
+    "solve": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/work/upstream/data_synth_and_rl/tool_use_data_synthesis/run_solve_task.py"
+  },
+  "resource_contract": {
+    "paper_scale": "requires approximately 100K tasks, multi-GPU verl/SGLang, and the exact teacher family",
+    "policy_gpu": "single H200 is supported for a bounded profile; paper recipe is 8xH100",
+    "policy_model": "Qwen/Qwen3-8B",
+    "teacher": "external OpenAI-compatible endpoint; credential is injected at runtime"
+  },
+  "schema_version": 1,
+  "status": "PASS",
+  "timestamp": "2026-08-05T08:45:15.674085+00:00",
+  "upstream": {
+    "expected_remote": "github.com/haruhi-sudo/data_synth_and_rl",
+    "git": {
+      "commit": "760825ccab31c6383ea6bc51e0594141a27905ce",
+      "dirty": true,
+      "is_git": true,
+      "remote": "https://github.com/haruhi-sudo/data_synth_and_rl.git"
+    },
+    "paths": {
+      "convert": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/work/upstream/data_synth_and_rl/RL/my_script/data_process/virtual_tool_use_convert_parquet.py",
+      "data_gen": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/work/upstream/data_synth_and_rl/tool_use_data_synthesis/run_data_gen.py",
+      "filter": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/work/upstream/data_synth_and_rl/tool_use_data_synthesis/make_filtered_verl_data.py",
+      "repo": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/work/upstream/data_synth_and_rl",
+      "rl": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/work/upstream/data_synth_and_rl/RL",
+      "rubric": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/work/upstream/data_synth_and_rl/tool_use_data_synthesis/run_rubrics.py",
+      "solve": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/work/upstream/data_synth_and_rl/tool_use_data_synthesis/run_solve_task.py",
+      "synthesis": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/work/upstream/data_synth_and_rl/tool_use_data_synthesis"
+    },
+    "remote_ok": true
+  },
+  "warnings": [
+    "teacher credential is not configured in this process; remote launch may provide it",
+    "upstream checkout is dirty; pin or archive the commit before a paper claim"
+  ]
+}

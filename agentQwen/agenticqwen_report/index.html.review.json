@@ -1,8 +1,22 @@
 {
-  "fabricated_pass": false,
-  "reason": "The render-html skill requires an independent cross-model review, but no independent reviewer tool is available in this runtime.",
-  "schema_version": 1,
-  "source": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/agenticqwen_report/TECHNICAL_REPORT.md",
-  "source_sha256": "dcd36401a6a494ef8a3230b0c1e955574363ac9615c6798bcd8981b5dd807dd3",
-  "status": "REVIEW_UNAVAILABLE"
+  "verdict": "REVIEW_UNAVAILABLE",
+  "source_sha256": "4862b0f998a0fcae0a499a4be6b52996087daf8e2f16536fca58b9f401c3406a",
+  "output_sha256": "4126ab52aba4ab8b0c62d21cd2961b7d763c0719adec8eadccef7ab0a7cf1c0f",
+  "checks": {
+    "source_hash_embedded": "pass",
+    "key_official_pool_value_present": "pass",
+    "round0_gradient_present": "pass",
+    "round1_gradient_present": "pass",
+    "holdout_boundary_present": "pass",
+    "placeholder_leak": "pass"
+  },
+  "blocking_issues": [],
+  "warnings": [
+    {
+      "severity": "warn",
+      "issue": "A fresh cross-model HTML render reviewer was not available in this runtime.",
+      "suggested_fix": "Run the render-html review gate when a cross-model Codex MCP reviewer is available."
+    }
+  ],
+  "summary": "The project-specific yyhdbl renderer completed deterministic source-hash and key-content checks; independent cross-model render review remains unavailable."
 }

@@ -1,68 +1,54 @@
 {
-  "schema_version": 1,
-  "generated_at": "2026-08-03T16:59:19.080627+00:00",
+  "schema_version": 2,
+  "generated_at": "2026-08-05T20:08:58+08:00",
   "claim_boundary": {
+    "official_two_round_execution_completed": true,
+    "official_two_round_learning_signal_pass": true,
+    "official_holdout_improvement_observed": false,
     "paper_scale_claimed": false,
-    "cloud_curriculum_completed": false,
-    "sft_completed": false,
-    "bfcl_completed": false,
-    "tau2_completed": false
+    "tau2_completed": false,
+    "bfcl_quality_improvement_claimed": false
   },
-  "actual_runs": {
-    "local_qwen3_8b_action_masked": {
-      "status": "PARTIAL_RUN",
-      "summary": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/real_qwen3_8b/summary.json",
-      "verification": "PASS"
+  "official_run": {
+    "gpu": "NVIDIA H200",
+    "model": "Qwen/Qwen3-8B",
+    "training_stack": "AgenticQwen official verl + SGLang + BF16 FSDP GRPO",
+    "official_pool_rows": 37401,
+    "synthetic_cap": 10,
+    "synthetic_rows_consumed": 1,
+    "round0": {
+      "status": "PASS",
+      "learning_signal_status": "PASS",
+      "rollouts": 8,
+      "reward_mean": 0.125,
+      "grad_norm": 1.484375
     },
-    "qwen3_7_flash_trajectory": {
-      "status": "COMPLETE",
-      "trajectory_id": "traj-38135bd79aff",
-      "verifier": "PASS"
+    "round1": {
+      "status": "PASS",
+      "learning_signal_status": "PASS",
+      "rollouts": 12,
+      "reward_mean": 0.3333333333333333,
+      "grad_norm": 1.2734375,
+      "holdout_score": 0.0,
+      "fresh_process_reload": "PASS"
     }
-  },
-  "not_run": {
-    "cloud_run_file_count": 0,
-    "sft": "NOT_IMPLEMENTED",
-    "bfcl_tau2": "PLANNED_NOT_RUN",
-    "paper_round_0_3": "BLOCKED_RESOURCE"
   },
   "sources": {
-    "artifacts/real_qwen3_8b/summary.json": {
-      "sha256": "b2b7e9ee73e3320226906f0793fab4505d3461d22dd03445628812eddbb8f7c5",
-      "bytes": 2700
-    },
-    "artifacts/real_qwen3_8b/verification.json": {
-      "sha256": "5ff3bcb6af2a64652eb23ea4aee857e558315b5c095ca59fb2355b677e64c53c",
-      "bytes": 2102
-    },
-    "artifacts/long_horizon/trajectory_qwen3.7_flash.json": {
-      "sha256": "830e1f1753ebc54c87958b9ffff3dcd9a34033a04faa0ed4b26e945f9422f2b1",
-      "bytes": 27863
-    },
-    "artifacts/ablations/offline_reward_diagnostic.json": {
-      "sha256": "41df7caad8143327740be96f9c575aeddc6b1de9b6977ee69e850f9f3d1e647e",
-      "bytes": 106751
-    },
-    "artifacts/benchmarks/planned_manifest.json": {
-      "sha256": "a02f4101e48de30401acbc67a40d43095e03e1f483a8a8e3ff8b4866c92a3ba8",
-      "bytes": 8614
-    },
-    "configs/curriculum_qwen3_8b.json": {
-      "sha256": "b4354fdb75e05073aaa96505d4fefe93d4935c9ec3c3bdf3d18ae391ea10148e",
-      "bytes": 1938
-    }
+    "artifacts/official_agenticqwen_h200/round0/audit.json": "f503c437dd292faed60b36acd0d167aa879c074e09014a76ca5b1c8af3a96800",
+    "artifacts/official_agenticqwen_h200/round0/dataset_manifest.json": "91582e2ccd9f11a742fc0abb10cd3556f4d542a4d220c59bd7cf20308135eef5",
+    "artifacts/official_agenticqwen_h200/round0/failure_candidates.json": "8fe97fee890bbb2578aec6965ade9abe62528ef344e702fabc4b4f7877b60e80",
+    "artifacts/official_agenticqwen_h200/round1/audit.json": "29b7cdc23594b01588cb2e407984d4a072b593321395cf53fee9f67d05680edc",
+    "artifacts/official_agenticqwen_h200/round1/dataset_manifest.json": "724521c2afca2b16cd3bb52225233f2d819a4304988880e3d361daf4d093b888",
+    "artifacts/official_agenticqwen_h200/round1/synthesis/manifest.json": "1b95bca517b9c2f20e29fd41fbad826b98f20b8845ef9b90a3185c4cb3c8ab9f",
+    "artifacts/official_agenticqwen_h200/round1/fresh_process_reload.json": "40ff7476d95dadce145a21fb4742743b89ed62b89eed241b99a71af534e2bde9",
+    "artifacts/official_agenticqwen_h200/runtime_patches.json": "5cfe7fa6b2d236e3d44b52f4258fbf2797978c2dcea29252d0e75899584f7556"
   },
   "report": {
-    "markdown": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/agenticqwen_report/TECHNICAL_REPORT.md",
-    "markdown_sha256": "a731b2005ba0fe00792e65d2ddbf3924e493b33eb61f9e16498cef0de2a63d9a",
-    "html": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/agenticqwen_report/index.html",
+    "markdown": "TECHNICAL_REPORT.md",
+    "markdown_sha256": "4862b0f998a0fcae0a499a4be6b52996087daf8e2f16536fca58b9f401c3406a",
+    "html": "index.html",
+    "html_sha256": "4126ab52aba4ab8b0c62d21cd2961b7d763c0719adec8eadccef7ab0a7cf1c0f",
     "renderer": "agentic_repro.blog_renderer",
-    "rendered": {
-      "source": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/agenticqwen_report/TECHNICAL_REPORT.md",
-      "output": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/agenticqwen_report/index.html",
-      "source_sha256": "a731b2005ba0fe00792e65d2ddbf3924e493b33eb61f9e16498cef0de2a63d9a",
-      "output_sha256": "9119bf9cb29e91300f6f8a6ba74e43a8f76ca9d512ef7a65a02dd40675e1ad8d",
-      "generated_at": "2026-08-04T00:59:19+08:00"
-    }
+    "independent_render_review": "REVIEW_UNAVAILABLE"
   }
 }

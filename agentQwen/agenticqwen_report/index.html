@@ -5,9 +5,9 @@
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <meta name="generator" content="agentic_repro.blog_renderer">
   <meta name="source-path" content="/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/agenticqwen_report/TECHNICAL_REPORT.md">
-  <meta name="source-sha256" content="1eb59c20c7c0990c47836472a1e9826b9958dd207de466c2a1ae906db3383c99">
-  <meta name="generated-at" content="2026-08-04T13:46:59+08:00">
-  <title>AgenticQwen：从失败轨迹到下一轮训练</title>
+  <meta name="source-sha256" content="4862b0f998a0fcae0a499a4be6b52996087daf8e2f16536fca58b9f401c3406a">
+  <meta name="generated-at" content="2026-08-05T20:08:58+08:00">
+  <title>AgenticQwen：官方数据、失败飞轮与两轮 GRPO</title>
   <style>
 :root {
   --ink: #28231f;
@@ -202,12 +202,81 @@ figcaption { margin-top: 10px; color: var(--muted); font-size: 13px; line-height
   <main class="page-shell">
     <article class="article" id="article">
       <p class="source-note">A long-horizon Agentic RL reproduction note</p>
-      <h1 id="agenticqwen-long-horizon-curriculum-可审计完整复现报告">AgenticQwen Long-Horizon Curriculum：可审计完整复现报告</h1>
-<blockquote>✅ <strong>结论先行。</strong> 本次运行在 <code>NVIDIA RTX PRO 6000 Blackwell Server Edition</code> 上完成了 Qwen3-8B 的两阶段 response-token QLoRA-GRPO：Stage 1 产生真实失败与非零奖励方差，训练后 probe 达到满分时按 frontier taxonomy 升级难度并混入 replay，再从 Stage-1 adapter 继续 Stage 2。完整性审计为 <strong>PASS</strong>，官方 BFCL-V4 multi-turn smoke 为 <strong>NOT_RUN</strong>。这证明的是一条真实、可恢复、可复核的小规模 curriculum 链路；不等价于论文 100K 数据、八卡训练或 47.4 平均分。</blockquote>
-<p><strong>Run:</strong> <code>qwen3-8b-qlora-20260804-v2</code> <strong>模型:</strong> <code>Qwen/Qwen3-8B</code> · NF4 QLoRA rank 16 <strong>训练:</strong> Stage 1 <code>12</code> steps → Stage 2 <code>12</code> steps <strong>状态:</strong> curriculum 完整通过 · BFCL <code>NOT_RUN</code> · paper-scale claim <code>false</code></p><details class="article-toc" open><summary>这篇长文会讲什么</summary><ol><li class="toc-level-2"><a href="#1-这次到底复现了什么">1. 这次到底复现了什么</a></li><li class="toc-level-2"><a href="#2-从论文目标拆成-plan-execute-verify">2. 从论文目标拆成 Plan → Execute → Verify</a></li><li class="toc-level-3"><a href="#plan">Plan</a></li><li class="toc-level-3"><a href="#execute">Execute</a></li><li class="toc-level-3"><a href="#一张图看懂几个-stage-如何串起来">一张图看懂几个 Stage 如何串起来</a></li><li class="toc-level-3"><a href="#verify">Verify</a></li><li class="toc-level-2"><a href="#3-stateful-tool-environment">3. Stateful tool environment</a></li><li class="toc-level-2"><a href="#4-真正的-response-token-grpo">4. 真正的 response-token GRPO</a></li><li class="toc-level-2"><a href="#5-stage-1-先训练-再诚实看失败">5. Stage 1：先训练，再诚实看失败</a></li><li class="toc-level-3"><a href="#stage-1-probe-代表轨迹">Stage-1 probe 代表轨迹</a></li><li class="toc-level-2"><a href="#6-失败驱动的困难数据合成">6. 失败驱动的困难数据合成</a></li><li class="toc-level-2"><a href="#7-stage-2-从同一个-adapter-继续训练">7. Stage 2：从同一个 adapter 继续训练</a></li><li class="toc-level-3"><a href="#final-holdout-代表轨迹">Final holdout 代表轨迹</a></li><li class="toc-level-2"><a href="#8-独立评测-fresh-reload-已完成-官方-bfcl-v4-未运行">8. 独立评测：fresh reload 已完成，官方 BFCL-V4 未运行</a></li><li class="toc-level-2"><a href="#9-实验完整性与可恢复性">9. 实验完整性与可恢复性</a></li><li class="toc-level-2"><a href="#10-失败模式-项目为什么可能-训练了却没学会">10. 失败模式：项目为什么可能“训练了却没学会”</a></li><li class="toc-level-3"><a href="#group-saturation">Group saturation</a></li><li class="toc-level-3"><a href="#reward-hacking">Reward hacking</a></li><li class="toc-level-3"><a href="#curriculum-forgetting">Curriculum forgetting</a></li><li class="toc-level-3"><a href="#benchmark-mismatch">Benchmark mismatch</a></li><li class="toc-level-2"><a href="#11-一键复现与运行成本">11. 一键复现与运行成本</a></li><li class="toc-level-2"><a href="#12-简历与面试怎么讲">12. 简历与面试怎么讲</a></li><li class="toc-level-3"><a href="#简历-bullet-只有本报告-pass-后才能使用">简历 bullet（只有本报告 PASS 后才能使用）</a></li><li class="toc-level-3"><a href="#面试问题-1-这和-sft-有什么本质区别">面试问题 1：这和 SFT 有什么本质区别？</a></li><li class="toc-level-3"><a href="#面试问题-2-为什么过程奖励不会替代最终正确性">面试问题 2：为什么过程奖励不会替代最终正确性？</a></li><li class="toc-level-3"><a href="#面试问题-3-怎么证明第二阶段真的用了第一阶段">面试问题 3：怎么证明第二阶段真的用了第一阶段？</a></li><li class="toc-level-3"><a href="#面试问题-4-如果-stage-2-指标没提升怎么办">面试问题 4：如果 Stage 2 指标没提升怎么办？</a></li><li class="toc-level-2"><a href="#13-自我检查-仍未完成什么">13. 自我检查：仍未完成什么</a></li><li class="toc-level-2"><a href="#14-claim-boundary">14. Claim boundary</a></li><li class="toc-level-2"><a href="#参考资料">参考资料</a></li></ol></details>
+      <h1 id="agenticqwen-long-horizon-curriculum-多证据链可审计复现报告">AgenticQwen Long-Horizon Curriculum：多证据链可审计复现报告</h1>
+<blockquote>✅ <strong>结论先行。</strong> 最新官方路径已在 <code>NVIDIA H200</code> 上直接运行 AgenticQwen 发布的 <code>verl + SGLang + mock user/tool + completion reward</code>：Round 0 使用官方数据训练，基于真实失败做定向合成，再从 Round-0 权重继续 Round 1。两轮均出现非零奖励方差、非零 policy loss 和正梯度，审计均为 <strong>PASS</strong>。固定官方 holdout 最终仍为 0/1，因此本报告证明“算法链路和参数更新真实发生”，<strong>不声称泛化提升、100K 全量训练或论文 47.4 分已复现</strong>。</blockquote>
+<p><strong>最新官方 Run:</strong> <code>official_round0_single_tool_smoke_v3</code> → <code>official_round1_curriculum_smoke_v1</code> <strong>模型:</strong> <code>Qwen/Qwen3-8B</code> · BF16 · full-parameter FSDP <strong>训练:</strong> Round 0 <code>1</code> audited step → failure audit / teacher gate → Round 1 <code>1</code> audited step <strong>状态:</strong> official execution <code>PASS</code> · learning signal <code>PASS</code> · holdout improvement <code>NOT OBSERVED</code> · paper-scale claim <code>false</code></p><details class="article-toc" open><summary>这篇长文会讲什么</summary><ol><li class="toc-level-2"><a href="#0-最新官方路径-37-401-行发布数据作为主池">0. 最新官方路径：37,401 行发布数据作为主池</a></li><li class="toc-level-2"><a href="#0-1-较早的-qlora-退款课程证据链">0.1 较早的 QLoRA 退款课程证据链</a></li><li class="toc-level-3"><a href="#模型与运行时-gate">模型与运行时 gate</a></li><li class="toc-level-2"><a href="#1-这次到底复现了什么">1. 这次到底复现了什么</a></li><li class="toc-level-2"><a href="#2-从论文目标拆成-plan-execute-verify">2. 从论文目标拆成 Plan → Execute → Verify</a></li><li class="toc-level-3"><a href="#plan">Plan</a></li><li class="toc-level-3"><a href="#execute">Execute</a></li><li class="toc-level-3"><a href="#verify">Verify</a></li><li class="toc-level-2"><a href="#3-stateful-tool-environment">3. Stateful tool environment</a></li><li class="toc-level-2"><a href="#4-真正的-response-token-grpo">4. 真正的 response-token GRPO</a></li><li class="toc-level-2"><a href="#5-stage-1-先训练-再诚实看失败">5. Stage 1：先训练，再诚实看失败</a></li><li class="toc-level-3"><a href="#stage-1-probe-代表轨迹">Stage-1 probe 代表轨迹</a></li><li class="toc-level-2"><a href="#6-失败驱动的困难数据合成">6. 失败驱动的困难数据合成</a></li><li class="toc-level-2"><a href="#7-stage-2-从同一个-adapter-继续训练">7. Stage 2：从同一个 adapter 继续训练</a></li><li class="toc-level-3"><a href="#final-holdout-代表轨迹">Final holdout 代表轨迹</a></li><li class="toc-level-2"><a href="#8-独立评测-fresh-reload-与官方-bfcl-v4-smoke">8. 独立评测：fresh reload 与官方 BFCL-V4 smoke</a></li><li class="toc-level-2"><a href="#9-实验完整性与可恢复性">9. 实验完整性与可恢复性</a></li><li class="toc-level-2"><a href="#9-5-论文式行为树飞轮-真实执行与失败恢复">9.5 论文式行为树飞轮：真实执行与失败恢复</a></li><li class="toc-level-3"><a href="#9-5-1-较早的-paper_flywheel-试运行-历史负对照">9.5.1 较早的 paperflywheel 试运行（历史负对照）</a></li><li class="toc-level-3"><a href="#最新-bounded-continuation-独立-run2">最新 bounded continuation（独立 run2）</a></li><li class="toc-level-2"><a href="#10-失败模式-项目为什么可能-训练了却没学会">10. 失败模式：项目为什么可能“训练了却没学会”</a></li><li class="toc-level-3"><a href="#group-saturation">Group saturation</a></li><li class="toc-level-3"><a href="#reward-hacking">Reward hacking</a></li><li class="toc-level-3"><a href="#curriculum-forgetting">Curriculum forgetting</a></li><li class="toc-level-3"><a href="#benchmark-mismatch">Benchmark mismatch</a></li><li class="toc-level-2"><a href="#11-一键复现与运行成本">11. 一键复现与运行成本</a></li><li class="toc-level-2"><a href="#12-简历与面试怎么讲">12. 简历与面试怎么讲</a></li><li class="toc-level-3"><a href="#简历-bullet-只有本报告-pass-后才能使用">简历 bullet（只有本报告 PASS 后才能使用）</a></li><li class="toc-level-3"><a href="#面试问题-1-这和-sft-有什么本质区别">面试问题 1：这和 SFT 有什么本质区别？</a></li><li class="toc-level-3"><a href="#面试问题-2-为什么过程奖励不会替代最终正确性">面试问题 2：为什么过程奖励不会替代最终正确性？</a></li><li class="toc-level-3"><a href="#面试问题-3-怎么证明第二阶段真的用了第一阶段">面试问题 3：怎么证明第二阶段真的用了第一阶段？</a></li><li class="toc-level-3"><a href="#面试问题-4-如果-stage-2-指标没提升怎么办">面试问题 4：如果 Stage 2 指标没提升怎么办？</a></li><li class="toc-level-2"><a href="#13-自我检查-仍未完成什么">13. 自我检查：仍未完成什么</a></li><li class="toc-level-2"><a href="#14-claim-boundary">14. Claim boundary</a></li><li class="toc-level-2"><a href="#参考资料">参考资料</a></li></ol></details>
+<h2 id="0-最新官方路径-37-401-行发布数据作为主池">0. 最新官方路径：37,401 行发布数据作为主池</h2>
+<p>这次没有把“最多合成 10 条”错误地套到官方数据上。已下载和校验的 <code>agenticqwen_synthetic_data.parquet</code> 包含 <strong>37,401</strong> 行、4,782 个 base task；<code>≤10</code> 只限制新生成的困难任务。为了在单张 H200 上先验证 curriculum 的因果链路，本轮从官方池精确选取 3 个单工具 variant：2 个进入训练，1 个作为按 base-id 隔离的 holdout。</p>
+<div class="table-wrap"><table><thead><tr>
+<th>环节</th>
+<th>真实输入</th>
+<th>真实结果</th>
+</tr></thead><tbody>
+<tr>
+<td>Round 0</td>
+<td>2 条官方 train，1 条官方 holdout；4 generations / prompt</td>
+<td>8 条 rollout：1 成功、7 失败；reward mean <code>0.125</code>；policy loss <code>0.01707</code>；<code>grad_norm=1.484375</code></td>
+</tr>
+<tr>
+<td>轨迹审计</td>
+<td>rollout 对齐官方 <code>normal_path</code>、参数和终止协议</td>
+<td>参数改写不匹配、过早转人工、重复调用、缺少终止标记</td>
+</tr>
+<tr>
+<td>教师扩展</td>
+<td>DeepSeek-v4-flash 替代 Qwen3-235B；branch inversion → schema → solve → branch-hit</td>
+<td>请求 2 条，保留 1 条；另一条因未新增分支被拒；合成用量 <code>1/10</code></td>
+</tr>
+<tr>
+<td>Round 1</td>
+<td>2 条官方 replay + 1 条门控困难任务；从 Round-0 合并权重启动</td>
+<td>12 条 rollout：4 成功、8 失败；reward mean <code>0.3333</code>；policy loss <code>0.02850</code>；<code>grad_norm=1.2734375</code></td>
+</tr>
+<tr>
+<td>权重与部署</td>
+<td>两轮 FSDP checkpoint 合并为 Hugging Face 格式</td>
+<td>Stage 1/2 的 4/4 分片哈希全部变化；fresh-process reload <code>PASS</code></td>
+</tr>
+<tr>
+<td>固定 holdout</td>
+<td>完整多轮工具任务</td>
+<td>最终 <code>0/1</code>；独立重载能生成正确首个工具调用，但没有通过完整 episode reward</td>
+</tr>
+</tbody></table></div>
+<p>官方执行证据保存在 <code>artifacts/official_agenticqwen_h200/</code>。审计器不仅检查 checkpoint 和 reward，还解析持久化训练日志，只有同时观察到 reward variance 与 <code>actor/grad_norm &gt; 0</code> 才把 learning signal 标为 <code>PASS</code>。</p>
+<h2 id="0-1-较早的-qlora-退款课程证据链">0.1 较早的 QLoRA 退款课程证据链</h2>
+<p>下面原有章节记录的是另一条较早完成的自建退款环境实验：NF4 + LoRA、每阶段 12 steps，并跑通 BFCL smoke 流水线。它用于解释长程状态机、过程奖励和 curriculum 工程，不与最新的官方 FSDP 路径合并计数。</p>
+<h3 id="模型与运行时-gate">模型与运行时 gate</h3>
+<p>模型不是在训练进程里临时下载的：远端 15 个文件已逐项 SHA-256 校验，随后才启动训练。独立 smoke 重新加载 NF4 base + LoRA，并在同一张 GPU 上生成短 completion。</p>
+<div class="table-wrap"><table><thead><tr>
+<th>Gate</th>
+<th>状态</th>
+<th>证据</th>
+</tr></thead><tbody>
+<tr>
+<td>Remote snapshot SHA-256</td>
+<td><strong>PASS</strong></td>
+<td><code>15 files</code></td>
+</tr>
+<tr>
+<td>NF4 + LoRA model load</td>
+<td><strong>PASS</strong></td>
+<td><code>NVIDIA H200</code>, peak <code>9.148 GiB</code></td>
+</tr>
+<tr>
+<td>Transformers / bitsandbytes / torch</td>
+<td><strong>observed</strong></td>
+<td><code>5.14.1 / 0.50.0 / 2.6.0+cu124</code></td>
+</tr>
+<tr>
+<td>Trainable LoRA parameters</td>
+<td><strong>observed</strong></td>
+<td><code>43646976</code></td>
+</tr>
+</tbody></table></div>
 <h2 id="1-这次到底复现了什么">1. 这次到底复现了什么</h2>
 <p>这不是“写好一个框架”或“调用一次 API”的展示。训练过程中，Qwen3-8B 自己生成 assistant response token 和结构化工具调用；TRL 为每条 rollout 创建独立的 stateful environment；工具执行后把 observation 继续写回对话；episode 结束时由环境最终状态计算 outcome/process reward；四条同 prompt rollout 形成 GRPO group 并反向传播到 LoRA 参数。</p>
-<p>第二阶段的数据不是一份与运行无关的固定训练集。训练完成后先运行冻结 probe：若仍有 terminal failure，就按实际失败类型生成难例；若小 probe 已全对，就转入预定义的 frontier taxonomy，继续增加 decoy orders、瞬时失败和更紧的确认约束。两条路径都会保存 source trace hash，并混入旧任务 replay 再训练。本次实际走的是 <code>frontier_taxonomy_fallback</code>。</p>
+<p>第二阶段的数据不是一份与运行无关的固定训练集。训练完成后先运行冻结 probe：若仍有 terminal failure，就按实际失败类型生成难例；若小 probe 已全对，就转入预定义的 frontier taxonomy，继续增加 decoy orders、瞬时失败和更紧的确认约束。两条路径都会保存 source trace hash，并混入旧任务 replay 再训练。本次实际走的是 <code>stage1_training_failures</code>。</p>
 <div class="table-wrap"><table><thead><tr>
 <th>层次</th>
 <th>本次真实证据</th>
@@ -231,12 +300,12 @@ figcaption { margin-top: 10px; color: var(--muted); font-size: 13px; line-height
 <tr>
 <td>Curriculum</td>
 <td>Stage-1 trace hash → failure/frontier selection → hard tasks → Stage 2</td>
-<td>当前选择：<code>frontier_taxonomy_fallback</code></td>
+<td>当前选择：<code>stage1_training_failures</code></td>
 </tr>
 <tr>
 <td>Evaluation</td>
 <td>untouched final holdout + fresh reload</td>
-<td>BFCL smoke 当前为 <code>NOT_RUN</code></td>
+<td>BFCL smoke 当前为 <code>PASS</code></td>
 </tr>
 </tbody></table></div>
 <h2 id="2-从论文目标拆成-plan-execute-verify">2. 从论文目标拆成 Plan → Execute → Verify</h2>
@@ -263,11 +332,7 @@ Untouched holdout (6 tasks)
     ↓
 Fresh-process reload
     ↓
-BFCL base/adapter smoke（本次状态：NOT_RUN）</code></pre>
-<h3 id="一张图看懂几个-stage-如何串起来">一张图看懂几个 Stage 如何串起来</h3>
-<p>下面这张图把基础工具链、失败轨迹审计、困难数据合成和第二阶段持续训练放在同一条因果链上。第一阶段学习线性的完整工具链；中间不是“随机加噪”，而是把失败类型映射为相似干扰项、临时超时、同参重试、确认硬门、先读后写和幂等校验；第二阶段把这些压力组合成带分支的受约束工作流，并让新轨迹继续回流。</p>
-<figure><img src="images/figure4_curriculum_stage_flow.png" alt="第一阶段训练、失败轨迹审计、困难数据合成与第二阶段持续训练机制图" loading="lazy"><figcaption>第一阶段训练、失败轨迹审计、困难数据合成与第二阶段持续训练机制图</figcaption></figure>
-<blockquote>图中 failure taxonomy 是可操作的课程标签；本次微型 run 的实际 source selection 记录为 <code>frontier_taxonomy_fallback</code>，具体 trace、任务和 SHA-256 见 <code>stage2/synthesis_manifest.json</code>。</blockquote>
+BFCL base/adapter smoke（本次状态：PASS）</code></pre>
 <h3 id="verify">Verify</h3>
 <div class="table-wrap"><table><thead><tr>
 <th>审计门</th>
@@ -277,17 +342,17 @@ BFCL base/adapter smoke（本次状态：NOT_RUN）</code></pre>
 <tr>
 <td>stage1 adapter exists</td>
 <td><strong>PASS</strong></td>
-<td><code>/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2/stage1/adapter</code></td>
+<td><code>/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/artifacts/agenticqwen_codelab_curriculum_run1/stage1/adapter</code></td>
 </tr>
 <tr>
 <td>stage2 adapter exists</td>
 <td><strong>PASS</strong></td>
-<td><code>/root/autodl-tmp/runs/agenticqwen-qwen3-8b-qlora-v2/qwen3-8b-qlora-20260804-v2/stage2/adapter</code></td>
+<td><code>/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/artifacts/agenticqwen_codelab_curriculum_run1/stage2/adapter</code></td>
 </tr>
 <tr>
 <td>stage2 adapter differs from stage1</td>
 <td><strong>PASS</strong></td>
-<td><code>stage1=7d3c6d223209f26f26e39004c46afac8e6f123ed30992f8a97bc56f7c275bee0; stage2=920f76c8c0f35d8976ddf4a24ac77ae4fbcc5cd793ac942865942b01d9149c4d</code></td>
+<td><code>stage1=f0fad889000fb98e7a80de61a30615f35d3ae1a763cca60c2830e33981104a9c; stage2=ea699445f74d835df8d49a7a8839069faceee7f5c0c51f0085504d2433264cfb</code></td>
 </tr>
 <tr>
 <td>both GRPO stages changed trainable parameters</td>
@@ -297,7 +362,7 @@ BFCL base/adapter smoke（本次状态：NOT_RUN）</code></pre>
 <tr>
 <td>training reward variance observed</td>
 <td><strong>PASS</strong></td>
-<td><code>stage1_std=0.5267711867027023; stage2_std=0.2673004453755907</code></td>
+<td><code>stage1_std=0.6143729119528745; stage2_std=0.32974885162106293</code></td>
 </tr>
 <tr>
 <td>final holdout isolation</td>
@@ -312,7 +377,7 @@ BFCL base/adapter smoke（本次状态：NOT_RUN）</code></pre>
 <tr>
 <td>stage2 consumed stage1 adapter</td>
 <td><strong>PASS</strong></td>
-<td><code>7d3c6d223209f26f26e39004c46afac8e6f123ed30992f8a97bc56f7c275bee0</code></td>
+<td><code>f0fad889000fb98e7a80de61a30615f35d3ae1a763cca60c2830e33981104a9c</code></td>
 </tr>
 <tr>
 <td>all planned optimizer steps completed</td>
@@ -327,7 +392,7 @@ BFCL base/adapter smoke（本次状态：NOT_RUN）</code></pre>
 <tr>
 <td>fresh-process adapter replay</td>
 <td><strong>PASS</strong></td>
-<td><code>episodes=6; success_rate=1.0; parent_pid=5643; child_pid=6913</code></td>
+<td><code>episodes=6; success_rate=1.0; parent_pid=69452; child_pid=72418</code></td>
 </tr>
 </tbody></table></div>
 <h2 id="3-stateful-tool-environment">3. Stateful tool environment</h2>
@@ -401,20 +466,20 @@ BFCL base/adapter smoke（本次状态：NOT_RUN）</code></pre>
 <tr>
 <td>Training seconds</td>
 <td>—</td>
-<td>408.934</td>
+<td>425.942</td>
 <td>—</td>
 </tr>
 <tr>
 <td>Training rollout reward std</td>
 <td>—</td>
-<td>0.5268</td>
-<td>27 unique rewards</td>
+<td>0.6144</td>
+<td>20 unique rewards</td>
 </tr>
 <tr>
 <td>Trainable parameters changed</td>
 <td>—</td>
 <td><code>True</code></td>
-<td>train loss <code>0.029398</code></td>
+<td>train loss <code>0.022327</code></td>
 </tr>
 </tbody></table></div>
 <div class="table-wrap"><table><thead><tr>
@@ -481,7 +546,7 @@ BFCL base/adapter smoke（本次状态：NOT_RUN）</code></pre>
 </tr>
 </tbody></table></div>
 <h2 id="6-失败驱动的困难数据合成">6. 失败驱动的困难数据合成</h2>
-<p>困难数据 manifest 记录 source trace 的绝对路径与 SHA-256：<code>ca0d54b78a400bab1de423e0bf2efc8cd1d68819925e926d16e2389c6d42b7bd</code>。本次 source selection 为 <code>frontier_taxonomy_fallback</code>。当 post-train probe 仍有失败时优先按残余失败合成；若小 probe 已全对，则升级到预定义 frontier taxonomy。生成器不把模型自然语言当答案，所有 customer/order/charge/amount、状态转移与 verifier target 都由代码确定。</p>
+<p>困难数据 manifest 记录 source trace 的绝对路径与 SHA-256：<code>7388b93f024dac4bd8842fbe6b6239ef2ea29e4a7a051dafd8ddfa23540f9a9f</code>。本次 source selection 为 <code>stage1_training_failures</code>。当 post-train probe 仍有失败时优先按残余失败合成；若小 probe 已全对，则升级到预定义 frontier taxonomy。生成器不把模型自然语言当答案，所有 customer/order/charge/amount、状态转移与 verifier target 都由代码确定。</p>
 <div class="table-wrap"><table><thead><tr>
 <th>合成项</th>
 <th>证据</th>
@@ -492,7 +557,7 @@ BFCL base/adapter smoke（本次状态：NOT_RUN）</code></pre>
 </tr>
 <tr>
 <td>Source selection</td>
-<td><code>frontier_taxonomy_fallback</code></td>
+<td><code>stage1_training_failures</code></td>
 </tr>
 <tr>
 <td>Hard tasks</td>
@@ -504,7 +569,7 @@ BFCL base/adapter smoke（本次状态：NOT_RUN）</code></pre>
 </tr>
 <tr>
 <td>Stage-2 train SHA-256</td>
-<td><code>5790304c792b7ef6bbcdf85b9eb2e40eb5f4ffd1ab2767c6e0007d085a96bf1d</code></td>
+<td><code>222bd26ad52470d25ea3a0c3d190af9636edc981c57276d4951283b6597fcdc7</code></td>
 </tr>
 <tr>
 <td>Ground-truth policy</td>
@@ -521,15 +586,15 @@ BFCL base/adapter smoke（本次状态：NOT_RUN）</code></pre>
 </tr></thead><tbody>
 <tr>
 <td>Final-holdout success rate</td>
-<td>66.7%</td>
 <td>100.0%</td>
-<td>+33.3 pt</td>
+<td>100.0%</td>
+<td>+0.0 pt</td>
 </tr>
 <tr>
 <td>Mean combined reward</td>
-<td>0.8376</td>
-<td>1.2505</td>
-<td>+0.4128</td>
+<td>1.2526</td>
+<td>1.2525</td>
+<td>-0.0001</td>
 </tr>
 <tr>
 <td>Optimizer global step</td>
@@ -540,20 +605,20 @@ BFCL base/adapter smoke（本次状态：NOT_RUN）</code></pre>
 <tr>
 <td>Training seconds</td>
 <td>—</td>
-<td>396.218</td>
+<td>402.884</td>
 <td>—</td>
 </tr>
 <tr>
 <td>Training rollout reward std</td>
 <td>—</td>
-<td>0.2673</td>
-<td>33 unique rewards</td>
+<td>0.3297</td>
+<td>36 unique rewards</td>
 </tr>
 <tr>
 <td>Trainable parameters changed</td>
 <td>—</td>
 <td><code>True</code></td>
-<td>train loss <code>-0.029555</code></td>
+<td>train loss <code>-0.030853</code></td>
 </tr>
 </tbody></table></div>
 <div class="table-wrap"><table><thead><tr>
@@ -562,8 +627,8 @@ BFCL base/adapter smoke（本次状态：NOT_RUN）</code></pre>
 <th>After</th>
 </tr></thead><tbody>
 <tr>
-<td><code>IDENTITY_ERROR</code></td>
-<td>2</td>
+<td>无失败类别</td>
+<td>0</td>
 <td>0</td>
 </tr>
 </tbody></table></div>
@@ -619,19 +684,19 @@ BFCL base/adapter smoke（本次状态：NOT_RUN）</code></pre>
 <td><code>{&quot;amount&quot;: 349.0, &quot;arrival_window&quot;: &quot;3-5 business days&quot;, &quot;currency&quot;: &quot;CNY&quot;, &quot;refund_id&quot;: &quot;RF-27582FA0BC&quot;}</code></td>
 </tr>
 </tbody></table></div>
-<h2 id="8-独立评测-fresh-reload-已完成-官方-bfcl-v4-未运行">8. 独立评测：fresh reload 已完成，官方 BFCL-V4 未运行</h2>
-<p>已完成的独立性来自 fresh-process reload：父训练进程释放模型后启动新的 Python 子进程，记录父/子 PID，再重新加载 base + Stage-2 PEFT adapter，在未触碰的 final holdout 上重新生成并计分。官方 BFCL-V4 multi-turn evaluator 的 base/adapter 对照路径已经实现，但本次没有运行，所以没有 result JSON、score CSV 或 benchmark 分数可报告。</p>
+<h2 id="8-独立评测-fresh-reload-与官方-bfcl-v4-smoke">8. 独立评测：fresh reload 与官方 BFCL-V4 smoke</h2>
+<p>已完成的独立性来自 fresh-process reload：父训练进程释放模型后启动新的 Python 子进程，记录父/子 PID，再重新加载 base + Stage-2 PEFT adapter，在未触碰的 final holdout 上重新生成并计分。官方 BFCL-V4 multi-turn evaluator 使用官方数据、官方生成器和官方 checker；当前状态由下表中的 manifest 决定，未通过时不会被包装成成功。</p>
 <div class="table-wrap"><table><thead><tr>
 <th>Fresh replay evidence</th>
 <th>值</th>
 </tr></thead><tbody>
 <tr>
 <td>Parent PID</td>
-<td><code>5643</code></td>
+<td><code>69452</code></td>
 </tr>
 <tr>
 <td>Child PID</td>
-<td><code>6913</code></td>
+<td><code>72418</code></td>
 </tr>
 <tr>
 <td>Is fresh process</td>
@@ -646,16 +711,22 @@ BFCL base/adapter smoke（本次状态：NOT_RUN）</code></pre>
 <th>Variant</th>
 <th>状态</th>
 <th>Episodes</th>
-<th>Official score</th>
+<th>Official score row</th>
 </tr></thead><tbody>
 <tr>
-<td>—</td>
-<td><strong>NOT_RUN</strong></td>
-<td>0</td>
-<td>BFCL artifact missing</td>
+<td><code>base</code></td>
+<td><strong>PASS</strong></td>
+<td>4</td>
+<td><code>{&quot;Overall Acc&quot;: &quot;0.00%&quot;, &quot;Multi Turn Acc&quot;: &quot;0.00%&quot;, &quot;Model&quot;: &quot;Qwen3-8B (FC)&quot;}</code></td>
+</tr>
+<tr>
+<td><code>stage2_adapter</code></td>
+<td><strong>PASS</strong></td>
+<td>4</td>
+<td><code>{&quot;Overall Acc&quot;: &quot;0.00%&quot;, &quot;Multi Turn Acc&quot;: &quot;0.00%&quot;, &quot;Model&quot;: &quot;Qwen3-8B (FC)&quot;}</code></td>
 </tr>
 </tbody></table></div>
-<p>BFCL 状态为 <code>NOT_RUN</code>。只有在 manifest、result JSON 和 score CSV 齐全后，才可声称官方接口、tool-call 格式、multi-turn execution 与 score pipeline 跑通；即便未来完成小样本 smoke，也不能替代每类 200 个任务的论文 profile，更不能与论文平均分直接比较。</p>
+<p>BFCL 状态为 <code>PASS</code>。本次 manifest、result JSON 和 score CSV 已齐全，因此官方接口、tool-call 格式、multi-turn execution 与 score pipeline 确实跑通；但这组 smoke 的 base 与 Stage-2 adapter <code>Overall Acc</code>/<code>Multi Turn Acc</code> 都是 <strong>0.00%</strong>，说明当前模型没有通过所选的 4 个 BFCL 题目，不能把“流水线 PASS”误读为模型质量 PASS。它仍不能替代每类 200 个任务的论文 profile，更不能与论文平均分直接比较。</p>
 <h2 id="9-实验完整性与可恢复性">9. 实验完整性与可恢复性</h2>
 <ul>
 <li>数据先落盘再训练；train/probe/final-holdout ID 分离并写入 manifest。</li>
@@ -671,39 +742,179 @@ BFCL base/adapter smoke（本次状态：NOT_RUN）</code></pre>
 <th>SHA-256</th>
 </tr></thead><tbody>
 <tr>
+<td><code>benchmarks/bfcl_smoke/base/result/Qwen_Qwen3-8B-FC/multi_turn/BFCL_v4_multi_turn_base_result.json</code></td>
+<td>232015</td>
+<td><code>b13788f58cd00635…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/base/result/Qwen_Qwen3-8B-FC/multi_turn/BFCL_v4_multi_turn_long_context_result.json</code></td>
+<td>283413</td>
+<td><code>ea02c9bb19514c09…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/base/result/Qwen_Qwen3-8B-FC/multi_turn/BFCL_v4_multi_turn_miss_func_result.json</code></td>
+<td>362205</td>
+<td><code>fcf22aff512f9f1c…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/base/result/Qwen_Qwen3-8B-FC/multi_turn/BFCL_v4_multi_turn_miss_param_result.json</code></td>
+<td>236252</td>
+<td><code>a9b71303c99f35b9…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/base/score/Qwen_Qwen3-8B-FC/multi_turn/BFCL_v4_multi_turn_base_score.json</code></td>
+<td>231911</td>
+<td><code>9067ea7eb346518c…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/base/score/Qwen_Qwen3-8B-FC/multi_turn/BFCL_v4_multi_turn_long_context_score.json</code></td>
+<td>282395</td>
+<td><code>2ee93cf52609ce37…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/base/score/Qwen_Qwen3-8B-FC/multi_turn/BFCL_v4_multi_turn_miss_func_score.json</code></td>
+<td>363378</td>
+<td><code>562529f06a1c9012…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/base/score/Qwen_Qwen3-8B-FC/multi_turn/BFCL_v4_multi_turn_miss_param_score.json</code></td>
+<td>237216</td>
+<td><code>01808a881e5dfcc8…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/base/score/data_agentic.csv</code></td>
+<td>207</td>
+<td><code>165122540b141ba8…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/base/score/data_format_sensitivity.csv</code></td>
+<td>2723</td>
+<td><code>dab92466fbcb2369…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/base/score/data_live.csv</code></td>
+<td>218</td>
+<td><code>25620e00c0de91b5…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/base/score/data_multi_turn.csv</code></td>
+<td>118</td>
+<td><code>10541ca2bfb14b86…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/base/score/data_non_live.csv</code></td>
+<td>238</td>
+<td><code>80fe0a5937eb5bae…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/base/score/data_overall.csv</code></td>
+<td>884</td>
+<td><code>45423faf5c75d34d…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/base/test_case_ids_to_generate.json</code></td>
+<td>249</td>
+<td><code>a96fa16dd4d8ce2e…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/manifest.json</code></td>
+<td>31575</td>
+<td><code>3a731a7327147478…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/stage2_adapter/result/Qwen_Qwen3-8B-FC/multi_turn/BFCL_v4_multi_turn_base_result.json</code></td>
+<td>233343</td>
+<td><code>c16ff07e0e981727…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/stage2_adapter/result/Qwen_Qwen3-8B-FC/multi_turn/BFCL_v4_multi_turn_long_context_result.json</code></td>
+<td>214101</td>
+<td><code>19549c6f5e8d3bba…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/stage2_adapter/result/Qwen_Qwen3-8B-FC/multi_turn/BFCL_v4_multi_turn_miss_func_result.json</code></td>
+<td>229027</td>
+<td><code>3e33fe331b69443e…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/stage2_adapter/result/Qwen_Qwen3-8B-FC/multi_turn/BFCL_v4_multi_turn_miss_param_result.json</code></td>
+<td>203534</td>
+<td><code>8afd21c9a9aae00b…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/stage2_adapter/score/Qwen_Qwen3-8B-FC/multi_turn/BFCL_v4_multi_turn_base_score.json</code></td>
+<td>233122</td>
+<td><code>4ec02e609cb2ccb3…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/stage2_adapter/score/Qwen_Qwen3-8B-FC/multi_turn/BFCL_v4_multi_turn_long_context_score.json</code></td>
+<td>214096</td>
+<td><code>4802020fd3c60351…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/stage2_adapter/score/Qwen_Qwen3-8B-FC/multi_turn/BFCL_v4_multi_turn_miss_func_score.json</code></td>
+<td>229620</td>
+<td><code>832c549ee5734c75…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/stage2_adapter/score/Qwen_Qwen3-8B-FC/multi_turn/BFCL_v4_multi_turn_miss_param_score.json</code></td>
+<td>206416</td>
+<td><code>8b46bd9ce325d549…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/stage2_adapter/score/data_agentic.csv</code></td>
+<td>207</td>
+<td><code>165122540b141ba8…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/stage2_adapter/score/data_format_sensitivity.csv</code></td>
+<td>2723</td>
+<td><code>dab92466fbcb2369…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/stage2_adapter/score/data_live.csv</code></td>
+<td>218</td>
+<td><code>25620e00c0de91b5…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/stage2_adapter/score/data_multi_turn.csv</code></td>
+<td>118</td>
+<td><code>10541ca2bfb14b86…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/stage2_adapter/score/data_non_live.csv</code></td>
+<td>238</td>
+<td><code>80fe0a5937eb5bae…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/stage2_adapter/score/data_overall.csv</code></td>
+<td>884</td>
+<td><code>111dce47512dea3b…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/stage2_adapter/test_case_ids_to_generate.json</code></td>
+<td>249</td>
+<td><code>a96fa16dd4d8ce2e…</code></td>
+</tr>
+<tr>
+<td><code>benchmarks/bfcl_smoke/verification.json</code></td>
+<td>5779</td>
+<td><code>3c5305cc87100285…</code></td>
+</tr>
+<tr>
 <td><code>data_manifest.json</code></td>
-<td>1683</td>
-<td><code>974ff3207c953dae…</code></td>
+<td>1743</td>
+<td><code>c3659f3731eed782…</code></td>
 </tr>
 <tr>
 <td><code>fresh_replay/summary.json</code></td>
-<td>1740</td>
-<td><code>2b9cec2aa8d206f5…</code></td>
+<td>1750</td>
+<td><code>7e2c65225444589d…</code></td>
 </tr>
 <tr>
 <td><code>fresh_replay/traces.jsonl</code></td>
-<td>23769</td>
-<td><code>77e47ef0b181b9b3…</code></td>
-</tr>
-<tr>
-<td><code>launch.json</code></td>
-<td>209</td>
-<td><code>81361460b3a078c9…</code></td>
-</tr>
-<tr>
-<td><code>model_snapshot_manifest.json</code></td>
-<td>2753</td>
-<td><code>da9d9484e5c83ae3…</code></td>
-</tr>
-<tr>
-<td><code>preflight.json</code></td>
-<td>2160</td>
-<td><code>7cb37aa7a6a542e3…</code></td>
-</tr>
-<tr>
-<td><code>process-exit.json</code></td>
-<td>74</td>
-<td><code>030d8c25cde9ead2…</code></td>
+<td>23771</td>
+<td><code>555799d996d56640…</code></td>
 </tr>
 <tr>
 <td><code>resolved_config.json</code></td>
@@ -712,85 +923,128 @@ BFCL base/adapter smoke（本次状态：NOT_RUN）</code></pre>
 </tr>
 <tr>
 <td><code>run_summary.json</code></td>
-<td>24388</td>
-<td><code>90c2258cc7491e9e…</code></td>
+<td>26077</td>
+<td><code>6dbcb6b01a818e0d…</code></td>
 </tr>
 <tr>
-<td><code>stage1/eval_before_traces.jsonl</code></td>
-<td>14764</td>
-<td><code>653b7653ed38aebd…</code></td>
+<td><code>stage1/adapter/adapter_config.json</code></td>
+<td>1200</td>
+<td><code>2d2df16f2493c568…</code></td>
 </tr>
 <tr>
-<td><code>stage1/eval_probe_traces.jsonl</code></td>
-<td>14549</td>
-<td><code>ca0d54b78a400bab…</code></td>
+<td><code>stage1/adapter/adapter_model.safetensors</code></td>
+<td>87361592</td>
+<td><code>f0fad889000fb98e…</code></td>
 </tr>
 <tr>
-<td><code>stage1/summary.json</code></td>
-<td>6370</td>
-<td><code>c9b8566fc869144a…</code></td>
-</tr>
-<tr>
-<td><code>stage1/train_traces.jsonl</code></td>
-<td>183657</td>
-<td><code>73e03318e92807d9…</code></td>
-</tr>
-<tr>
-<td><code>stage2/eval_before_traces.jsonl</code></td>
-<td>17954</td>
-<td><code>29b3bef16865f1b5…</code></td>
-</tr>
-<tr>
-<td><code>stage2/eval_final_traces.jsonl</code></td>
-<td>23763</td>
-<td><code>05b1c350702ea68c…</code></td>
-</tr>
-<tr>
-<td><code>stage2/summary.json</code></td>
-<td>6928</td>
-<td><code>9bd2ba39556d1351…</code></td>
-</tr>
-<tr>
-<td><code>stage2/synthesis_manifest.json</code></td>
-<td>2476</td>
-<td><code>ea218e668bea780b…</code></td>
-</tr>
-<tr>
-<td><code>stage2/train_traces.jsonl</code></td>
-<td>199747</td>
-<td><code>c555a2d9f57746f2…</code></td>
-</tr>
-<tr>
-<td><code>tasks/curriculum_probe.jsonl</code></td>
-<td>2695</td>
-<td><code>64c90346b92cf943…</code></td>
-</tr>
-<tr>
-<td><code>tasks/final_holdout.jsonl</code></td>
-<td>4145</td>
-<td><code>dc9c2fc8139dc7d8…</code></td>
-</tr>
-<tr>
-<td><code>tasks/stage1_train.jsonl</code></td>
-<td>5510</td>
-<td><code>afa55e2f00091ab1…</code></td>
-</tr>
-<tr>
-<td><code>tasks/stage2_hard.jsonl</code></td>
-<td>6232</td>
-<td><code>77a8e8484cd7b65a…</code></td>
-</tr>
-<tr>
-<td><code>tasks/stage2_train.jsonl</code></td>
-<td>8987</td>
-<td><code>5790304c792b7ef6…</code></td>
-</tr>
-<tr>
-<td><code>verification.json</code></td>
-<td>4708</td>
-<td><code>b623e4944131ffd7…</code></td>
+<td><code>stage1/adapter/tokenizer.json</code></td>
+<td>11422650</td>
+<td><code>be75606093db2094…</code></td>
 </tr>
 </tbody></table></div>
+<h2 id="9-5-论文式行为树飞轮-真实执行与失败恢复">9.5 论文式行为树飞轮：真实执行与失败恢复</h2>
+<p>最新官方路径不再使用下面较早的 deterministic frontier fallback。它读取 Qwen3-8B 的真实 verl rollout，对照官方 <code>normal_path</code> 做失败归因，再把失败任务交给 DS-v4-flash 做 branch-to-task inversion。候选必须依次通过 schema、与源路径不同、教师可解、完整工具序列命中预设分支四个门。</p>
+<div class="table-wrap"><table><thead><tr>
+<th>Gate</th>
+<th>Round 0</th>
+<th>Round 1</th>
+</tr></thead><tbody>
+<tr>
+<td>official train / synthetic train</td>
+<td>2 / 0</td>
+<td>2 / 1</td>
+</tr>
+<tr>
+<td>rollout rows</td>
+<td>8</td>
+<td>12</td>
+</tr>
+<tr>
+<td>reward mean / unique</td>
+<td>0.125 / {0,1}</td>
+<td>0.3333 / {0,1}</td>
+</tr>
+<tr>
+<td>policy loss</td>
+<td>0.01707</td>
+<td>0.02850</td>
+</tr>
+<tr>
+<td>actor grad norm</td>
+<td>1.484375</td>
+<td>1.2734375</td>
+</tr>
+<tr>
+<td>execution / learning audit</td>
+<td>PASS / PASS</td>
+<td>PASS / PASS</td>
+</tr>
+<tr>
+<td>merged model</td>
+<td>PASS</td>
+<td>PASS + fresh-process reload</td>
+</tr>
+</tbody></table></div>
+<p>失败审计不是只搜关键词：Maramureș 任务实际把 <code>&quot;Maramureș County, Romania&quot;</code> 改写成了 <code>&quot;Maramureș County, RO&quot;</code> 并过早转人工；PRT-1234 任务重复执行同一查询且没有终止标记。合成器据此产生带干扰删除路径的候选；保留 1 条，另一条因 normal path 没有新增分支而被拒。这里的 <code>1/10</code> 是新合成用量，官方数据池 37,401 行不受该 cap 限制。</p>
+<h3 id="9-5-1-较早的-paper_flywheel-试运行-历史负对照">9.5.1 较早的 paper_flywheel 试运行（历史负对照）</h3>
+<p>下面这条路径与退款 curriculum 分开计数：它从 SynthAgent-compatible 的线性航班 workflow 出发，让教师模型做 branch expansion、branch-to-task inversion 和 teacher-solved/branch-hit filtering，再把新任务交给同一个 Qwen3-8B policy 继续训练。论文中的 Qwen3-235B 在本次实验中由配置的 DeepSeek-v4-flash endpoint 替代，因此不声称论文规模或教师等价性。该旧 run 的合成预算同样只约束新任务，不约束官方 replay。</p>
+<div class="table-wrap"><table><thead><tr>
+<th>项目</th>
+<th>证据</th>
+</tr></thead><tbody>
+<tr>
+<td>run status</td>
+<td><strong>partial_teacher_endpoint_blocked</strong></td>
+</tr>
+<tr>
+<td>flywheel verification</td>
+<td><strong>PASS</strong></td>
+</tr>
+<tr>
+<td>completed boundary</td>
+<td><code>round1:training_and_policy_rollout</code></td>
+</tr>
+<tr>
+<td>teacher audit rows</td>
+<td><code>96</code></td>
+</tr>
+<tr>
+<td>teacher operation/status counts</td>
+<td><code>Analyze policy rollouts and expand the existing linear or partial workflow into a deeper multi-branch behavior tree/ok=10, Perform AgenticQwen branch-to-task inversion/error=5, Perform AgenticQwen branch-to-task inversion/ok=23, Solve this simulated agent task/error=10, Solve this simulated agent task/ok=48</code></td>
+</tr>
+<tr>
+<td>deterministic frontier recovery observed</td>
+<td><code>False</code></td>
+</tr>
+</tbody></table></div>
+<div class="table-wrap"><table><thead><tr>
+<th>Round</th>
+<th>Optimizer steps</th>
+<th>Policy episodes</th>
+<th>Successes</th>
+<th>Reward std</th>
+<th>Parameters changed</th>
+</tr></thead><tbody>
+<tr>
+<td><code>round0</code></td>
+<td>4</td>
+<td>4</td>
+<td>4</td>
+<td>0.0</td>
+<td>False</td>
+</tr>
+<tr>
+<td><code>round1</code></td>
+<td>4</td>
+<td>5</td>
+<td>5</td>
+<td>0.0</td>
+<td>False</td>
+</tr>
+</tbody></table></div>
+<p>真实运行中，Round 0 的 policy 训练与 rollout 已落盘；后续扩展由教师 API 返回 502/读取超时以及 branch-hit 校验拒绝，控制器保持 PARTIAL 并保留 API audit，不把未验证候选写入训练集。恢复配置已经写入并启动，但在 saturation fallback 产物落盘前因 teacher endpoint 的 timeout/截断停止；因此不能把 fallback 说成已完成。 设计上的 fallback 是：如果五条允许的 micro 行为分支已饱和，就增加 revision 并重放可验证分支，不伪造第六条分支。</p>
+<h3 id="最新-bounded-continuation-独立-run2">最新 bounded continuation（独立 run2）</h3>
+<p>该次恢复明确执行 <code>max_synthetic_trajectories=10</code>、<code>max_new_tasks_per_round=1</code>，不会合成超过 10 条。Round 0 的 Qwen3-8B LoRA-GRPO 产物已保留；教师 audit 共 <code>18</code> 条，其中状态计数为 <code>Analyze policy rollouts and expand the existing linear or partial workflow into a deeper multi-branch behavior tree/error=1, Analyze policy rollouts and expand the existing linear or partial workflow into a deeper multi-branch behavior tree/ok=3, Perform AgenticQwen branch-to-task inversion/error=1, Perform AgenticQwen branch-to-task inversion/ok=6, Solve this simulated agent task/error=1, Solve this simulated agent task/ok=6</code>。终态为 <strong>PARTIAL</strong>：教师请求出现读取超时，随后 executable branch-hit gate 拒绝候选，因此没有把未验证任务写入下一轮。</p>
 <h2 id="10-失败模式-项目为什么可能-训练了却没学会">10. 失败模式：项目为什么可能“训练了却没学会”</h2>
 <h3 id="group-saturation">Group saturation</h3>
 <p>如果同一 group 四条 rollout 都成功或都失败，标准差接近零，relative advantage 变成零。过程奖励只能在轨迹真正产生不同读取/恢复行为时打破平局；若所有样本在第一个 token 就走同一路径，仍然没有信号。</p>
@@ -801,15 +1055,18 @@ BFCL base/adapter smoke（本次状态：NOT_RUN）</code></pre>
 <h3 id="benchmark-mismatch">Benchmark mismatch</h3>
 <p>自建退款环境验证 causal curriculum，但 BFCL 测工具调用格式、缺函数/缺参数和长上下文；TAU-2 又依赖 user simulator。不同指标回答不同问题，不能用自建 success rate 替换官方 benchmark。</p>
 <h2 id="11-一键复现与运行成本">11. 一键复现与运行成本</h2>
-<pre><code class="language-bash"># AutoDL 实例中：复用 /root/autodl-tmp/models/Qwen3-8B
+<pre><code class="language-bash"># 官方 AgenticQwen/verl 路径
+./scripts/run_official_agenticqwen_h200.sh
+
+# AutoDL 实例中：复用 /root/autodl-tmp/models/Qwen3-8B
 ./run_curriculum_autodl_remote.sh
 
 # 本地：把下载的 run root 渲染成 HTML + PPT
 ./finalize_curriculum_project.sh /path/to/qwen3-8b-qlora-20260804-v2</code></pre>
-<p>本次实测硬件是单张 RTX PRO 6000 96GB；Qwen3-8B 以 NF4 运行时量化加载，Stage 1/2 都只训练 LoRA。模型、venv、run、日志和归档分别落在 AutoDL 数据盘与 <code>/root</code> 下载区，终态后再按 SHA-256 收集。</p>
+<p>两条路径都在单张 <code>NVIDIA H200</code>（显存约 <code>139.7</code> GiB）上运行。最新官方路径使用 BF16 full-parameter FSDP，峰值 allocated 约 76.35 GiB、reserved 约 89.25 GiB；较早退款路径才是 NF4 + LoRA。模型、venv、run、日志和证据归档分离落盘，终态按 SHA-256 收集。</p>
 <h2 id="12-简历与面试怎么讲">12. 简历与面试怎么讲</h2>
 <h3 id="简历-bullet-只有本报告-pass-后才能使用">简历 bullet（只有本报告 PASS 后才能使用）</h3>
-<blockquote>基于 Qwen3-8B 与 TRL 实现 stateful multi-turn QLoRA-GRPO：构建身份验证—多工具读链—确认—幂等退款环境，诊断 reward saturation 后以过程质量打破零方差，并通过失败/能力边界选择合成含 decoy 与 transient failure 的困难数据继续 Stage-2 训练；加入 split hash、checkpoint resume 与 fresh-process verifier，形成可审计训练闭环。</blockquote>
+<blockquote>基于 AgenticQwen 官方 verl/SGLang 与 Qwen3-8B 实现两轮 stateful multi-turn GRPO：从 37,401 行发布数据池构建 group-disjoint curriculum，审计真实 rollout 的参数错配、过早转人工、重复调用和终止失败，使用强模型完成 branch inversion + solved/branch-hit 门控后继续训练；两轮均验证非零梯度，Stage 1/2 四个权重分片全部变化，并完成 fresh-process reload。</blockquote>
 <h3 id="面试问题-1-这和-sft-有什么本质区别">面试问题 1：这和 SFT 有什么本质区别？</h3>
 <p>SFT 复制给定答案；这里模型自己采样完整 trajectory，reward 来自工具执行后的最终 state，同 prompt 的多个 trajectory 做 group-relative baseline。困难数据也由实际失败类型触发，而不是预先固定一份 instruction 数据。</p>
 <h3 id="面试问题-2-为什么过程奖励不会替代最终正确性">面试问题 2：为什么过程奖励不会替代最终正确性？</h3>
@@ -825,14 +1082,29 @@ BFCL base/adapter smoke（本次状态：NOT_RUN）</code></pre>
 <th>补完条件</th>
 </tr></thead><tbody>
 <tr>
-<td>两阶段 response-token curriculum</td>
+<td>官方数据 + verl/SGLang 两轮 GRPO</td>
+<td><strong>PASS（微型）</strong></td>
+<td>两轮 execution / learning audit 均 PASS</td>
+</tr>
+<tr>
+<td>失败审计 → 定向合成 → 再训练</td>
+<td><strong>PASS（1 条新任务）</strong></td>
+<td>solved + branch-hit，合成用量 1/10</td>
+</tr>
+<tr>
+<td>固定官方 holdout 提升</td>
+<td><strong>NOT OBSERVED</strong></td>
+<td>当前 0/1；扩大任务、steps、seed</td>
+</tr>
+<tr>
+<td>较早退款 QLoRA curriculum</td>
 <td><strong>COMPLETE</strong></td>
 <td>verification 全门通过</td>
 </tr>
 <tr>
 <td>官方 BFCL multi-turn smoke</td>
-<td><strong>NOT_RUN</strong></td>
-<td>base/adapter result 与 score 齐全</td>
+<td><strong>PIPELINE PASS / SCORE 0%</strong></td>
+<td>base/adapter result 与 score 齐全，但无质量提升</td>
 </tr>
 <tr>
 <td>BFCL-V4 paper profile</td>
@@ -850,9 +1122,14 @@ BFCL base/adapter smoke（本次状态：NOT_RUN）</code></pre>
 <td>Vanilla/PRM/LATA/Joint × 3 seeds</td>
 </tr>
 <tr>
-<td>论文约 100K 数据</td>
-<td><strong>BLOCKED_RESOURCE</strong></td>
-<td>Qwen3-235B synthesis/simulator/judge</td>
+<td>37,401 行官方发布池</td>
+<td><strong>AVAILABLE / VERIFIED</strong></td>
+<td>当前 active curriculum 只使用 3 个 variant</td>
+</tr>
+<tr>
+<td>论文约 100K 总训练规模</td>
+<td><strong>NOT RUN</strong></td>
+<td>扩大官方池 + reasoning 数据 + 多轮扩展</td>
 </tr>
 <tr>
 <td>论文八 H100 配方</td>
@@ -861,8 +1138,8 @@ BFCL base/adapter smoke（本次状态：NOT_RUN）</code></pre>
 </tr>
 </tbody></table></div>
 <h2 id="14-claim-boundary">14. Claim boundary</h2>
-<p>本报告支持：“一次真实 Qwen3-8B 多轮 response-token QLoRA-GRPO curriculum 在云端 GPU 执行；V1 的零方差失败被校验器捕获，V2 两阶段均出现非零 reward variance 与参数哈希变化，Stage-2 adapter 可在新进程独立重载。”</p>
-<p>本报告不支持：“完整复现论文 47.4、100K 数据、Qwen3-235B 数据飞轮、八 H100 recipe、TAU-2 Avg@4 或统计显著的普遍提升。”</p>
+<p>本报告支持：“一次真实 Qwen3-8B 官方 AgenticQwen/verl 两轮 curriculum 在 H200 执行；官方数据参与训练，真实失败驱动一条门控困难任务进入下一轮；两轮均观察到 reward variance、非零 policy loss、正梯度与独立 checkpoint，Stage-2 合并模型可在新进程重载并生成正确首个工具调用。”</p>
+<p>本报告不支持：“完整复现论文 47.4、100K 全量训练、Qwen3-235B 教师等价性、八 H100 recipe、TAU-2 Avg@4、BFCL 提升或统计显著的普遍提升。”</p>
 <h2 id="参考资料">参考资料</h2>
 <ul>
 <li><a href="https://arxiv.org/abs/2604.21590">AgenticQwen paper</a></li>
@@ -875,7 +1152,7 @@ BFCL base/adapter smoke（本次状态：NOT_RUN）</code></pre>
 <li><a href="https://modal.com/pricing">Modal pricing</a></li>
 </ul>
       <div class="article-meta">
-        规范源：TECHNICAL_REPORT.md · SHA-256 1eb59c20c7c0990c… · 生成于 2026-08-04T13:46:59+08:00
+        规范源：TECHNICAL_REPORT.md · SHA-256 4862b0f998a0fcae… · 生成于 2026-08-05T20:08:58+08:00
       </div>
     </article>
   </main>

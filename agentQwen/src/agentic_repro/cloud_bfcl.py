@@ -123,6 +123,23 @@ def build_vllm_command(
     port: int,
     model_cache: Path,
 ) -> list[str]:
+    # The official BFCL runner only needs an OpenAI-compatible completions
+    # endpoint.  On a minimal research image where vLLM is not installed we
+    # can launch the auditable Transformers+NF4+PEFT server shipped with this
+    # project.  The benchmark/evaluator path remains unchanged.
+    server_script = os.getenv("AGENTICQWEN_BFCL_SERVER_SCRIPT")
+    if server_script:
+        command = [
+            sys.executable,
+            server_script,
+            "--model-path",
+            _model_load_path(),
+            "--port",
+            str(port),
+        ]
+        if adapter_dir is not None:
+            command.extend(["--adapter-path", str(adapter_dir)])
+        return command
     command = [
         "vllm",
         "serve",
@@ -374,6 +391,10 @@ def run_bfcl_smoke(
         "model_load_path": _model_load_path(),
         "categories": list(BFCL_CATEGORIES),
         "tasks_per_category": tasks_per_category,
+        "generation_limits": {
+            "max_tokens": int(os.getenv("AGENTICQWEN_BFCL_MAX_TOKENS", "4096")),
+            "reason": "Explicit smoke cap; official BFCL generation/evaluation remains unchanged.",
+        },
         "selected_ids": selected,
         "variants": variants,
         "checks": checks,

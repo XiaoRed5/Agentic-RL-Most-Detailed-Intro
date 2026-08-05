@@ -116,6 +116,7 @@ async function main() {
   const paperFig = await bytes(path.join(PROJECT, "agenticqwen_report/images/figure1_dual_flywheel.png"));
   const stageFigure = await bytes(path.join(PROJECT, "agenticqwen_report/images/figure4_curriculum_stage_flow.png"));
   const gpu = stage2.runtime?.gpu?.name || "Cloud GPU";
+  const gpuMemory = stage2.runtime?.gpu?.memory_gib ? `${stage2.runtime.gpu.memory_gib} GiB` : "GPU";
   const successTrace = traces.find((x) => x.success) || traces[0];
 
   // 1 — Cover
@@ -303,7 +304,7 @@ async function main() {
     metric(s, "s2-step", 120, 570, String(stage2.global_step), "Stage-2 optimizer steps", C.teal);
     metric(s, "s2-time", 420, 570, `${Math.round(stage2.training_seconds / 60)}m`, "training wall time", C.copper);
     metric(s, "s2-replay", 720, 570, String(verify.fresh_replay?.episodes || 0), "fresh-process episodes", C.green);
-    metric(s, "s2-gpu", 1020, 570, "1×", "RTX PRO 6000 · 96GB", C.gold);
+    metric(s, "s2-gpu", 1020, 570, "1×", `${gpu} · ${gpuMemory}`, C.gold);
     note(s, "结果页必须如实展示正负 delta；不要用完整性 PASS 替代性能提升。", [path.join(RUN_ROOT, "stage2/summary.json"), path.join(RUN_ROOT, "fresh_replay/summary.json")]);
   }
 
@@ -326,14 +327,21 @@ async function main() {
 
   // 12 — benchmark boundary
   {
-    const s = frame(p, 12, "Benchmark boundary", "官方 benchmark 没跑，就不应该出现一个分数", "本次验证的是自建 stateful curriculum；BFCL/TAU-2 代码路径保留，但状态必须明确写成 NOT RUN。");
-    txt(s, "benchmark-status", bfclStatus, { left: 75, top: 230, width: 470, height: 150 }, { fontFamily: FONT.display, fontSize: 78, bold: true, color: C.copper, alignment: "center" });
+    const baseScore = scoreRow("base");
+    const adapterScore = scoreRow("stage2_adapter");
+    const scoreText = bfclStatus === "PASS"
+      ? `官方流水线 ${bfclStatus} · base ${baseScore} · Stage-2 ${adapterScore}`
+      : `官方流水线 ${bfclStatus}`;
+    const s = frame(p, 12, "Benchmark boundary", bfclStatus === "PASS" ? "官方 benchmark 已跑通，但模型分数仍需如实面对" : "官方 benchmark 没跑，就不应该出现一个分数", bfclStatus === "PASS" ? "本次完成官方 BFCL-V4 multi-turn smoke；PASS 只表示结果与评分 artifact 齐全，不能替代模型质量得分。" : "本次验证的是自建 stateful curriculum；BFCL/TAU-2 代码路径保留，但状态必须明确写成 NOT RUN。");
+    txt(s, "benchmark-status", scoreText, { left: 55, top: 230, width: 510, height: 150 }, { fontFamily: FONT.display, fontSize: bfclStatus === "PASS" ? 37 : 78, bold: true, color: C.copper, alignment: "center" });
     txt(s, "benchmark-label", "BFCL-V4 MULTI-TURN", { left: 95, top: 395, width: 430, height: 38 }, { fontFamily: FONT.display, fontSize: 18, bold: true, color: C.navy, alignment: "center", letterSpacing: 2 });
     rule(s, 640, 230, 470, C.teal, 4);
     txt(s, "benchmark-ready", "代码已经具备", { left: 640, top: 258, width: 470, height: 42 }, { fontFamily: FONT.serif, fontSize: 27, bold: true, color: C.navy });
-    txt(s, "benchmark-list", "• 固定 ID 的 base / adapter 对照\n• 官方 multi-turn 结果与评分目录隔离\n• smoke 与 4×200 paper profile 分开\n• 缺 manifest 时报告和 PPT 不生成分数", { left: 640, top: 335, width: 475, height: 180 }, { fontSize: 20, color: C.muted, lineSpacing: 1.25 });
-    txt(s, "benchmark-boundary", "能写：curriculum micro-run PASS    不能写：论文 benchmark 已复现", { left: 175, top: 575, width: 930, height: 42 }, { fontFamily: FONT.serif, fontSize: 23, bold: true, color: C.teal2, alignment: "center" });
-    note(s, "这页主动声明 BFCL 未运行；代码就绪不等于实验完成。", [path.join(PROJECT, "docs/benchmark_protocol.md"), "https://github.com/ShishirPatil/gorilla/tree/main/berkeley-function-call-leaderboard"]);
+    txt(s, "benchmark-list", bfclStatus === "PASS"
+      ? "• 固定 ID 的 base / adapter 对照\n• 官方 multi-turn 结果与评分目录隔离\n• 4 个类别各 1 题，属于 smoke，不是论文规模\n• 流水线 PASS ≠ 模型得分 PASS（本次得分为 0.00%）"
+      : "• 固定 ID 的 base / adapter 对照\n• 官方 multi-turn 结果与评分目录隔离\n• smoke 与 4×200 paper profile 分开\n• 缺 manifest 时报告和 PPT 不生成分数", { left: 640, top: 335, width: 475, height: 180 }, { fontSize: 20, color: C.muted, lineSpacing: 1.25 });
+    txt(s, "benchmark-boundary", bfclStatus === "PASS" ? "能写：官方 smoke 流水线 PASS、模型得分 0.00%    不能写：论文 benchmark 已复现" : "能写：curriculum micro-run PASS    不能写：论文 benchmark 已复现", { left: 125, top: 575, width: 1030, height: 42 }, { fontFamily: FONT.serif, fontSize: 21, bold: true, color: C.teal2, alignment: "center" });
+    note(s, bfclStatus === "PASS" ? "这页区分官方 evaluator 流水线是否成功与模型实际得分；本次四类 smoke 的 base 和 Stage-2 得分均为 0.00%。" : "这页主动声明 BFCL 未运行；代码就绪不等于实验完成。", [path.join(PROJECT, "docs/benchmark_protocol.md"), path.join(RUN_ROOT, "benchmarks/bfcl_smoke/manifest.json"), "https://github.com/ShishirPatil/gorilla/tree/main/berkeley-function-call-leaderboard"]);
   }
 
   // 13 — audit
@@ -357,7 +365,7 @@ async function main() {
     const s = frame(p, 14, "Honest self-check", "项目已经完整到哪里，哪些仍然不能写？", "把 COMPLETE、CODE_READY 与 BLOCKED_RESOURCE 分开，是这份复现最重要的研究纪律。");
     const cols = [
       ["COMPLETE", C.green, ["两阶段 response-token GRPO", "frontier hard-task curriculum", "fresh-process adapter replay", "V1 失败 → V2 修复审计"]],
-      ["CODE READY / NOT RUN", C.copper, ["BFCL-V4 smoke / paper profile", "TAU-2 Avg@4", "3 seeds × ablation matrix", "更长训练与 replay-ratio sweep"]],
+      ["BFCL SMOKE PASS · PAPER NOT RUN", C.copper, ["BFCL-V4 smoke：流水线 PASS，得分 0.00%", "BFCL paper profile：4 类 × 200 未运行", "TAU-2 Avg@4：未运行", "3 seeds × ablation / 更长训练未运行"]],
       ["BLOCKED RESOURCE", C.red, ["论文约 100K 数据飞轮", "Qwen3-235B simulator/judge", "8×H100 原配方", "论文 47.4 benchmark claim"]],
     ];
     cols.forEach((c, i) => {

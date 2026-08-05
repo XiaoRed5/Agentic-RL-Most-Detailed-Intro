@@ -1,0 +1,71 @@
+{
+  "artifacts": {
+    "checkpoint_actor_dir": "/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/artifacts/official_round0_single_tool_smoke_v3/checkpoints/global_step_1/actor",
+    "checkpoint_file_count": 13,
+    "checkpoint_manifest_sha256": "2c745f3027a53792b3dd537d80d0260bdff267db164e324ba242cdeac38d5228",
+    "dataset_manifest_sha256": "91582e2ccd9f11a742fc0abb10cd3556f4d542a4d220c59bd7cf20308135eef5",
+    "environment_manifest_sha256": "b11b5349324597c8d1137499e6fa8c47a410c0f2d8d3bea8b9a13a08cb6b10fd",
+    "rollout_errors": [],
+    "rollout_files": [
+      "/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/artifacts/official_round0_single_tool_smoke_v3/rollouts/1.jsonl"
+    ],
+    "rollout_rows": 8,
+    "teacher_probe_sha256": "4ac417c2ddf9fa2f893f3194a01c9b453baa75338dbd33bfd903559348a57df6",
+    "train_log": "/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/artifacts/official_round0_single_tool_smoke_v3/train.log",
+    "train_log_sha256": "a53507c63ed7a1faee5546383abe9896330a802e4081a75ccab6bc50065a1246",
+    "validation_errors": [],
+    "validation_files": [
+      "/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/artifacts/official_round0_single_tool_smoke_v3/validation/0.jsonl",
+      "/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/artifacts/official_round0_single_tool_smoke_v3/validation/1.jsonl"
+    ],
+    "validation_rows": 2
+  },
+  "checks": {
+    "checkpoint_actor_nonempty": true,
+    "environment_pass": true,
+    "expected_step_checkpointed": true,
+    "group_disjoint_holdout": true,
+    "official_data_present": true,
+    "official_train_rows_present": true,
+    "rollout_jsonl_valid": true,
+    "rollout_scores_present": true,
+    "synthetic_within_cap": true,
+    "teacher_api_reachable": true,
+    "validation_jsonl_valid": true
+  },
+  "claim_scope": "official AgenticQwen/verl execution is verified",
+  "dataset": {
+    "official_pool_rows": 37401,
+    "official_train_rows": 2,
+    "official_validation_rows": 1,
+    "synthetic_cap": 10,
+    "synthetic_train_rows": 0
+  },
+  "expected_steps": 1,
+  "latest_checkpointed_step": 1,
+  "learning_signal": {
+    "nonzero_reward_observed": true,
+    "positive_grad_norm_observed": true,
+    "reward_variance_observed": true,
+    "train_log_present": true,
+    "zero_reward_observed": true
+  },
+  "learning_signal_status": "PASS",
+  "optimizer": {
+    "grad_norm_count": 1,
+    "max_grad_norm": 1.484375,
+    "positive_grad_norm_count": 1
+  },
+  "reward": {
+    "count": 8,
+    "max": 1.0,
+    "mean": 0.125,
+    "min": 0.0,
+    "unique": [
+      0.0,
+      1.0
+    ]
+  },
+  "schema_version": 1,
+  "status": "PASS"
+}

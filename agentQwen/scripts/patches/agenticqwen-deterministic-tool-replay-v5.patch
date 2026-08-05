@@ -1,0 +1,78 @@
+--- a/RL/my_script/tools/mock_tool.py
++++ b/RL/my_script/tools/mock_tool.py
+@@ -30,3 +30,38 @@ T = TypeVar("T")
+
+
++def _load_expected(value):
++    return json.loads(value) if isinstance(value, str) else value
++
++
++def _fixture_response(tool_return_expected, mock_tool_name_and_args):
++    expected = _load_expected(tool_return_expected)
++    for path_name in ("normal_path", "hack_path"):
++        for step in (expected or {}).get(path_name, []) or []:
++            if step.get("tool_name") == mock_tool_name_and_args.get("name") and step.get("input") == mock_tool_name_and_args.get("arguments"):
++                return json.dumps(step.get("expected_output"), ensure_ascii=False, indent=2)
++    return None
++
++
++def _normal_path_completed(tool_return_expected, history_messages):
++    expected = _load_expected(tool_return_expected)
++    normal_path = (expected or {}).get("normal_path", []) or []
++    if not normal_path:
++        return False
++    try:
++        calls = [json.loads(item) for item in re.findall(r"<tool_call>(.*?)</tool_call>", history_messages, re.DOTALL)]
++        responses = [json.loads(item) for item in re.findall(r"<tool_response>(.*?)</tool_response>", history_messages, re.DOTALL)]
++    except Exception:
++        return False
++    pairs = list(zip(calls, responses))
++    return all(
++        any(
++            call.get("name") == step.get("tool_name")
++            and call.get("arguments") == step.get("input")
++            and response == step.get("expected_output")
++            for call, response in pairs
++        )
++        for step in normal_path
++    )
++
++
+ def mock_user_response(task_background, test_policy, user_escape_strategy, history_messages, user_timeout: float = 300.0):
+@@ -205,6 +240,10 @@ class MockSandboxFusionTool(BaseTool):
+         """Call the LLM to simulate the response of a virtual tool."""
+         tool_description = self._instance_dict[instance_id]["tool_description"]
+         tool_return_expected = self._instance_dict[instance_id]["tool_return_expected"]
++        fixture_response = _fixture_response(tool_return_expected, mock_tool_name_and_args)
++        if fixture_response is not None:
++            logger.info("Replaying exact official tool fixture without an external API call")
++            return fixture_response
+
+         user_prompt = TOOL_SIMULATION_PROMPT.format(
+             query=mock_tool_name_and_args,
+@@ -245,9 +284,22 @@ class MockSandboxFusionTool(BaseTool):
+             task_background = self._instance_dict[instance_id]["task_background"]
+             test_policy = self._instance_dict[instance_id]["test_policy"]
+             user_escape_strategy = self._instance_dict[instance_id]["user_escape_strategy"]
+-            user_response = mock_user_response(
+-                task_background, test_policy, user_escape_strategy, history_messages, user_timeout=timeout
+-            )
++            tool_return_expected = self._instance_dict[instance_id]["tool_return_expected"]
++            try:
++                user_response = mock_user_response(
++                    task_background,
++                    test_policy,
++                    user_escape_strategy,
++                    history_messages,
++                    user_timeout=timeout,
++                )
++            except Exception:
++                if not _normal_path_completed(tool_return_expected, history_messages):
++                    raise
++                logger.warning(
++                    "Mock-user API failed after the official normal path completed; using auditable ###STOP fallback"
++                )
++                user_response = "###STOP"
+             return ToolResponse(text=user_response) if user_response else ToolResponse(text="None")
+
+         # Act as a tool

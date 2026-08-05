@@ -1,0 +1,83 @@
+{
+  "checks": {
+    "no_exact_duplicate_official_rows": true,
+    "official_base_ids_may_repeat": true,
+    "required_fields": [
+      "id",
+      "prompt",
+      "rubrics",
+      "task_background",
+      "test_policy",
+      "tool_return_expected",
+      "user_escape_strategy"
+    ],
+    "synthetic_within_cap": true,
+    "train_validation_base_id_disjoint": true,
+    "train_validation_disjoint": true
+  },
+  "outputs": {
+    "manifest_path": "/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/upstream/data_synth_and_rl/RL/my_data/raw/tool_use/industrial_official_round0_single_tool/dataset_manifest.json",
+    "train_sha256": "424edfb6b815ca477a2eb24d785a6d767b607aadb486282486c0a526f0ddb136",
+    "validation_sha256": "6461daaee1901ffeaf59b4a8d61af79d8d08f30a44abf0c822811fd23dc9f346"
+  },
+  "policy": {
+    "holdout_method": "deterministic_group_subset_sum_exact",
+    "holdout_seed": "agenticqwen-official-round0-single-tool-v1",
+    "leakage_policy": "all variants sharing an official base id stay on one side of the split; synthetic rows never enter validation",
+    "official_curriculum_filter": {
+      "max_hack_path_steps": 0,
+      "max_normal_path_steps": 1
+    },
+    "official_data_usage": "published official pool with deterministic train subset and holdout",
+    "official_exact_variant_filter": {
+      "row_sha256": [
+        "13c4cee18c2aaea996cebd1ae32e83b68fbc9d50bdbab9dbb63428ff95889fc8",
+        "215ba494fc1e2c7c7caa001854cc5d4322be1b5a38f721730019bd9e30eacdd4",
+        "6a6cadf4a8b3ccd45523586c98d09de26fabc302a159160ee0497dc1ea55f4e4"
+      ]
+    },
+    "synthetic_cap": 10,
+    "synthetic_data_usage": "new curriculum rows are appended to training only"
+  },
+  "schema_version": 1,
+  "sources": {
+    "official": {
+      "eligible_rows": 3,
+      "exact_duplicate_rows": 0,
+      "excluded_by_curriculum_filter": 0,
+      "excluded_by_exact_variant_filter": 37398,
+      "path": "/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/data/official/agenticqwen_synthetic_data.parquet",
+      "repeated_id_rows": 32619,
+      "rows": 37401,
+      "selected_by_exact_variant_filter": 3,
+      "selected_train_rows": 2,
+      "selected_validation_rows": 1,
+      "sha256": "044648e2ffbed9b50029b165bce6585fb13c8e940feefdfcbc37a5c25d2a0b53",
+      "unique_base_ids": 4782,
+      "unselected_rows": 37398,
+      "validation_target_rows": 1
+    },
+    "synthetic": {
+      "path": null,
+      "rows": 0,
+      "sha256": null,
+      "state": "not_configured"
+    }
+  },
+  "splits": {
+    "train": {
+      "ids_sha256": "e468c29c33bc257ff7b2eac0e2ac4085f16fdfe18fdbaa1a66a4d865327d96c0",
+      "official_rows": 2,
+      "path": "/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/upstream/data_synth_and_rl/RL/my_data/raw/tool_use/industrial_official_round0_single_tool/tool_use_data_train.json",
+      "rows": 2,
+      "synthetic_rows": 0
+    },
+    "validation": {
+      "ids_sha256": "5d52a9abcf62ad1da32d6717d8423c93c1c40d7184b4248e4dc9f3714c73d0ab",
+      "official_rows": 1,
+      "path": "/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/upstream/data_synth_and_rl/RL/my_data/raw/tool_use/industrial_official_round0_single_tool/tool_use_data_val.json",
+      "rows": 1,
+      "synthetic_rows": 0
+    }
+  }
+}

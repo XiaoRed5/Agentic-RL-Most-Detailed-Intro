@@ -1,0 +1,28 @@
+--- a/RL/verl/experimental/agent_loop/tool_parser.py
++++ b/RL/verl/experimental/agent_loop/tool_parser.py
+@@ -132,7 +132,23 @@ class UserHermesToolParser(ToolParser):
+                 question = question_matches[0]
+                 function_calls = [FunctionCall(name="mock_user", arguments=json.dumps({"agent_query":question}, ensure_ascii=False))]
+             else:
+-                logger.error("Failed to extract <question> tag from assistant response")
+-                function_calls = []
++                # Qwen3-8B can ask a valid clarification in plain text before it
++                # has learned AgenticQwen's private <question> protocol.  The
++                # released prompt asks the model to clarify missing parameters,
++                # but never tells it to wrap that clarification in XML.  Keep
++                # the semantic interaction alive while preserving the original
++                # generated tokens for policy optimisation and audit.
++                visible_text = regex.sub(r"<think>.*?</think>", "", text, flags=regex.DOTALL).strip()
++                if visible_text:
++                    logger.warning("Missing <question> tag; forwarding visible assistant text to mock_user")
++                    function_calls = [
++                        FunctionCall(
++                            name="mock_user",
++                            arguments=json.dumps({"agent_query": visible_text}, ensure_ascii=False),
++                        )
++                    ]
++                else:
++                    logger.error("Failed to extract a user-facing clarification from assistant response")
++                    function_calls = []
+
+             return text, function_calls

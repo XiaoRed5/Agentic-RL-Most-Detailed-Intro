@@ -1,0 +1,23 @@
+{
+  "algorithm": "AgenticQwen §3.3 behavior-tree data flywheel",
+  "paper_scale_claimed": false,
+  "round_count": 1,
+  "rounds": [
+    {
+      "candidate_count": 5,
+      "paths": {
+        "tasks": "round_1/training_tasks.jsonl",
+        "tree": "round_1/behavior_tree.json",
+        "validation": "round_1/teacher_validation.jsonl"
+      },
+      "retained_count": 1,
+      "round_index": 1,
+      "tasks_sha256": "2b5b34fccb3111fb08727662e54b026dc6f77482a26a588e5f485a7639c90a60",
+      "tree_revision": 1,
+      "tree_sha256": "e66580cbb3f1ad8bb1de790e348b0672a7680e62b7df8cb2b96c1f2647f4f1e5",
+      "validation_sha256": "c8a04ca16ef1aa79e3b2c3325d5861c6cd728dfa30383cb531089553f76fb6eb"
+    }
+  ],
+  "schema_version": 1,
+  "teacher_model": "deepseek-v4-flash-sa-256k"
+}

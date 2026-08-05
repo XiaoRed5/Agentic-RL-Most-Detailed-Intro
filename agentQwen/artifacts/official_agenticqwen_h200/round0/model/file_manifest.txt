@@ -1,0 +1,15 @@
+added_tokens.json 707
+chat_template.jinja 4168
+config.json 1538
+file_manifest.txt 0
+generation_config.json 214
+merges.txt 1671853
+model-00001-of-00004.safetensors 4941169120
+model-00002-of-00004.safetensors 4974620584
+model-00003-of-00004.safetensors 4972507832
+model-00004-of-00004.safetensors 1493219264
+model.safetensors.index.json 32914
+special_tokens_map.json 613
+tokenizer_config.json 5404
+tokenizer.json 11422654
+vocab.json 2776833

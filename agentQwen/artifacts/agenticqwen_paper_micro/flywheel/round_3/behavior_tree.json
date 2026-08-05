@@ -1,0 +1,204 @@
+{
+  "domain": "airline",
+  "edges": [
+    {
+      "condition": {
+        "flight_status": "available"
+      },
+      "label": "available",
+      "source": "query",
+      "target": "book_direct"
+    },
+    {
+      "condition": {},
+      "label": "booking created",
+      "source": "book_direct",
+      "target": "confirm_direct"
+    },
+    {
+      "condition": {
+        "flight_status": "sold_out",
+        "hsr_available": true
+      },
+      "label": "sold out; HSR available",
+      "source": "query",
+      "target": "search_hsr"
+    },
+    {
+      "condition": {},
+      "label": "HSR found",
+      "source": "search_hsr",
+      "target": "book_hsr"
+    },
+    {
+      "condition": {},
+      "label": "HSR booked",
+      "source": "book_hsr",
+      "target": "confirm_hsr"
+    },
+    {
+      "condition": {
+        "flight_status": "delayed",
+        "membership": "gold"
+      },
+      "label": "delayed; gold member",
+      "source": "query",
+      "target": "check_gold"
+    },
+    {
+      "condition": {},
+      "label": "gold verified",
+      "source": "check_gold",
+      "target": "cash"
+    },
+    {
+      "condition": {},
+      "label": "cash issued",
+      "source": "cash",
+      "target": "confirm_cash"
+    },
+    {
+      "condition": {
+        "flight_status": "delayed",
+        "membership": "standard"
+      },
+      "label": "delayed; standard member",
+      "source": "query",
+      "target": "check_standard"
+    },
+    {
+      "condition": {},
+      "label": "standard verified",
+      "source": "check_standard",
+      "target": "voucher"
+    },
+    {
+      "condition": {},
+      "label": "voucher issued",
+      "source": "voucher",
+      "target": "confirm_voucher"
+    },
+    {
+      "condition": {
+        "flight_status": "sold_out",
+        "hsr_available": false,
+        "nearby_airport_available": true
+      },
+      "label": "sold out; HSR unavailable; nearby airport available",
+      "source": "query",
+      "target": "search_nearby"
+    },
+    {
+      "condition": {},
+      "label": "nearby flight found",
+      "source": "search_nearby",
+      "target": "book_nearby"
+    },
+    {
+      "condition": {},
+      "label": "nearby flight booked",
+      "source": "book_nearby",
+      "target": "confirm_nearby"
+    }
+  ],
+  "nodes": [
+    {
+      "action": "query_flight",
+      "description": "Query the requested flight.",
+      "node_id": "query",
+      "terminal": false
+    },
+    {
+      "action": "book_flight",
+      "description": "Book the available direct flight.",
+      "node_id": "book_direct",
+      "terminal": false
+    },
+    {
+      "action": "confirm",
+      "description": "Confirm the direct booking.",
+      "node_id": "confirm_direct",
+      "terminal": true
+    },
+    {
+      "action": "search_hsr",
+      "description": "Search high-speed rail after sell-out.",
+      "node_id": "search_hsr",
+      "terminal": false
+    },
+    {
+      "action": "book_hsr",
+      "description": "Book the available high-speed rail.",
+      "node_id": "book_hsr",
+      "terminal": false
+    },
+    {
+      "action": "confirm",
+      "description": "Confirm the rail booking.",
+      "node_id": "confirm_hsr",
+      "terminal": true
+    },
+    {
+      "action": "check_membership",
+      "description": "Verify delayed passenger membership.",
+      "node_id": "check_gold",
+      "terminal": false
+    },
+    {
+      "action": "issue_cash",
+      "description": "Issue cash to an eligible gold member.",
+      "node_id": "cash",
+      "terminal": false
+    },
+    {
+      "action": "confirm",
+      "description": "Confirm cash compensation.",
+      "node_id": "confirm_cash",
+      "terminal": true
+    },
+    {
+      "action": "check_membership",
+      "description": "Verify delayed passenger membership.",
+      "node_id": "check_standard",
+      "terminal": false
+    },
+    {
+      "action": "issue_voucher",
+      "description": "Issue a voucher to a standard member.",
+      "node_id": "voucher",
+      "terminal": false
+    },
+    {
+      "action": "confirm",
+      "description": "Confirm voucher compensation.",
+      "node_id": "confirm_voucher",
+      "terminal": true
+    },
+    {
+      "action": "search_nearby_airport",
+      "description": "Search a nearby airport after all direct flights sell out.",
+      "node_id": "search_nearby",
+      "terminal": false
+    },
+    {
+      "action": "book_nearby_flight",
+      "description": "Book an available nearby-airport flight.",
+      "node_id": "book_nearby",
+      "terminal": false
+    },
+    {
+      "action": "confirm",
+      "description": "Confirm the nearby-airport booking.",
+      "node_id": "confirm_nearby",
+      "terminal": true
+    }
+  ],
+  "provenance": "offline deterministic expansion from revision=2; rollout_count=4; rollout_sha256=8ae022249e7d67716f644d9935e0c94212e10453c345965592d30336687919e0",
+  "revision": 3,
+  "root_id": "query",
+  "source_workflow": [
+    "query_flight",
+    "book_flight",
+    "confirm"
+  ]
+}

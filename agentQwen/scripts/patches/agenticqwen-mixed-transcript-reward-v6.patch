@@ -1,0 +1,39 @@
+--- a/RL/my_script/utils/message_parser.py
++++ b/RL/my_script/utils/message_parser.py
+@@ -17,4 +17,14 @@ def parse_chat_turns(raw_text: str) -> list[tuple[str, str]]:
+-    return re.findall(
++    turns = re.findall(
+         r'<\|im_start\|>(user|assistant)\n(.*?)<\|im_end\|>',
+         cleaned, flags=re.DOTALL
+     )
++    if turns:
++        return turns
++
++    # verl rollout dumps may keep literal role lines while omitting ChatML end
++    # markers.  Normalize that mixed serialization instead of dropping the
++    # entire trajectory before reward evaluation.
++    normalized = re.sub(r'<\|im_start\|>(user|assistant)\n', r'\1\n', cleaned)
++    normalized = normalized.replace('<|im_end|>', '')
++    pieces = re.split(r'(?m)^(user|assistant)\n', normalized)
++    return [(pieces[index], pieces[index + 1]) for index in range(1, len(pieces) - 1, 2)]
+@@ -104,5 +114,20 @@ def extract_solution_summary(raw_text: str) -> str:
+             for a in answers:
+                 parts.append(f"[Agent Answer]:\n{a.strip()}")
+
++            # Base Qwen3-8B emits a normal user-facing final response because
++            # the published prompt does not document the private <answer>
++            # wrapper.  Keep that visible text while still removing reasoning
++            # and structured blocks already represented above.
++            visible = re.sub(r'<think>.*?</think>', '', content, flags=re.DOTALL)
++            visible = re.sub(
++                r'<(question|tool_call|answer)>.*?</\1>',
++                '',
++                visible,
++                flags=re.DOTALL,
++            )
++            visible = visible.replace("###TRANSFER_TO_HUMAN", "").strip()
++            if visible:
++                parts.append(f"[Agent Response]:\n{visible}")
++
+             if "###TRANSFER_TO_HUMAN" in content:
+                 parts.append("[Agent Escalated to Human]: ###TRANSFER_TO_HUMAN")

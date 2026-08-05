@@ -1,0 +1,8 @@
+{"event": "seed_generation_started", "teacher": "deepseek-v4-flash-sa-256k", "unix_time": 1785831075.7789648}
+{"actions": ["query_flight", "book_flight", "confirm"], "branch_hit": true, "event": "seed_generation_completed", "reward": 1.0, "task_id": "agenticqwen-r0-5a816f5a08", "unix_time": 1785831107.180825}
+{"event": "round1_evolution_started", "rollout_count": 1, "unix_time": 1785831107.18088}
+{"event": "seed_generation_started", "teacher": "deepseek-v4-flash-sa-256k", "unix_time": 1785831444.9850307}
+{"actions": ["query_flight", "book_flight", "confirm"], "branch_hit": true, "event": "seed_generation_completed", "reward": 1.0, "task_id": "agenticqwen-r0-5a816f5a08", "unix_time": 1785831778.3682063}
+{"event": "round1_evolution_started", "rollout_count": 1, "unix_time": 1785831778.3682613}
+{"error": "Strong model could not produce a valid behavior-tree expansion after retries", "error_type": "RuntimeError", "event": "teacher_smoke_failed", "unix_time": 1785832102.0712616}
+{"event": "round1_evolution_completed", "retained": 1, "unix_time": 1785833704.237045}

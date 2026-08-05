@@ -1,0 +1,86 @@
+{
+  "domain": "airline",
+  "edges": [
+    {
+      "condition": {
+        "flight_status": "available"
+      },
+      "label": "available",
+      "source": "query",
+      "target": "book_direct"
+    },
+    {
+      "condition": {},
+      "label": "booking created",
+      "source": "book_direct",
+      "target": "confirm_direct"
+    },
+    {
+      "condition": {
+        "flight_status": "sold_out",
+        "hsr_available": true
+      },
+      "label": "sold out; HSR available",
+      "source": "query",
+      "target": "search_hsr"
+    },
+    {
+      "condition": {},
+      "label": "HSR found",
+      "source": "search_hsr",
+      "target": "book_hsr"
+    },
+    {
+      "condition": {},
+      "label": "HSR booked",
+      "source": "book_hsr",
+      "target": "confirm_hsr"
+    }
+  ],
+  "nodes": [
+    {
+      "action": "query_flight",
+      "description": "Query the requested flight.",
+      "node_id": "query",
+      "terminal": false
+    },
+    {
+      "action": "book_flight",
+      "description": "Book the available direct flight.",
+      "node_id": "book_direct",
+      "terminal": false
+    },
+    {
+      "action": "confirm",
+      "description": "Confirm the direct booking.",
+      "node_id": "confirm_direct",
+      "terminal": true
+    },
+    {
+      "action": "search_hsr",
+      "description": "Search high-speed rail after sell-out.",
+      "node_id": "search_hsr",
+      "terminal": false
+    },
+    {
+      "action": "book_hsr",
+      "description": "Book the available high-speed rail.",
+      "node_id": "book_hsr",
+      "terminal": false
+    },
+    {
+      "action": "confirm",
+      "description": "Confirm the rail booking.",
+      "node_id": "confirm_hsr",
+      "terminal": true
+    }
+  ],
+  "provenance": "offline deterministic expansion from revision=0; rollout_count=1; rollout_sha256=64be1ba72de73fa83a3caf17d1a92941982127470dcde6185bd7feb1af21e10f",
+  "revision": 1,
+  "root_id": "query",
+  "source_workflow": [
+    "query_flight",
+    "book_flight",
+    "confirm"
+  ]
+}

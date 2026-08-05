@@ -119,6 +119,17 @@ Report meaningful transitions: model download progress, model load, first rollou
 
 Keep monitoring until a terminal condition is reached. A stopped PID is not automatically success: inspect `run.log` and required output files.
 
+For the CodeLab-hosted official BFCL smoke, use the read-only monitor after a
+browser/SSH reconnect:
+
+```bash
+bash scripts/monitor-codelab-bfcl.sh
+```
+
+Exit code `75` means the control plane is unavailable; preserve the remote
+process and retry later. Never interpret an empty monitor response as a
+successful benchmark.
+
 ### 6. Recover in place
 
 On failure:

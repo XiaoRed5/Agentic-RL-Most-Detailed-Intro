@@ -1,0 +1,53 @@
+{
+  "loop_target": "/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/upstream/data_synth_and_rl/RL/verl/experimental/agent_loop/tool_agent_loop.py",
+  "loop_target_sha256": "c69a0fd62a026eb6814d085bffeba9a0039548334def7407459f13ce840eeca1",
+  "message_parser_target": "/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/upstream/data_synth_and_rl/RL/my_script/utils/message_parser.py",
+  "message_parser_target_sha256": "87794de20d9347eaa09e85972df04fc5cd6ea8b97ab207a02d2a8e130da24163",
+  "mock_tool_target": "/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/upstream/data_synth_and_rl/RL/my_script/tools/mock_tool.py",
+  "mock_tool_target_sha256": "36d145ef407e27ec1f323626225a127ca178ddf5d19f1f0034f4536ee8562911",
+  "patches": [
+    {
+      "path": "/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/scripts/patches/agenticqwen-qwen3-clarification-fallback.patch",
+      "sha256": "b83f6d6faf1e26738e0c19fdd93ca6b938c72bc0d72450dab154ec90967d9e96"
+    },
+    {
+      "path": "/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/scripts/patches/agenticqwen-qwen3-clarification-routing-v2.patch",
+      "sha256": "0f2476bccf01cf4f429f7643a4231fbb4f5ea7b8fbdef622c3c12fa9d9064a8e"
+    },
+    {
+      "path": "/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/scripts/patches/agenticqwen-qwen3-stop-handshake-v3.patch",
+      "sha256": "cdb6c645cadb4f9d2eb4c7e7e077fbfc835d4f448db4fe8d7dff39764c07b6ea"
+    },
+    {
+      "path": "/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/scripts/patches/agenticqwen-mock-user-stop-termination-v4.patch",
+      "sha256": "9fdb800d0561444d7c229ea4657a8945582260ae869755bbc94ccf9303c52c8b"
+    },
+    {
+      "path": "/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/scripts/patches/agenticqwen-deterministic-tool-replay-v5.patch",
+      "sha256": "bb39b898953efc8a3a8058af779245cd5fb8f923f025279ccce2af988730f9f3"
+    },
+    {
+      "path": "/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/scripts/patches/agenticqwen-mixed-transcript-reward-v6.patch",
+      "sha256": "ae0dbc4f9d22c20cd7e5207c8d26c19c807ce46b5548ea1d1097cc17e2f5406e"
+    },
+    {
+      "path": "/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/scripts/patches/agenticqwen-concatenated-role-boundaries-v7.patch",
+      "sha256": "add916a41867aa080f5cc5097c448408ba771a73f304397086dc4cc0525d71dd"
+    }
+  ],
+  "reason": "Base Qwen3-8B emits plain-text turns although the released parser requires undocumented <question>/<answer> wrappers, while the official reward requires a mock-user ###STOP handshake.",
+  "schema_version": 1,
+  "semantic_scope": "Routes untagged visible assistant text to mock_user, terminates on ###STOP, replays exact published tool fixtures, and uses an audited STOP fallback only when the mock-user API fails after the official normal path completed; generated policy tokens and reward logic are unchanged.",
+  "state": {
+    "clarification_fallback": "already_applied",
+    "clarification_routing_v2": "already_applied",
+    "concatenated_role_boundaries_v7": "applied",
+    "deterministic_tool_replay_v5": "already_applied",
+    "mixed_transcript_reward_v6": "already_applied",
+    "mock_user_stop_termination_v4": "already_applied",
+    "stop_handshake_v3": "already_applied"
+  },
+  "status": "PASS",
+  "target": "/home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/upstream/data_synth_and_rl/RL/verl/experimental/agent_loop/tool_parser.py",
+  "target_sha256": "0d3a1aff529f3991863ef57b82ed866da780f555f8afb1114b262043e95a6513"
+}

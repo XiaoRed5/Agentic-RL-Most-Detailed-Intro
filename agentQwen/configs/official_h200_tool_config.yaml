@@ -1,0 +1,21 @@
+tools:
+  - class_name: "my_script.tools.mock_tool.MockSandboxFusionTool"
+    config:
+      num_workers: 2
+      enable_global_rate_limit: true
+      rate_limit: 2
+      acquire_timeout: 90
+      default_timeout: 60
+      type: native
+    tool_schema:
+      type: "function"
+      function:
+        name: "mock_tool"
+        description: "An LLM imitates a tool"
+        parameters:
+          type: "object"
+          properties:
+            query:
+              type: "string"
+              description: "The query."
+          required: ["query"]

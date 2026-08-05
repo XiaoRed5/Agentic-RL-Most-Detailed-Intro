@@ -1,0 +1,17 @@
+step_models:
+  RubricsAgent:
+    model_name: "deepseek-v4-flash-sa-256k"
+    max_tokens: 8192
+    temperature: 0.1
+    solution_top_k: 3
+processing:
+  max_workers: 2
+  max_tasks: 10
+logging:
+  already_processed_path: "logs/agenticqwen_ds_v4_rubrics.jsonl"
+paths:
+  solution_path: "output/agenticqwen_ds_v4_solve/"
+api_configs:
+  "deepseek-v4-flash-sa-256k":
+    api_base: "AIGC_BASE_URL"
+    api_key_env: "AIGC_APP_ID"

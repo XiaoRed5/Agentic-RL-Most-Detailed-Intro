@@ -1,0 +1,52 @@
+{
+  "command": {
+    "argv": [
+      "python3",
+      "my_script/data_process/virtual_tool_use_convert_parquet.py",
+      "--local_dir",
+      "my_data/tmp/agenticqwen_ds_v4_filtered",
+      "--train_data_source",
+      "../tool_use_data_synthesis/output/agenticqwen_ds_v4_filtered.json",
+      "--test_data_source",
+      "../tool_use_data_synthesis/output/agenticqwen_ds_v4_filtered_val.json"
+    ],
+    "command": "python3 my_script/data_process/virtual_tool_use_convert_parquet.py --local_dir my_data/tmp/agenticqwen_ds_v4_filtered --train_data_source ../tool_use_data_synthesis/output/agenticqwen_ds_v4_filtered.json --test_data_source ../tool_use_data_synthesis/output/agenticqwen_ds_v4_filtered_val.json",
+    "cwd": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/work/upstream/data_synth_and_rl/RL",
+    "env_configured": {
+      "AGENTICQWEN_TEACHER_API_KEY": false,
+      "AIGC_APP_ID": false,
+      "DASHSCOPE_API_KEY": false
+    },
+    "env_names": [
+      "AGENTICQWEN_TEACHER_API_KEY",
+      "AIGC_APP_ID",
+      "DASHSCOPE_API_KEY"
+    ]
+  },
+  "finished_at": "2026-08-05T08:45:15.690883+00:00",
+  "log": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/outputs/agenticqwen-reproduction/artifacts/industrial_agenticqwen/stages/convert.log",
+  "outputs": [
+    {
+      "bytes": 0,
+      "exists": false,
+      "files": 0,
+      "path": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/work/upstream/data_synth_and_rl/RL/my_data/tmp/agenticqwen_ds_v4_filtered/train.parquet"
+    },
+    {
+      "bytes": 0,
+      "exists": false,
+      "files": 0,
+      "path": "/Users/hongbo/Documents/Codex/2026-08-02/https-yyhdbl-github-io/work/upstream/data_synth_and_rl/RL/my_data/tmp/agenticqwen_ds_v4_filtered/val.parquet"
+    }
+  ],
+  "resource_contract": {
+    "paper_scale": "requires approximately 100K tasks, multi-GPU verl/SGLang, and the exact teacher family",
+    "policy_gpu": "single H200 is supported for a bounded profile; paper recipe is 8xH100",
+    "policy_model": "Qwen/Qwen3-8B",
+    "teacher": "external OpenAI-compatible endpoint; credential is injected at runtime"
+  },
+  "schema_version": 1,
+  "stage": "convert",
+  "started_at": "2026-08-05T08:45:15.690761+00:00",
+  "status": "dry_run"
+}

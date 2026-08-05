@@ -1,0 +1,4 @@
+1ac012c5dae3f2b99610dd87b44a5aedb3a008b2add7052de0d78d112f5c0ae2  /home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/artifacts/official_round1_curriculum_smoke_v1/merged/global_step_1/model-00001-of-00004.safetensors
+371b1cdb52680f3a52683fa3a55638f7c1faa82c2fd484ab4b37828cc4e57d65  /home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/artifacts/official_round1_curriculum_smoke_v1/merged/global_step_1/model-00002-of-00004.safetensors
+396540415544f8f976a953d4c9be393613c2bf37721935194c5f8b11e69a08a6  /home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/artifacts/official_round1_curriculum_smoke_v1/merged/global_step_1/model-00003-of-00004.safetensors
+47574aae106d8f4384d90e41e5e34f4211246dbf88068308a80f824f8c56b859  /home/hadoop-aipnlp/agenticqwen-paper-debug-20260804/artifacts/official_round1_curriculum_smoke_v1/merged/global_step_1/model-00004-of-00004.safetensors

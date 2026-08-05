@@ -1,0 +1,89 @@
+{
+  "elapsed_seconds": 2628.458,
+  "evolution": {
+    "branches": [
+      [
+        "query_flight",
+        "book_flight",
+        "confirm"
+      ],
+      [
+        "query_flight",
+        "check_membership",
+        "issue_cash",
+        "confirm"
+      ],
+      [
+        "query_flight",
+        "check_membership",
+        "issue_voucher",
+        "confirm"
+      ],
+      [
+        "query_flight",
+        "search_hsr",
+        "book_hsr",
+        "confirm"
+      ],
+      [
+        "query_flight",
+        "search_nearby_airport",
+        "book_nearby_flight",
+        "confirm"
+      ]
+    ],
+    "candidates": 5,
+    "retained": 1,
+    "revision": 1,
+    "validations": [
+      {
+        "branch_hit": true,
+        "reason": "teacher_solved_and_hit_intended_branch:attempt=2",
+        "retained": true,
+        "reward": 1.0,
+        "task_id": "agenticqwen-r1-5a816f5a08"
+      },
+      {
+        "branch_hit": false,
+        "reason": "teacher_failed_or_missed_branch:attempts=3",
+        "retained": false,
+        "reward": 0.25,
+        "task_id": "agenticqwen-r1-6202adb181"
+      },
+      {
+        "branch_hit": false,
+        "reason": "teacher_failed_or_missed_branch:attempts=3",
+        "retained": false,
+        "reward": 0.25,
+        "task_id": "agenticqwen-r1-9b1458932f"
+      },
+      {
+        "branch_hit": false,
+        "reason": "teacher_failed_or_missed_branch:attempts=3",
+        "retained": false,
+        "reward": 0.25,
+        "task_id": "agenticqwen-r1-934f6ce586"
+      },
+      {
+        "branch_hit": false,
+        "reason": "teacher_failed_or_missed_branch:attempts=3",
+        "retained": false,
+        "reward": 0.230769,
+        "task_id": "agenticqwen-r1-0192fe20b1"
+      }
+    ]
+  },
+  "manifest_sha256": "9ead0c09ad46fd966da3be49ab18114ca8596020f7c59fb88c4f1e7911ed1b7c",
+  "seed": {
+    "actions": [
+      "query_flight",
+      "book_flight",
+      "confirm"
+    ],
+    "branch_hit": true,
+    "reward": 1.0,
+    "task_id": "agenticqwen-r0-5a816f5a08"
+  },
+  "status": "completed",
+  "teacher": "deepseek-v4-flash-sa-256k"
+}

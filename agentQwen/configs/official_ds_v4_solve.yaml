@@ -1,0 +1,22 @@
+step_models:
+  SolveAgent:
+    model_name: "deepseek-v4-flash-sa-256k"
+    max_tokens: 8192
+    temperature: 0.7
+  MockToolAgent:
+    model_name: "deepseek-v4-flash-sa-256k"
+    max_tokens: 8192
+    temperature: 0.4
+processing:
+  max_workers: 6
+  max_tasks: 1000
+logging:
+  repeat_times: 1
+  already_processed_path: "logs/agenticqwen_ds_v4_solved.jsonl"
+  solve_path: "output/agenticqwen_ds_v4_solve/"
+paths:
+  data_file: "output/agenticqwen_ds_v4_virtual_tool_use.jsonl"
+api_configs:
+  "deepseek-v4-flash-sa-256k":
+    api_base: "AIGC_BASE_URL"
+    api_key_env: "AIGC_APP_ID"

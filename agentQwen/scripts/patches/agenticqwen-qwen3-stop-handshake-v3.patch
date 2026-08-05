@@ -1,0 +1,31 @@
+--- a/RL/verl/experimental/agent_loop/tool_parser.py
++++ b/RL/verl/experimental/agent_loop/tool_parser.py
+@@ -158,14 +158,21 @@ class UserHermesToolParser(ToolParser):
+                     ]
+                 elif visible_text:
+-                    # A plain declarative response is a final answer.  The
+-                    # released prompt likewise does not document <answer> for
+-                    # the base model, so ending the loop matches normal chat
+-                    # semantics and prevents an adversarial user from extending
+-                    # a task that the policy has already completed.
++                    # The official reward gate scores a trajectory only after
++                    # the simulated user emits ###STOP (or the agent transfers
++                    # to a human).  Base Qwen3-8B does not know the unreleased
++                    # <answer> wrapper, so a plain final response must still be
++                    # shown to mock_user.  The mock user then decides whether
++                    # the task is complete and returns ###STOP, preserving the
++                    # official multi-turn termination handshake.
+                     logger.warning(
+-                        "Missing <answer> tag; treating untagged declarative response as final"
++                        "Missing <answer> tag; routing untagged response to mock_user for STOP handshake"
+                     )
+-                    function_calls = []
++                    function_calls = [
++                        FunctionCall(
++                            name="mock_user",
++                            arguments=json.dumps({"agent_query": visible_text}, ensure_ascii=False),
++                        )
++                    ]
+                 else:
+                     logger.error("Failed to extract a user-facing clarification from assistant response")
+                     function_calls = []

@@ -1,0 +1,30 @@
+--- a/RL/verl/experimental/agent_loop/tool_agent_loop.py
++++ b/RL/verl/experimental/agent_loop/tool_agent_loop.py
+@@ -574,6 +574,16 @@ class UserToolAgentLoop(ToolAgentLoop):
+         with simple_timer("tool_calls", agent_data.metrics):
+             responses = await asyncio.gather(*tasks)
+
++        # The released mock-user prompt explicitly emits ###STOP when the
++        # task is complete.  Preserve that user message in the trajectory,
++        # then terminate before asking the policy for another turn.  Without
++        # this transition, a completed trajectory can be overwritten by a
++        # later, spurious agent response and the official reward gate fails.
++        mock_user_requested_stop = any(
++            name == "mock_user" and "###STOP" in (response[0].text or "")
++            for name, response in zip(tool_call_names, responses)
++        )
++
+         # Process tool responses and update multi_modal_data
+         # Removed: agent_data.new_images_this_turn = []
+         for tool_response, tool_reward, _ in responses:
+@@ -678,6 +685,10 @@ class UserToolAgentLoop(ToolAgentLoop):
+         if agent_data.response_logprobs:
+             agent_data.response_logprobs += [0.0] * len(response_ids)
+         agent_data.user_turns += 1
++        if mock_user_requested_stop:
++            logger.info("Mock user emitted ###STOP; terminating completed trajectory")
++            return AgentState.TERMINATED
++
+         return AgentState.GENERATING
+
+     async def _call_tool(

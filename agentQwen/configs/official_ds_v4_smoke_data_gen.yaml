@@ -1,0 +1,9 @@
+step_models:
+  ToolSetGenAgent: {model_name: "deepseek-v4-flash-sa-256k", max_tokens: 16384, temperature: 0.4}
+  PolicyTaskAgent: {model_name: "deepseek-v4-flash-sa-256k", max_tokens: 16384, temperature: 0.4}
+  FinalTaskAgent: {model_name: "deepseek-v4-flash-sa-256k", max_tokens: 16384, temperature: 0.4}
+processing: {max_workers: 1, max_tasks: 1}
+logging: {task_file_path: "output/agenticqwen_ds_v4_smoke_virtual_tool_use.jsonl"}
+paths: {data_file: "configs/persona_5K.jsonl"}
+api_configs:
+  "deepseek-v4-flash-sa-256k": {api_base: "AIGC_BASE_URL", api_key_env: "AIGC_APP_ID"}

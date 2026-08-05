@@ -1,0 +1,62 @@
+{
+  "seed": 260421590,
+  "model": {
+    "id": "Qwen/Qwen3-8B",
+    "attn_implementation": "sdpa",
+    "trust_remote_code": false,
+    "lora_rank": 16,
+    "lora_alpha": 32,
+    "lora_dropout": 0.0,
+    "target_modules": ["q_proj", "k_proj", "v_proj", "o_proj", "gate_proj", "up_proj", "down_proj"]
+  },
+  "teacher": {
+    "backend": "openai_compatible",
+    "model": "deepseek-v4-flash-sa-256k",
+    "base_url": "https://aigc.sankuai.com/v1/openai/native",
+    "api_key_env": "AIGC_APP_ID",
+    "api_key_file": "/home/hadoop-aipnlp/.aigc_app_id",
+    "timeout_seconds": 90,
+    "max_tokens": 8192,
+    "response_format_json": false
+  },
+  "flywheel": {
+    "rounds": 3,
+    "max_synthetic_trajectories": 10,
+    "max_new_tasks_per_round": 1,
+    "replay_previous_tasks": true,
+    "teacher_generation_attempts": 1,
+    "teacher_validation_attempts": 2,
+    "allow_deterministic_expansion_fallback": false,
+    "seed_source": "SynthAgent-compatible linear workflow",
+    "seed_destinations": ["Beijing", "Shanghai", "Shenzhen", "Chengdu"]
+  },
+  "training": {
+    "learning_rate": 0.000005,
+    "per_device_train_batch_size": 1,
+    "per_device_eval_batch_size": 1,
+    "gradient_accumulation_steps": 4,
+    "num_generations": 4,
+    "num_generations_eval": 1,
+    "max_completion_length": 1400,
+    "max_tool_calling_iterations": 10,
+    "temperature": 1.05,
+    "top_p": 0.95,
+    "repetition_penalty": 1.05,
+    "beta": 0.01,
+    "epsilon": 0.2,
+    "loss_type": "dapo",
+    "max_grad_norm": 1.0,
+    "warmup_ratio": 0.05
+  },
+  "stages": {
+    "round0": {"max_steps": 4, "save_steps": 2},
+    "round1": {"max_steps": 4, "save_steps": 2},
+    "round2": {"max_steps": 4, "learning_rate": 0.000003, "save_steps": 2},
+    "round3": {"max_steps": 4, "learning_rate": 0.000003, "save_steps": 2}
+  },
+  "claim_boundary": {
+    "policy": "Qwen3-8B NF4 QLoRA-GRPO on one H200",
+    "teacher_substitution": "DeepSeek-v4-flash substitutes for Qwen3-235B; this is a teacher-substituted faithful algorithm profile, not a paper-number reproduction.",
+    "paper_scale_claimed": false
+  }
+}

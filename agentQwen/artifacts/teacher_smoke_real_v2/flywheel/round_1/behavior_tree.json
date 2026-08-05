@@ -1,0 +1,195 @@
+{
+  "domain": "airline",
+  "edges": [
+    {
+      "condition": {
+        "flight_status": "available"
+      },
+      "label": "available",
+      "source": "query",
+      "target": "book_direct"
+    },
+    {
+      "condition": {
+        "flight_status": "unavailable"
+      },
+      "label": "unavailable",
+      "source": "query",
+      "target": "check_membership"
+    },
+    {
+      "condition": {
+        "membership": "premium"
+      },
+      "label": "premium",
+      "source": "check_membership",
+      "target": "issue_cash"
+    },
+    {
+      "condition": {
+        "membership": "basic"
+      },
+      "label": "basic",
+      "source": "check_membership",
+      "target": "issue_voucher"
+    },
+    {
+      "condition": {},
+      "label": "cash_issued",
+      "source": "issue_cash",
+      "target": "confirm_comp_cash"
+    },
+    {
+      "condition": {},
+      "label": "voucher_issued",
+      "source": "issue_voucher",
+      "target": "confirm_comp_voucher"
+    },
+    {
+      "condition": {
+        "destination": "domestic_high_speed",
+        "flight_status": "unavailable"
+      },
+      "label": "hsr_possible",
+      "source": "query",
+      "target": "search_hsr"
+    },
+    {
+      "condition": {
+        "hsr_available": true
+      },
+      "label": "hsr_available",
+      "source": "search_hsr",
+      "target": "book_hsr"
+    },
+    {
+      "condition": {},
+      "label": "hsr_booked",
+      "source": "book_hsr",
+      "target": "confirm_hsr"
+    },
+    {
+      "condition": {
+        "flight_status": "unavailable",
+        "nearby_airport": true
+      },
+      "label": "nearby_possible",
+      "source": "query",
+      "target": "search_nearby_airport"
+    },
+    {
+      "condition": {
+        "nearby_airport_available": true
+      },
+      "label": "nearby_available",
+      "source": "search_nearby_airport",
+      "target": "book_nearby_flight"
+    },
+    {
+      "condition": {},
+      "label": "nearby_booked",
+      "source": "book_nearby_flight",
+      "target": "confirm_nearby"
+    },
+    {
+      "condition": {},
+      "label": "booking created",
+      "source": "book_direct",
+      "target": "confirm_direct"
+    }
+  ],
+  "nodes": [
+    {
+      "action": "query_flight",
+      "description": "Query the requested flight.",
+      "node_id": "query",
+      "terminal": false
+    },
+    {
+      "action": "book_flight",
+      "description": "Book the available direct flight.",
+      "node_id": "book_direct",
+      "terminal": false
+    },
+    {
+      "action": "confirm",
+      "description": "Confirm the direct booking.",
+      "node_id": "confirm_direct",
+      "terminal": true
+    },
+    {
+      "action": "check_membership",
+      "description": "Check user membership status.",
+      "node_id": "check_membership",
+      "terminal": false
+    },
+    {
+      "action": "issue_cash",
+      "description": "Issue cash compensation.",
+      "node_id": "issue_cash",
+      "terminal": false
+    },
+    {
+      "action": "issue_voucher",
+      "description": "Issue voucher compensation.",
+      "node_id": "issue_voucher",
+      "terminal": false
+    },
+    {
+      "action": "confirm",
+      "description": "Confirm after cash compensation.",
+      "node_id": "confirm_comp_cash",
+      "terminal": true
+    },
+    {
+      "action": "confirm",
+      "description": "Confirm after voucher compensation.",
+      "node_id": "confirm_comp_voucher",
+      "terminal": true
+    },
+    {
+      "action": "search_hsr",
+      "description": "Search for high-speed rail alternatives.",
+      "node_id": "search_hsr",
+      "terminal": false
+    },
+    {
+      "action": "book_hsr",
+      "description": "Book high-speed rail ticket.",
+      "node_id": "book_hsr",
+      "terminal": false
+    },
+    {
+      "action": "confirm",
+      "description": "Confirm high-speed rail booking.",
+      "node_id": "confirm_hsr",
+      "terminal": true
+    },
+    {
+      "action": "search_nearby_airport",
+      "description": "Search for nearby airport alternatives.",
+      "node_id": "search_nearby_airport",
+      "terminal": false
+    },
+    {
+      "action": "book_nearby_flight",
+      "description": "Book flight from nearby airport.",
+      "node_id": "book_nearby_flight",
+      "terminal": false
+    },
+    {
+      "action": "confirm",
+      "description": "Confirm nearby airport flight booking.",
+      "node_id": "confirm_nearby",
+      "terminal": true
+    }
+  ],
+  "provenance": "SynthAgent-compatible linear seed; replace with a real SynthAgent normal_workflow for paper-scale use",
+  "revision": 1,
+  "root_id": "query",
+  "source_workflow": [
+    "query_flight",
+    "book_flight",
+    "confirm"
+  ]
+}
