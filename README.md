@@ -1,10 +1,9 @@
 # Agentic RL 入门
-
-又是小red帮学妹找基座实习的一天。
-
 我目前在美团M17做基座agent后训练，24年上交EE毕业转AI，帮助像曾经的我一样想转行的朋友！
 
-欢迎关注我的小红书：[小red](https://xhslink.com/m/2dKOxmxjYcC)，后续会继续更新 Agentic RL、基座模型后训练和算法工程师转行相关内容。
+欢迎关注我的小红书：[小red](https://xhslink.com/m/2dKOxmxjYcC)，后续会继续更新 Agentic RL论文、基座技术报告、Agentic RL项目等
+
+组里主要做通用工具调用和code agent，上海/北京的LongCat人才计划实习/校招、社招HC充沛，欢迎投递 315835497@qq.com
 
 ## 三个项目方向
 
