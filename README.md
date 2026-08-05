@@ -1,5 +1,5 @@
 # Agentic RL 入门
-我目前在美团M17做基座agent后训练，24年上交EE毕业转AI，帮助像曾经的我一样想转行的朋友！
+我目前在美团M17做基座code agent，24年上交EE毕业转AI，帮助像曾经的我一样想转行的朋友！
 
 欢迎关注我的小红书：[小red](https://xhslink.com/m/2dKOxmxjYcC)，后续会继续更新 Agentic RL论文、基座技术报告、Agentic RL项目等
 
