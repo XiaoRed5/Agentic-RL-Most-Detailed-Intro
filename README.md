@@ -1,5 +1,5 @@
 # Agentic RL 入门
-我在美团LongCat做基座code agent Mid-training/SFT/Agentic RL
+我在美团LongCat做基座预训练&code agent Mid-training/SFT/Agentic RL
 
 我从上交芯片系➡️华为诺亚实习➡️24届校招腾讯➡️美团LongCat，帮助像曾经的我一样想转行的朋友！
 
@@ -8,6 +8,8 @@
 小红书看更多干货&基座打工日常：[小red](https://xhslink.com/m/2dKOxmxjYcC)
 
 组里主要做通用工具调用和code agent，上海/北京的LongCat人才计划实习/校招、社招HC充沛，欢迎投递 315835497@qq.com
+
+有任何问题、需求、想看更新方向都可以直接提issue（预训练/Mid-training/SFT/Agentic RL方向）
 
 ## 三个项目方向
 
