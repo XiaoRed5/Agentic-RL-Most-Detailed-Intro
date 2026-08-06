@@ -1,0 +1,4 @@
+interface:
+  display_name: "机制图语言与 Qwen Prompt"
+  short_description: "先讲清论文机制，再生成可直接用于 Qwen 生图的中文提示词"
+  default_prompt: "使用 $mechanism-figure-prompt 先用通俗语言解释这个机制，再写一段可直接粘贴给 Qwen 生图模型的提示词。"
