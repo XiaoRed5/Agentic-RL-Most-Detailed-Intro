@@ -1,0 +1,4 @@
+interface:
+  display_name: "机制图解读与绘制"
+  short_description: "先还原论文与代码中的具体实现，再生成通俗准确且信息密度合适的机制图"
+  default_prompt: "Use $mechanism-figure to research this paper mechanism, explain the implementation plainly, and create an accurate visual."
